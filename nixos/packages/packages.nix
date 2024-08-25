@@ -6,5 +6,6 @@
     ./system-packages.nix
     ./development.nix
     ./dependencies.nix
+    ./flatpaks.nix
   ];
 }
