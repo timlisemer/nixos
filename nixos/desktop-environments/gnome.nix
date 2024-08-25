@@ -20,5 +20,7 @@
     gnome-tour
     gnome.gnome-initial-setup
     gnome.yelp
+    gnome.gnome-shell-extensions
+    gnome.epiphany
   ];
 }
