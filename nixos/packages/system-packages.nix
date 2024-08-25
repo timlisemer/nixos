@@ -33,5 +33,7 @@
     zoxide
     starship
     nerdfonts
+    switcheroo-control
+    atuin
   ];
 }

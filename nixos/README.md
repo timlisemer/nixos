@@ -6,24 +6,58 @@ This repository contains my personal configuration for NixOS, a Linux distributi
 
 To use this NixOS configuration on your system, follow these steps:
 
-### 1. Clone the Repository:
+### 1. Boot into the Minimal NixOS Live CD:
+
+Boot your system using a NixOS live CD or USB.
+
+### 2. Prepare the Live Environment:
+
+Since the minimal NixOS environment does not have `git` installed by default, install it with the following command:
+
+```bash
+nix-env -iA nixos.git
+```
+
+### 3. Clone the Repository:
 
 Clone the repository from GitHub to a temporary directory, such as `/tmp`.
 
 ```bash
-git clone https:github.com/TimLisemer/NixOs.git /tmp/nixos-config
+git clone https://github.com/TimLisemer/Dotfiles.git /tmp/nixos-config
 ```
 
-### 2. Move the Configuration to `/etc/nixos`:
+### 4. Prepare the Configuration for Installation:
 
-Move the cloned configuration files to `/etc/nixos` and replace the existing configuration files.
+Move the cloned NixOS configuration files from the `/nixos` directory to `/etc/nixos` and replace the existing configuration files.
 
 ```bash
 sudo rm -rf /etc/nixos/*
-sudo mv /tmp/nixos-config/* /etc/nixos/
+sudo mv /tmp/nixos-config/nixos/* /etc/nixos/
 ```
 
-### 3. Apply the Configuration for the First Time:
+### 5. Install NixOS Using Disko:
+
+To install NixOS using the Disko configuration, use the following commands. Make sure to specify the correct disk(s) for your machine.
+
+- **For `tim-laptop` (single disk):**
+
+```bash
+sudo nix run 'github:nix-community/disko#disko-install' -- --flake '/etc/nixos#install' --disk 'disk1' '/dev/nvme0n1'
+```
+
+- **For `tim-pc` (dual disk):**
+
+```bash
+sudo nix run 'github:nix-community/disko#disko-install' -- --flake '/etc/nixos#install' --disk 'disk1' '/dev/nvme0n1' --disk 'disk2' '/dev/nvme1n1'
+```
+
+### 6. Boot into the Newly Installed System:
+
+After the installation completes, reboot your system into the newly installed NixOS.
+
+### 7. Apply the Host-Specific Configuration:
+
+Once booted, apply the host-specific configuration. For example:
 
 - For `tim-pc`, use the following command:
 
@@ -37,7 +71,7 @@ sudo nixos-rebuild switch --flake '.#tim-pc'
 sudo nixos-rebuild switch --flake '.#tim-laptop'
 ```
 
-### 4. Rebuild the Configuration in the Future:
+### 8. Rebuild the Configuration in the Future:
 
 After the initial setup, you can rebuild the configuration with just:
 

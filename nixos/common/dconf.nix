@@ -512,7 +512,7 @@ with lib.hm.gvariant;
           (mkDictionaryEntry ["position" (mkVariant 3)])
         ])])
       ] ];
-      enabled-extensions = [ "app-hider@lynith.dev" "appindicatorsupport@rgcjonas.gmail.com" "blur-my-shell@aunetx" "dash-to-panel@jderose9.github.com" "ding@rastersoft.com" ];
+      enabled-extensions = [ "app-hider@lynith.dev" "appindicatorsupport@rgcjonas.gmail.com" "blur-my-shell@aunetx" "dash-to-panel@jderose9.github.com" "ding@rastersoft.com" "user-theme@gnome-shell-extensions.gcampax.github.com" "sp-tray@sp-tray.esenliyim.github.com" ];
       favorite-apps = [ "org.gnome.Nautilus.desktop" "org.mozilla.firefox.desktop" "com.spotify.Client.desktop" "io.github.spacingbat3.webcord.desktop" "com.github.flxzt.rnote.desktop" "org.gnome.Geary.desktop" "org.gnome.Calendar.desktop" "org.gnome.Terminal.desktop" ];
     };
 

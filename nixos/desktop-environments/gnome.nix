@@ -14,6 +14,7 @@
     gnomeExtensions.desktop-icons-ng-ding
     gnomeExtensions.phi-pi-hole-indicator
     gnomeExtensions.spotify-tray
+    gnomeExtensions.user-themes
   ];
 
   environment.gnome.excludePackages = with pkgs; [
