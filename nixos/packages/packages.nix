@@ -5,5 +5,6 @@
     ./applications.nix
     ./system-packages.nix
     ./development.nix
+    ./dependencies.nix
   ];
 }

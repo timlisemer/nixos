@@ -10,6 +10,7 @@
       ../hardware-configuration.nix
       ./home-manager.nix
       ../packages/packages.nix
+      ../desktop-environments/desktop-enviroments.nix
     ];
 
   # Bootloader.
@@ -43,9 +44,8 @@
   # Enable the X11 windowing system.
   services.xserver.enable = true;
 
-  # Enable the GNOME Desktop Environment.
+  # Enable the GDM Display Manager
   services.xserver.displayManager.gdm.enable = true;
-  services.xserver.desktopManager.gnome.enable = true;
 
   # Configure keymap in X11
   services.xserver.xkb = {
