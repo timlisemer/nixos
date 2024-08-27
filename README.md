@@ -72,7 +72,7 @@ Create the necessary directories and copy the configuration to the target filesy
 
 ```bash
 sudo mkdir -p /mnt/etc/nixos
-sudo cp -rT /tmp/nixos/* /mnt/etc/nixos/
+sudo cp -a /tmp/nixos/* /mnt/etc/nixos/
 ```
 
 - **For `tim-laptop`:**
