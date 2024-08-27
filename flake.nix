@@ -5,15 +5,15 @@
     flatpaks.url = "github:GermanBread/declarative-flatpak/stable-v3";
     disko.url = "github:nix-community/disko";
     comin.url = "github:nlewo/comin";
-  };
 
-  morewaita = {
-    url = "github:somepaulo/MoreWaita";
-    flake = false;
-  };
-  firefox-gnome-theme = {
-    url = "github:rafaelmardojai/firefox-gnome-theme";
-    flake = false;
+    morewaita = {
+      url = "github:somepaulo/MoreWaita";
+      flake = false;
+    };
+    firefox-gnome-theme = {
+      url = "github:rafaelmardojai/firefox-gnome-theme";
+      flake = false;
+    };
   };
 
   outputs = { self, nixpkgs, flatpaks, disko, comin, firefox-gnome-theme, morewaita, ... }@attrs: {

@@ -42,7 +42,7 @@ sudo nixos-generate-config --no-filesystems --show-hardware-config >> /mnt/etc/n
 Clone the repository from GitHub to a temporary directory, such as `/tmp`.
 
 ```bash
-git clone https://github.com/TimLisemer/Dotfiles.git /tmp/dotfiles
+git clone https://github.com/TimLisemer/NixOs.git /tmp/nixos
 ```
 
 ### 5. Prepare the Configuration for Installation:
@@ -50,7 +50,7 @@ git clone https://github.com/TimLisemer/Dotfiles.git /tmp/dotfiles
 Move the cloned NixOS configuration files from the `/nixos` directory to `/etc/nixos` and replace the existing configuration files.
 
 ```bash
-sudo mv /tmp/dotfiles/nixos/* /mnt/etc/nixos/
+sudo mv /tmp/nixos/* /mnt/etc/nixos/
 ```
 
 ### 6. Install NixOS Using Disko:
