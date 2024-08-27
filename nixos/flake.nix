@@ -16,20 +16,19 @@
       ];
     };
 
-    nixosConfigurations.install = nixpkgs.lib.nixosSystem {
+    nixosConfigurations.install-tim-laptop = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       specialArgs = attrs;
       modules = [
+        # Install (Disko) Modules
         disko.nixosModules.disko
-        ./install.nix
-      ];
+        (import ./install.nix { disks = [ "/dev/nvme0n1" ]; }) # Edit this if hardware changed in the future
 
-      # You can specify disks during installation here or pass them from the CLI
-      # For example, during installation:
-      # `nixos-install --flake .#install --arg disks '[ "/dev/nvme0n1", "/dev/nvme1n1" ]'`
-      configuration = {
-        disks = [ "/dev/nvme0n1", "/dev/nvme1n1" ];
-      };
+
+        # Tim-Laptop Modules
+        flatpaks.nixosModules.default
+        ./hosts/tim-laptop.nix 
+      ];
     };
   };
 }

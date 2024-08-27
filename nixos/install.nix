@@ -42,22 +42,6 @@ in
                   mountpoint = "/nix";
                   mountOptions = [ "compress=zstd" "noatime" ];
                 };
-                "@/persist" = {
-                  mountpoint = "/persist";
-                  mountOptions = [ "compress=zstd" "noatime" ];
-                };
-                "@/var-lib" = {
-                  mountpoint = "/var/lib";
-                  mountOptions = [ "compress=zstd" "noatime" ];
-                };
-                "@/var-log" = {
-                  mountpoint = "/var/log";
-                  mountOptions = [ "compress=zstd" "noatime" ];
-                };
-                "@/var-tmp" = {
-                  mountpoint = "/var/tmp";
-                  mountOptions = [ "compress=zstd" "noatime" ];
-                };
               };
             };
           };
