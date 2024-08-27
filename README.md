@@ -18,13 +18,16 @@ If the minimal NixOS environment does not have `git` installed by default, insta
 nix-env -iA nixos.git
 ```
 
-#### 2.1 Optionally enable ssh access within the Live Environment:
+#### 2.1 Optionally Enable SSH Access Within the Live Environment:
+
+To set a password for the `nixos` user, run:
 
 ```bash
 passwd nixos
 ```
 
-This allows you to do 
+This allows you to SSH into the live environment using:
+
 ```bash
 ssh nixos@<hostname>
 ```
@@ -37,53 +40,68 @@ Clone the repository from GitHub to a temporary directory, such as `/tmp`.
 git clone https://github.com/TimLisemer/NixOs.git /tmp/nixos
 ```
 
-### 3.1 Optionally generate Hardware config
+### 3.1 Optionally Generate Hardware Configuration:
+
+Generate a hardware configuration without filesystem information and save it to `hardware-configuration.nix`:
 
 ```bash
 sudo nixos-generate-config --no-filesystems --show-hardware-config >> hardware-configuration.nix
 ```
 
-Afterwards move it for example into /tmp/nixos/hosts with a correct name.
+Move the generated file, for example, into `/tmp/nixos/hosts` with an appropriate name.
 
-### 4. Mount & install NixOS using Disko:
+### 4. Mount the Filesystem Using Disko:
 
-To mount and install the filesystem using Disko, use the following commands. Make sure to specify the correct disk(s) for your machine.
+Use Disko to mount the filesystem by running the following commands. Ensure you specify the correct disk(s) for your machine.
 
 - **For `tim-laptop` (single disk):**
 
 ```bash
 sudo nix --extra-experimental-features 'nix-command flakes' run github:nix-community/disko -- --mode zap_create_mount /tmp/nixos/install.nix --arg disks '[ "/dev/nvme0n1" ]'
-
-sudo nixos-install --flake '/tmp/nixos/flake.nix#tim-laptop'
 ```
 
 - **For `tim-pc` (dual disk):**
 
 ```bash
 sudo nix --extra-experimental-features 'nix-command flakes' run github:nix-community/disko -- --mode zap_create_mount /tmp/install.nix --arg disks '[ "/dev/nvme0n1" "/dev/nvme1n1" ]'
-
-sudo nixos-install --flake '/tmp/nixos/flake.nix#tim-pc'
 ```
 
-### 5. Boot into the Newly Installed System:
+### 5. Install NixOS:
+
+Create the necessary directories and copy the configuration to the target filesystem:
+
+```bash
+sudo mkdir -p /mnt/etc/nixos
+sudo cp -rT /tmp/nixos/* /mnt/etc/nixos/
+```
+
+- **For `tim-laptop`:**
+
+```bash
+sudo nixos-install --flake '/mnt/etc/nixos/flake.nix#tim-laptop'
+```
+
+- **For `tim-pc`:**
+
+```bash
+sudo nixos-install --flake '/mnt/etc/nixos/flake.nix#tim-pc'
+```
+
+### 6. Finalize Installation:
+
+Set the password for each user account declared in the configuration:
+
+```bash
+sudo nixos-enter --root /mnt -c 'passwd tim'
+```
+
+### 7. Boot into the Newly Installed System:
 
 After the installation completes, reboot your system into the newly installed NixOS.
 
-### 6. Finish Installation
+### 8. Rebuild the Configuration in the Future:
 
-Once booted, set the password for the user account
-
-If in a display manager switch to a tty: CTRL + ALT + (F1 - F12)
-
-Login with the root account and then replace tim  with the username of you configuration:
-
-```bash
-passwd tim
-```
-
-### 7. Rebuild the Configuration in the Future:
-
-After the initial setup, you can rebuild the configuration with just:
+After the initial setup, you can rebuild the configuration with the following command:
 
 ```bash
 sudo nixos-rebuild switch

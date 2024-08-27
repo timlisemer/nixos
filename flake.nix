@@ -23,6 +23,7 @@
       modules = [ 
         disko.nixosModules.disko
         flatpaks.nixosModules.default
+        comin.nixosModules.comin
         (import ./install.nix { disks = [ "/dev/nvme0n1" ]; }) # Edit this if hardware changed in the future
         ./hosts/tim-laptop.nix 
       ];
