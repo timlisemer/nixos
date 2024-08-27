@@ -109,6 +109,17 @@
   # Enable Switcheroo
   services.switcherooControl.enable = true;
 
+  # Comin
+  services.comin = {
+    enable = true;
+    remotes = [{
+      name = "origin";
+      url = "https://github.com/TimLisemer/NixOs.git";
+      poller.period = 60;
+      branches.main.name = "main";
+    }];
+  };
+
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
