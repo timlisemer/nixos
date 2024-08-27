@@ -50,7 +50,7 @@ git clone https://github.com/TimLisemer/NixOs.git /tmp/nixos
 Move the cloned NixOS configuration files from the `/nixos` directory to `/etc/nixos` and replace the existing configuration files.
 
 ```bash
-sudo mv /tmp/nixos/* /mnt/etc/nixos/
+sudo cp -rT /tmp/nixos/* /mnt/etc/nixos/
 ```
 
 ### 6. Install NixOS Using Disko:
