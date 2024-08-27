@@ -23,7 +23,6 @@ in
     cmake
     composefs
     dbus
-    flatpak
     libgcc
     go
     gtk3
