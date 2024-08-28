@@ -513,8 +513,9 @@ with lib.hm.gvariant;
         ])])
       ] ];
       enabled-extensions = [ "app-hider@lynith.dev" "appindicatorsupport@rgcjonas.gmail.com" "blur-my-shell@aunetx" "dash-to-panel@jderose9.github.com" "ding@rastersoft.com" "user-theme@gnome-shell-extensions.gcampax.github.com" "sp-tray@sp-tray.esenliyim.github.com" ];
-      favorite-apps = [ "org.gnome.Nautilus.desktop" "org.mozilla.firefox.desktop" "com.spotify.Client.desktop" "io.github.spacingbat3.webcord.desktop" "com.github.flxzt.rnote.desktop" "org.gnome.Geary.desktop" "org.gnome.Calendar.desktop" "org.gnome.Terminal.desktop" ];
+      favorite-apps = [ "org.gnome.Nautilus.desktop" "firefox.desktop" "com.spotify.Client.desktop" "io.github.spacingbat3.webcord.desktop" "com.github.flxzt.rnote.desktop" "org.gnome.Geary.desktop" "org.gnome.Calendar.desktop" "org.gnome.Terminal.desktop" ];
     };
+    # org.mozilla.firefox.desktop
 
     "org/gnome/shell/extensions/app-hider" = {
       hidden-apps = [ "org.gnome.Characters.desktop" "cups.desktop" "org.gnome.font-viewer.desktop" "nvim.desktop" "org.gnome.FileRoller.desktop" "org.gnome.Logs.desktop" "xterm.desktop" "org.gnome.Console.desktop" "org.gnome.seahorse.Application.desktop" "org.gnome.Connections.desktop" "nixos-manual.desktop" "org.torproject.torbrowser-launcher.settings.desktop" "btop.desktop" "julia.desktop" "org.gnome.Console.desktop" ];

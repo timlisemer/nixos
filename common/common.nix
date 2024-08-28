@@ -100,13 +100,18 @@
   # List services that you want to enable:
 
   # Enable Flatpaks
-  services.flatpak.enable = true;
+  services.flatpak = {
+    enable = true;
+  };
 
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
 
   # Enable Switcheroo
   services.switcherooControl.enable = true;
+
+  # Laptop Lid Switch on External Power
+  services.logind.lidSwitchExternalPower = "ignore";
 
   # Comin
   services.comin = {
@@ -117,6 +122,21 @@
       poller.period = 60;
       branches.main.name = "main";
     }];
+  };
+
+  # Auto Updates
+  system.autoUpgrade = {
+    enable = true;
+    flake = "/etc/nixos";
+    flags = [
+      "--update-input"
+      "nixpkgs"
+      "-L" # print build logs
+    ];
+    dates = "02:00";
+    randomizedDelaySec = "45min";
+    persistent = true;
+    allowReboot = false;
   };
 
   # Open ports in the firewall.

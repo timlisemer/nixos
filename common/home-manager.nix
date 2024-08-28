@@ -25,6 +25,15 @@
 
     imports = [ ./dconf.nix ];
 
+    # GTK theme configuration
+    gtk = {
+      enable = true;
+      theme = {
+        name = "adw-gtk3-dark";
+        package = pkgs.adw-gtk3;
+      };
+    };
+
     # You can add more Home Manager configurations here, e.g.,
     # home.packages = [ pkgs.foo ];
 

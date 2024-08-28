@@ -2,6 +2,7 @@
 
 {
   environment.systemPackages = with pkgs; [
+    firefox
     btop
     steam
     openrgb

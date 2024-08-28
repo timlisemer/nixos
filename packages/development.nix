@@ -10,6 +10,9 @@ in
         ms-python.python
         ms-azuretools.vscode-docker
         ms-vscode-remote.remote-ssh
+        piousdeer.adwaita-theme
+        bbenoist.nix
+        rust-lang.rust-analyzer
       ];
     })
 

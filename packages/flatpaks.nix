@@ -19,8 +19,6 @@
     "flathub:app/org.gnome.Builder//stable"
     "flathub:app/org.pulseaudio.pavucontrol//stable"
     "flathub:app/org.torproject.torbrowser-launcher//stable"
-    "flathub:app/org.mozilla.firefox//stable"
-    "flathub:app/org.gtk.Gtk3theme.adw-gtk3//stable"
-    "flathub:app/org.gtk.Gtk3theme.adw-gtk3-dark//stable"
+    # "flathub:app/org.mozilla.firefox//stable"
   ];
 }
