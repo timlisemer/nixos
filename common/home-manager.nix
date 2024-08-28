@@ -1,9 +1,8 @@
-{ config, pkgs, home-manager, inputs, lib, ... }:
-
+{ config, pkgs, inputs, home-manager, ... }:
 {
   # Import the Home Manager NixOS module
   imports = [
-    home-manager.nixosModules.home-manager
+    inputs.home-manager.nixosModules.home-manager
   ];
 
   # Home Manager configuration for the user 'tim'
@@ -20,6 +19,35 @@
       # Set the default branch name using the attribute set format
       extraConfig = {
         init.defaultBranch = "main";
+      };
+    };
+
+    # Firefox Theme
+    # Add Firefox GNOME theme directory
+    home.file.".mozilla/firefox/default/chrome/firefox-gnome-theme".source = inputs.firefox-gnome-theme;
+
+    programs.firefox = {
+      enable = true;
+      profiles = {
+        default = {
+          id = 0;
+          name = "default";
+          isDefault = true;
+          settings = {
+            "extensions.activeThemeID" = "firefox-compact-dark@mozilla.org";
+            "signon.rememberSignons" = false;
+
+            # For Firefox GNOME theme:
+            "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
+            "browser.tabs.drawInTitlebar" = true;
+            "svg.context-properties.content.enabled" = true;
+            "widget.gtk.rounded-bottom-corners.enabled" = true;
+          };
+          userChrome = ''
+            @import "firefox-gnome-theme/userChrome.css";
+            @import "firefox-gnome-theme/theme/colors/dark.css"; 
+          '';
+        };
       };
     };
 

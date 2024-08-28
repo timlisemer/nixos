@@ -7,5 +7,6 @@
     ./system-packages.nix
     ./development.nix
     ./dependencies.nix
+    ./firefox.nix
   ];
 }

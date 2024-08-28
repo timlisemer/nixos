@@ -6,7 +6,7 @@
 
 {
   imports =
-    [ # Include the results of the hardware scan.
+    [ 
       ./home-manager.nix
       ../packages/packages.nix
       ../desktop-environments/desktop-enviroments.nix
@@ -123,6 +123,9 @@
       branches.main.name = "main";
     }];
   };
+
+  # VsCode Server
+  services.vscode-server.enable = true;
 
   # Auto Updates
   system.autoUpgrade = {
