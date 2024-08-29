@@ -35,5 +35,6 @@
     nerdfonts
     switcheroo-control
     atuin
+    sops
   ];
 }

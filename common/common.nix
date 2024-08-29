@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 
 {
   imports =
@@ -10,6 +10,8 @@
       ./home-manager.nix
       ../packages/packages.nix
       ../desktop-environments/desktop-enviroments.nix
+      inputs.sops-nix.nixosModules.sops
+      ../secrets/sops.nix
     ];
 
   # Bootloader.
@@ -105,7 +107,10 @@
   };
 
   # Enable the OpenSSH daemon.
-  services.openssh.enable = true;
+  services.openssh = {
+    enable = true;
+    settings.PermitRootLogin = "yes";
+  };
 
   # Enable Switcheroo
   services.switcherooControl.enable = true;
@@ -114,11 +119,13 @@
   services.logind.lidSwitchExternalPower = "ignore";
 
   # Comin
+  sops.secrets.github_token = { };
   services.comin = {
     enable = true;
     remotes = [{
       name = "origin";
       url = "https://github.com/TimLisemer/NixOs.git";
+      auth.access_token_path = config.sops.secrets."github_token".path;
       poller.period = 60;
       branches.main.name = "main";
     }];
@@ -126,6 +133,9 @@
 
   # VsCode Server
   services.vscode-server.enable = true;
+
+  # Fix Shebang
+  services.envfs.enable = true;
 
   # Auto Updates
   system.autoUpgrade = {

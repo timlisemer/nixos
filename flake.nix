@@ -30,7 +30,7 @@
         disko.nixosModules.disko
         flatpaks.nixosModules.default
         comin.nixosModules.comin
-        sops-nix.nixosModules.sops
+        # sops-nix.nixosModules.sops
         vscode-server.nixosModules.default
         (import ./install.nix { disks = [ "/dev/nvme0n1" ]; }) # Edit this if hardware changed in the future
         ./hosts/tim-laptop.nix 

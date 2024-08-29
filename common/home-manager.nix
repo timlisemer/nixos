@@ -62,6 +62,12 @@
       };
     };
 
+    services.gpg-agent = {
+      enable = true;
+      defaultCacheTtl = 1800;
+      enableSshSupport = true;
+    };
+
     # You can add more Home Manager configurations here, e.g.,
     # home.packages = [ pkgs.foo ];
 
