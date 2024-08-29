@@ -125,7 +125,7 @@
     remotes = [{
       name = "origin";
       url = "https://github.com/TimLisemer/NixOs.git";
-      auth.access_token_path = config.sops.secrets.github_token.path;
+      auth.access_token_path = config.sops.;
       branches.main.name = "main";
     }];
   };
