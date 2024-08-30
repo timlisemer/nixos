@@ -1,7 +1,0 @@
-keys:
-  - &tim 2200D9B7A09A5177D231364C768D588B91DF7CE5
-creation_rules:
-  path_regex: secrets/secrets.yaml$
-  key_groups:
-  - pgp:
-    - *tim

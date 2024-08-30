@@ -34,7 +34,5 @@
     starship
     nerdfonts
     switcheroo-control
-    atuin
-    sops
   ];
 }

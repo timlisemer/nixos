@@ -5,10 +5,24 @@
     inputs.home-manager.nixosModules.home-manager
   ];
 
+  # NixOS system-wide home-manager configuration
+  home-manager.sharedModules = [
+    inputs.sops-nix.homeManagerModules.sops
+  ];
+
   # Home Manager configuration for the user 'tim'
   home-manager.users.tim = {
     # Specify the Home Manager state version
     home.stateVersion = "24.05"; # Update to "24.11" if needed
+
+    imports = [ 
+      ./dconf.nix 
+    ];
+
+    # Sops Home Configuration
+    sops.defaultSopsFile = ../secrets/secrets.yaml;
+    sops.defaultSopsFormat = "yaml";
+    sops.age.sshKeyPaths = [ "/home/tim/.ssh/id_ed25519y" ];
 
     # Git configuration
     programs.git = {
@@ -53,7 +67,9 @@
       };
     };
 
-    imports = [ ./dconf.nix ];
+    programs.atuin = {
+      enable = true;
+    };
 
     # GTK theme configuration
     gtk = {
@@ -72,6 +88,10 @@
 
     # You can add more Home Manager configurations here, e.g.,
     # home.packages = [ pkgs.foo ];
+    home.packages = with pkgs; [
+      atuin
+      sops
+    ];
 
   };
 }

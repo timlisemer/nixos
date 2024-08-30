@@ -1,8 +1,0 @@
-keys:
-  - &tim age1q82tzytc2alkw4n2qxnjfru3etf76cgcjcmzsktc7zd42pmz39ksvl74lw
-
-creation_rules:
-  - path_regex: secrets/[^/]+\.yaml$
-    key_groups:
-      - age:
-        - *tim
