@@ -19,8 +19,9 @@
       # Set the default branch name using the attribute set format
       extraConfig = {
         init.defaultBranch = "main";
-        safe.directory = "/etc/nixos";
+        safe.directory = [ "/etc/nixos" "/tmp/NixOs" ];
         pull.rebase = "false";
+        advice.addIgnoredFile = false;
       };
     };
 
