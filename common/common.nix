@@ -129,6 +129,11 @@
       branches.main.name = "main";
     }];
   };
+  systemd.services.comin = {
+    serviceConfig = {
+      User = "root";  # Specify the user
+    };
+  };
   
   # VsCode Server
   services.vscode-server.enable = true;
