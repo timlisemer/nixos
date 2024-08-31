@@ -69,6 +69,7 @@
 
     programs.atuin = {
       enable = true;
+      # https://github.com/nix-community/home-manager/issues/5734
     };
 
     # GTK theme configuration
