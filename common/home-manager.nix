@@ -96,12 +96,15 @@
     # Files and folders to be symlinked into home
     home.file.".config/ags".source = builtins.toPath ../files/ags;
     home.file.".config/hypr".source = builtins.toPath ../files/hypr;
-    home.file.".config/nvim".source = builtins.toPath ../files/nvim;
     home.file."Pictures/Wallpapers".source = builtins.toPath ../files/Wallpapers;
     home.file.".bash_profile".source = builtins.toPath ../files/bash_profile;
     home.file.".bashrc".source = builtins.toPath ../files/bashrc;
     home.file.".stignore".source = builtins.toPath ../files/stignore;
     home.file.".vimrc".source = builtins.toPath ../files/vimrc;
+
+    # Folders from git into home
+    home.file.".config/nvim".source = inputs.tim-nvim;
+
 
 
   };

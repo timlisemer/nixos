@@ -175,6 +175,7 @@
         "morewaita": "morewaita",
         "nixpkgs": "nixpkgs",
         "sops-nix": "sops-nix",
+        "tim-nvim": "tim-nvim",
         "vscode-server": "vscode-server"
       }
     },
@@ -226,6 +227,22 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "tim-nvim": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1723130713,
+        "narHash": "sha256-R9dhzey6r80mS/pqBWQyJOc9gY88muUNvZujZ8QZX+c=",
+        "owner": "timlisemer",
+        "repo": "nvim",
+        "rev": "c250c1d32ebaf5e97886907fe5d0035857876a3a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "timlisemer",
+        "repo": "nvim",
         "type": "github"
       }
     },

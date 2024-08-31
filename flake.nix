@@ -41,9 +41,14 @@
       url = "github:rafaelmardojai/firefox-gnome-theme";
       flake = false;
     };
+
+    tim-nvim = {
+      url = "github:timlisemer/nvim";
+      flake = false;
+    };
   };
 
-  outputs = inputs@{ self, nixpkgs, flatpaks, disko, comin, sops-nix, vscode-server, home-manager, firefox-gnome-theme, morewaita, ... }: {
+  outputs = inputs@{ self, nixpkgs, flatpaks, disko, comin, sops-nix, vscode-server, home-manager, firefox-gnome-theme, morewaita, tim-nvim, ... }: {
     nixosConfigurations.tim-laptop = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       specialArgs = { inherit inputs; };
