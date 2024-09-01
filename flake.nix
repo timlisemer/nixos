@@ -71,8 +71,13 @@
         (import ./install.nix { disks = [ "/dev/nvme0n1" ]; }) # Edit this if hardware changed in the future
 
         ({ pkgs, ... }: {
-            nixpkgs.overlays = [ rust-overlay.overlays.default ];
-            environment.systemPackages = [ pkgs.rust-bin.stable.latest.default ];
+             nixpkgs.overlays = [ rust-overlay.overlays.default ];
+            environment.systemPackages = [ 
+            (pkgs.rust-bin.stable.latest.default.overrideAttrs (old: {
+              extensions = [ "rustfmt" "clippy" "rust-src" "rustc-dev" "llvm-tools-preview" "cargo" "rust-analyzer" ];
+              targets = [ "x86_64-unknown-linux-gnu" ];
+            }))
+          ];
         })
 
         ./hosts/tim-laptop.nix 

@@ -1,0 +1,18 @@
+[toolchain]
+channel = "stable" # This specifies that you're using the stable version of Rust.
+
+# Additional components that are often needed for development.
+components = [
+    "rustfmt",       # A tool for formatting Rust code according to style guidelines.
+    "clippy",        # A collection of lints to catch common mistakes and improve code quality.
+    "rust-src",      # The Rust source code, often required for IDEs and tools.
+    "rustc-dev",     # Useful for working on projects that depend on Rust internals.
+    "llvm-tools-preview", # Tools like `cargo-llvm-lines`, useful for analyzing LLVM IR.
+    "cargo",         # The package manager for Rust.
+    "rust-analyzer",
+]
+
+# Target platforms you want to compile for.
+targets = [
+    "x86_64-unknown-linux-gnu",
+]

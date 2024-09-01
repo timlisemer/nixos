@@ -12,7 +12,13 @@
       ../desktop-environments/desktop-enviroments.nix
       inputs.sops-nix.nixosModules.sops
       ../secrets/sops.nix
+      ./wireguard.nix
     ];
+
+  # Enviroment Variables
+  environment.variables = {
+    RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
+  };
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
@@ -119,7 +125,6 @@
   services.logind.lidSwitchExternalPower = "ignore";
 
   # Comin
-  sops.secrets.github_token = { };
   services.comin = {
     enable = true;
     remotes = [{
