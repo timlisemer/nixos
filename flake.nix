@@ -31,6 +31,11 @@
       url = "github:nix-community/home-manager/release-24.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     
     morewaita = {
       url = "github:somepaulo/MoreWaita";
@@ -42,13 +47,18 @@
       flake = false;
     };
 
+    blesh = {
+      url = "https://github.com/akinomyoga/ble.sh/releases/download/nightly/ble-nightly.tar.xz";
+      flake = false;
+    };
+
     tim-nvim = {
       url = "github:timlisemer/nvim";
       flake = false;
     };
   };
 
-  outputs = inputs@{ self, nixpkgs, flatpaks, disko, comin, sops-nix, vscode-server, home-manager, firefox-gnome-theme, morewaita, tim-nvim, ... }: {
+  outputs = inputs@{ self, nixpkgs, flatpaks, disko, comin, sops-nix, vscode-server, home-manager, rust-overlay, firefox-gnome-theme, morewaita, blesh, tim-nvim, ... }: {
     nixosConfigurations.tim-laptop = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       specialArgs = { inherit inputs; };
@@ -59,6 +69,12 @@
         # sops-nix.nixosModules.sops
         vscode-server.nixosModules.default
         (import ./install.nix { disks = [ "/dev/nvme0n1" ]; }) # Edit this if hardware changed in the future
+
+        ({ pkgs, ... }: {
+            nixpkgs.overlays = [ rust-overlay.overlays.default ];
+            environment.systemPackages = [ pkgs.rust-bin.stable.latest.default ];
+        })
+
         ./hosts/tim-laptop.nix 
       ];
     };

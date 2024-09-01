@@ -50,7 +50,6 @@
 !/.ssh/
 !/.vim/
 
-!/.config/starship.toml
 !/.gitconfig
 !/.history.db
 !/.pulse-cookie

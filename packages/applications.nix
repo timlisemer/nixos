@@ -13,5 +13,6 @@
     setzer
     timeshift
     gnome.gnome-boxes
+    loupe
   ];
 }

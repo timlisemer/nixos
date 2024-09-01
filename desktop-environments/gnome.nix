@@ -5,8 +5,8 @@
   services.xserver.desktopManager.gnome.enable = true;
 
   environment.systemPackages = with pkgs; [
-    gnome-extension-manager
     gnome.gnome-tweaks
+    gnome-extension-manager
     gnomeExtensions.app-hider
     gnomeExtensions.appindicator
     gnomeExtensions.blur-my-shell

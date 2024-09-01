@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 
 let
   vscodeExtensions = pkgs.vscode-extensions;
@@ -47,5 +47,17 @@ in
     protobuf
     ruby
     typescript   
+    gnumake
+    # neovim
+    gcc
+    clang
+    zig
+    fzf
+    black
+    pylint
+    isort
+    stylua
   ];
+
+
 }

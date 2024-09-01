@@ -2,7 +2,6 @@
 
 {
   environment.systemPackages = with pkgs; [
-    neovim
     git
     curl
     wget
@@ -34,5 +33,10 @@
     starship
     nerdfonts
     switcheroo-control
+    dconf2nix
+    dive
+    podman-tui
+    docker-compose
+    podman-compose
   ];
 }

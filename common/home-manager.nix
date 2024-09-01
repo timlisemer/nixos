@@ -1,4 +1,4 @@
-{ config, pkgs, inputs, home-manager, ... }:
+{ config, pkgs, inputs, home-manager, lib, ... }:
 {
   # Import the Home Manager NixOS module
   imports = [
@@ -67,6 +67,15 @@
       };
     };
 
+    programs.neovim = {
+      enable = true;
+      plugins = [
+        pkgs.vimPlugins.nvim-treesitter
+        pkgs.vimPlugins.nvim-treesitter.withAllGrammars
+        pkgs.vimPlugins.telescope-fzf-native-nvim
+      ];
+    };
+
     programs.atuin = {
       enable = true;
       # https://github.com/nix-community/home-manager/issues/5734
@@ -96,6 +105,7 @@
     # Files and folders to be symlinked into home
     home.file.".config/ags".source = builtins.toPath ../files/ags;
     home.file.".config/hypr".source = builtins.toPath ../files/hypr;
+    home.file.".config/starship.toml".source = builtins.toPath ../files/starship.toml;
     home.file."Pictures/Wallpapers".source = builtins.toPath ../files/Wallpapers;
     home.file.".bash_profile".source = builtins.toPath ../files/bash_profile;
     home.file.".bashrc".source = builtins.toPath ../files/bashrc;
@@ -104,6 +114,8 @@
 
     # Folders from git into home
     home.file.".config/nvim".source = inputs.tim-nvim;
+    home.file.".local/share/blesh".source = inputs.blesh;
+
 
 
 

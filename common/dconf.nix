@@ -73,8 +73,8 @@ with lib.hm.gvariant;
     "org/gnome/desktop/background" = {
       color-shading-type = "solid";
       picture-options = "zoom";
-      picture-uri = "file:///home/tim/Pictures/Wallpapers/blobs-l.svg";
-      picture-uri-dark = "file:///home/tim/Pictures/Wallpapers/blobs-d.svg";
+      picture-uri = "file:///home/tim/Pictures/Wallpapers/Desktop/blobs-l.svg";
+      picture-uri-dark = "file:///home/tim/Pictures/Wallpapers/Desktop/blobs-d.svg";
       primary-color = "#241f31";
       secondary-color = "#000000";
     };
@@ -124,7 +124,7 @@ with lib.hm.gvariant;
     "org/gnome/desktop/screensaver" = {
       color-shading-type = "solid";
       picture-options = "zoom";
-      picture-uri = "file:///home/tim/Pictures/Wallpapers/blobs-d.svg";
+      picture-uri = "file:///home/tim/Pictures/Wallpapers/Desktop/blobs-d.svg";
       primary-color = "#241f31";
       secondary-color = "#000000";
     };
@@ -174,6 +174,7 @@ with lib.hm.gvariant;
     };
 
     "org/gnome/mutter" = {
+      edge-tiling = true;
       center-new-windows = true;
       dynamic-workspaces = true;
       overlay-key = "Super_L";
@@ -209,6 +210,10 @@ with lib.hm.gvariant;
       current-workspace-only = false;
     };
 
+    "org/gnome/desktop/notifications/application/com-spotify-client" = {
+      enable = false;
+      enable-sound-alerts = true;
+    };
 
     "org/gnome/shell/extensions/arcmenu" = {
       arc-menu-icon = 71;

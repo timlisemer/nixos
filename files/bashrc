@@ -673,4 +673,4 @@ source ~/.local/share/blesh/ble.sh
 eval "$(atuin init bash)"
 
 
-. "$HOME/.cargo/env"
+# . "$HOME/.cargo/env"
