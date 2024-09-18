@@ -1,5 +1,3 @@
-# install.nix
-
 { disks ? [ "/dev/nvme0n1" ], ... }:
 let 
   number_of_disks = if (builtins.length disks < 3) 
@@ -64,15 +62,14 @@ in
                 type = "gpt";
                 partitions = {
                   DATA = {
-                    type = "btrfs";
-                    subvolumes = {
-                      "@" = { 
-                        mountpoint = "/DATA";
-                        mountOptions = [ "compress=zstd" "noatime" ];
-                      };
-                      "@/home" = {
-                        mountpoint = "/home";
-                        mountOptions = [ "compress=zstd" ];
+                    size = "100%";
+                    content = {
+                      type = "btrfs";
+                      subvolumes = {
+                        "@" = { 
+                          mountpoint = "/data";
+                          mountOptions = [ "compress=zstd" "noatime" ];
+                        };
                       };
                     };
                   };
