@@ -65,7 +65,6 @@ in
                 partitions = {
                   DATA = {
                     type = "btrfs";
-                    extraArgs = [ "-f" ]; 
                     subvolumes = {
                       "@" = { 
                         mountpoint = "/DATA";
