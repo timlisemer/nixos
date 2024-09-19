@@ -12,7 +12,7 @@
       ../desktop-environments/desktop-enviroments.nix
       inputs.sops-nix.nixosModules.sops
       ../secrets/sops.nix
-      ./wireguard.nix
+      # ./wireguard.nix
     ];
 
   # Enviroment Variables

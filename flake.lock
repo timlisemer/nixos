@@ -268,11 +268,11 @@
     "tim-nvim": {
       "flake": false,
       "locked": {
-        "lastModified": 1723130713,
-        "narHash": "sha256-R9dhzey6r80mS/pqBWQyJOc9gY88muUNvZujZ8QZX+c=",
+        "lastModified": 1726705119,
+        "narHash": "sha256-UBAdl3seWcgwNFxAf6KAgqrcZsgLE0gME3eCL0Fvo2E=",
         "owner": "timlisemer",
         "repo": "nvim",
-        "rev": "c250c1d32ebaf5e97886907fe5d0035857876a3a",
+        "rev": "94721052b4ba68fe29bd4d5fbb8320a6f7da2792",
         "type": "github"
       },
       "original": {

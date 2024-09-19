@@ -67,15 +67,6 @@
       };
     };
 
-    programs.neovim = {
-      enable = true;
-      plugins = [
-        pkgs.vimPlugins.nvim-treesitter
-        pkgs.vimPlugins.nvim-treesitter.withAllGrammars
-        pkgs.vimPlugins.telescope-fzf-native-nvim
-      ];
-    };
-
     programs.atuin = {
       enable = true;
       # https://github.com/nix-community/home-manager/issues/5734
@@ -106,15 +97,29 @@
     home.file.".config/ags".source = builtins.toPath ../files/ags;
     home.file.".config/hypr".source = builtins.toPath ../files/hypr;
     home.file.".config/starship.toml".source = builtins.toPath ../files/starship.toml;
+    home.file.".config/wireplumber".source = builtins.toPath ../files/wireplumber;
     home.file."Pictures/Wallpapers".source = builtins.toPath ../files/Wallpapers;
     home.file.".bash_profile".source = builtins.toPath ../files/bash_profile;
     home.file.".bashrc".source = builtins.toPath ../files/bashrc;
     home.file.".stignore".source = builtins.toPath ../files/stignore;
     home.file.".vimrc".source = builtins.toPath ../files/vimrc;
 
+    # OpenRGB
+    home.file = { ".config/OpenRGB/ia.txt" = { text = '' ia! ''; executable = false; };};
+    home.file.".config/OpenRGB/plugins".source = ../files/OpenRGB/plugins;
+    home.file.".config/OpenRGB/Off.orp".source = ../files/OpenRGB/Off.orp;
+    home.file.".config/OpenRGB/On.orp".source = ../files/OpenRGB/On.orp;
+    home.file.".config/OpenRGB/OpenRGB.json".source = ../files/OpenRGB/OpenRGB.json;
+    home.file.".config/OpenRGB/sizes.ors".source = ../files/OpenRGB/sizes.ors;
+    home.file."/usr/lib/udev/60-openrgb.rules".source = ../files/OpenRGB/60-openrgb.rules;
+
     # Folders from git into home
-    home.file.".config/nvim".source = inputs.tim-nvim;
+    home.file = { ".config/nvim/ia.txt" = { text = '' ia! ''; executable = false; };};
+    home.file.".config/nvim/after".source = "${inputs.tim-nvim}/after";
+    home.file.".config/nvim/lua".source = "${inputs.tim-nvim}/lua";
+    home.file.".config/nvim/init.lua".source = "${inputs.tim-nvim}/init.lua";
     home.file.".local/share/blesh".source = inputs.blesh;
+
 
 
 

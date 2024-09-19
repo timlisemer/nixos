@@ -93,6 +93,7 @@ with lib.hm.gvariant;
     "org/gnome/desktop/interface" = {
       clock-show-seconds = false;
       clock-show-weekday = false;
+      enable-hot-corners = false;
       color-scheme = "prefer-dark";
       enable-animations = true;
       font-antialiasing = "grayscale";
@@ -203,6 +204,7 @@ with lib.hm.gvariant;
 
 
     "org/gnome/settings-daemon/plugins/power" = {
+      power-button-action = "interactive";
       sleep-inactive-ac-timeout = 7200;
     };
 
@@ -332,7 +334,7 @@ with lib.hm.gvariant;
       animate-appicon-hover-animation-type = "SIMPLE";
       appicon-margin = 8;
       appicon-padding = 4;
-      available-monitors = [ 1 0 2 ];
+      available-monitors = [ 0 1 2 ];
       dot-position = "BOTTOM";
       dot-style-focused = "SQUARES";
       dot-style-unfocused = "DOTS";
@@ -349,9 +351,9 @@ with lib.hm.gvariant;
         {"0":100,"1":100,"2":100}
       '';
       panel-sizes = ''
-        {"0":40,"1":48,"2":48}
+        {"0":48,"1":40,"2":40}
       '';
-      primary-monitor = 1;
+      primary-monitor = 0;
       status-icon-padding = -1;
       trans-panel-opacity = mkDouble "0.7000000000000001";
       trans-use-custom-bg = false;

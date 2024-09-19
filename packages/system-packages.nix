@@ -21,6 +21,7 @@
     fzf
     gamemode
     just
+    unzip
     justbuild
     sockdump
     qemu
@@ -38,5 +39,7 @@
     podman-tui
     docker-compose
     podman-compose
+    i2c-tools
+    liquidctl
   ];
 }

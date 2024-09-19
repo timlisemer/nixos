@@ -1,0 +1,9 @@
+[Desktop Entry]
+Categories=Utility;
+Comment=OpenRGB 0.9, for controlling RGB lighting.
+Icon=OpenRGB
+Name=OpenRGB
+StartupNotify=true
+Terminal=false
+Type=Application
+Exec=/nix/store/2bjahnckgzs10sxhq1kcsc71ly7rl2z3-openrgb-0.9/bin/.openrgb-wrapped --startminimized --profile "On"
