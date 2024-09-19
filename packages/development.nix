@@ -17,6 +17,8 @@ in
     })
 
     qtcreator
+    libsForQt5.qt5.qtbase
+    kdePackages.qtbase
     jetbrains.clion
     jetbrains.rust-rover
     jetbrains.rider

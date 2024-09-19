@@ -11,10 +11,20 @@ in
   # Enable OpenGL
   hardware.opengl = {
     enable = true;
+    driSupport = true;
+    driSupport32Bit = true;
+    extraPackages = with pkgs; [
+      libvdpau-va-gl
+      nvidia-vaapi-driver
+    ];
   };
 
   # Load nvidia driver for Xorg and Wayland
   services.xserver.videoDrivers = ["nvidia"];
+
+  environment.systemPackages = with pkgs; [
+    nvidia-vaapi-driver
+  ];
 
   hardware.nvidia = {
     # Modesetting is required
@@ -24,7 +34,7 @@ in
     powerManagement.enable = true;
     powerManagement.finegrained = false;
 
-    open = true;
+    open = false;
     nvidiaSettings = false;
 
     # Explicitly use the stable Nvidia driver from unstable (which should be 560)

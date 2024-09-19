@@ -24,7 +24,18 @@
     };
   };
 
-  services.udev.extraRules = builtins.readFile ../files/OpenRGB/60-openrgb.rules;
+  # services.udev.extraRules = builtins.readFile ../files/OpenRGB/60-openrgb.rules;
 
   environment.systemPackages = with pkgs; [ openrgb-with-all-plugins ];
+
+  services.hardware.openrgb.enable = true;
+  systemd.user.services.openrgb = {
+    description = "OpenRGB";
+    wantedBy = [ "graphical-session.target" ];
+    partOf = [ "graphical-session.target" ];
+    serviceConfig = {
+      ExecStart = "${pkgs.openrgb-with-all-plugins}/bin/openrgb --startminimized --profile 'On'";
+      Restart = "on-failure";
+    };
+  };
 }

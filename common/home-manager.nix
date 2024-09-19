@@ -106,13 +106,13 @@
 
     # OpenRGB
     home.file = { ".config/OpenRGB/ia.txt" = { text = '' ia! ''; executable = false; };};
-    home.file.".config/OpenRGB/plugins".source = ../files/OpenRGB/plugins;
+    # home.file.".config/OpenRGB/plugins".source = ../files/OpenRGB/plugins;
+    home.file.".config/OpenRGB/plugins/settings".source = ../files/OpenRGB/plugins/settings;
     home.file.".config/OpenRGB/Off.orp".source = ../files/OpenRGB/Off.orp;
     home.file.".config/OpenRGB/On.orp".source = ../files/OpenRGB/On.orp;
     home.file.".config/OpenRGB/OpenRGB.json".source = ../files/OpenRGB/OpenRGB.json;
     home.file.".config/OpenRGB/sizes.ors".source = ../files/OpenRGB/sizes.ors;
-    home.file."/usr/lib/udev/60-openrgb.rules".source = ../files/OpenRGB/60-openrgb.rules;
-
+    
     # Folders from git into home
     home.file = { ".config/nvim/ia.txt" = { text = '' ia! ''; executable = false; };};
     home.file.".config/nvim/after".source = "${inputs.tim-nvim}/after";

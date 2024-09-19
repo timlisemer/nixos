@@ -41,5 +41,10 @@
     podman-compose
     i2c-tools
     liquidctl
+    glxinfo
+    libglvnd
+    mesa
+    xorg.libxcb
+    openal
   ];
 }

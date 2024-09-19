@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=WebCord Minimized
+Exec=/usr/bin/flatpak run --branch=stable --arch=x86_64 --env=NODE_OPTIONS=--max-old-space-size=4096 --env=sgx.enclave_size=4G --command=run.sh io.github.spacingbat3.webcord -m
+Terminal=false
+Type=Application
+Icon=io.github.spacingbat3.webcord
+StartupWMClass=WebCord
+Comment=A Discord and Fosscord electron based client implemented without Discord API.
+Categories=Network;InstantMessaging;
+Keywords=Discord;Fosscord;
+X-Flatpak=io.github.spacingbat3.webcord

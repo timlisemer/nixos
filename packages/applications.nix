@@ -4,9 +4,9 @@
   environment.systemPackages = with pkgs; [
     btop
     steam
-    openrgb
     wireshark
     gnome.gnome-terminal
+    gnome.geary
     minecraft
     easyeffects
     rnote

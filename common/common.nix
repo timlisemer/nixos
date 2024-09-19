@@ -12,12 +12,22 @@
       ../desktop-environments/desktop-enviroments.nix
       inputs.sops-nix.nixosModules.sops
       ../secrets/sops.nix
+      ./autostart.nix
       # ./wireguard.nix
     ];
 
   # Enviroment Variables
   environment.variables = {
     RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
+    NVD_BACKEND = "direct";
+    MOZ_DISABLE_RDD_SANDBOX = "1";
+    LIBVA_DRIVER_NAME = "nvidia";
+    DOCKER_HOST = "unix:///run/user/1000/podman/podman.sock";
+    MUTTER_DEBUG_KMS_THREAD_TYPE = "user";
+    NODE_OPTIONS = "--max-old-space-size=4096";
+    SGX_ENCLAVE_SIZE = "4G";
+    RUST_MIN_STACK = "268435456";
+    PKG_CONFIG_PATH = "/usr/lib64/pkgconfig:/usr/share/pkgconfig";
   };
 
   # Bootloader.
