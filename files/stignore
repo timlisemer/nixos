@@ -20,11 +20,9 @@
 !/Videos/
 
 !/.Calendar-Backup/
-!/.config/autostart/
-!/.config/atuin/
 !/.config/containers
 !/.config/fastfetch/
-!/.config/OpenRGB
+!/.config/syncthing
 !/.config/wireplumber
 !/.factorio/
 !/.FiraxisLive/
@@ -33,16 +31,10 @@
 !/.gnupg/
 !/.go/
 !/.keras/
-!/.local/share/applications/
 !/.local/share/aspyr-media/
-!/.local/share/blesh/
-!/.local/share/flatpak/
-!/.local/share/JetBrains/
 !/.local/share/ParadoxInteractive/
-!/.local/share/themes/
 !/.mysterium/
 !/.Nextcloud/
-!/.npm/
 !/.paradoxlauncher/
 !/.pki/
 !/.redhat/
@@ -50,7 +42,6 @@
 !/.ssh/
 !/.vim/
 
-!/.gitconfig
 !/.history.db
 !/.pulse-cookie
 !/.python_history

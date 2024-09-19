@@ -187,6 +187,33 @@
     allowReboot = false;
   };
 
+  # Syncthing
+  services = {
+    syncthing = {
+      enable = true;
+      user = "tim";
+      dataDir = "/home/tim";
+      configDir = "/home/tim/.config/syncthing";
+      overrideDevices = true;                       # overrides any devices added or deleted through the WebUI
+      overrideFolders = true;                       # overrides any folders added or deleted through the WebUI
+      settings = {
+        devices = {
+          "Tim-Server" = { 
+            id = "NG4UP3Z-BG5SHNT-CBZC6EJ-KYYWRTH-6UFZWWC-XFMKCWM-IXTRKBJ-ULPMUAX";
+            autoAcceptFolders = true;
+          };
+          # "device2" = { id = "DEVICE-ID-GOES-HERE"; };
+        };
+        folders = {
+          "Home" = {                                # Folder ID in Syncthing, also the name of folder (label) by default
+            path = "/home/tim";                     # Which folder to add to Syncthing
+            devices = [ "Tim-Server" ];             # Which devices to share the folder with
+          };
+        };
+      };
+    };
+  };
+
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
