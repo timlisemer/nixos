@@ -117,6 +117,33 @@
 
   # List services that you want to enable:
 
+  # Steam adwaita theme:
+  systemd.services.installAdwaitaTheme = {
+    description = "Install Adwaita Theme for Steam";
+    after = [ "network-online.target" ];
+    wants = [ "network-online.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.writeShellScript "install-adwaita-theme" ''
+        export HOME=/home/tim
+        if [ ! -d $HOME/.config/steam-adwaita-theme ]; then
+          ${pkgs.git}/bin/git clone https://github.com/tkashkin/Adwaita-for-Steam $HOME/.config/steam-adwaita-theme
+        else
+          cd $HOME/.config/steam-adwaita-theme
+          ${pkgs.git}/bin/git reset --hard
+          ${pkgs.git}/bin/git pull
+        fi
+        cd $HOME/.config/steam-adwaita-theme
+        ${pkgs.python3}/bin/python3 install.py -c adwaita -e library/hide_whats_new
+      ''}";
+      User = "tim";
+      Environment = "DISPLAY=:0";
+      StandardOutput = "journal";
+      StandardError = "journal";
+    };
+    wantedBy = [ "multi-user.target" ];
+  };
+
   # Enable Flatpaks
   services.flatpak = {
     enable = true;

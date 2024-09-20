@@ -15,4 +15,6 @@
     gnome.gnome-boxes
     loupe
   ];
+
+  programs.steam.enable = true;
 }

@@ -122,5 +122,31 @@
       # blesh
       ".local/share/blesh".source = inputs.blesh;
     };
+
+    # Steam adwaita theme
+    systemd.user.services.installAdwaitaTheme = {
+      Unit = {
+        Description = "Install Adwaita Theme for Steam";
+        After = [ "network-online.target" ];
+        Wants = [ "network-online.target" ];
+      };
+      Service = {
+        Type = "oneshot";
+        ExecStart = "${pkgs.writeShellScript "install-adwaita-theme" ''
+          if [ ! -d $HOME/.config/steam-adwaita-theme ]; then
+            ${pkgs.git}/bin/git clone https://github.com/tkashkin/Adwaita-for-Steam $HOME/.config/steam-adwaita-theme
+          else
+            cd $HOME/.config/steam-adwaita-theme
+            ${pkgs.git}/bin/git reset --hard
+            ${pkgs.git}/bin/git pull
+          fi
+          cd $HOME/.config/steam-adwaita-theme
+          ${pkgs.python3}/bin/python3 install.py -c adwaita -e library/hide_whats_new
+        ''}";
+      };
+      Install = {
+        WantedBy = [ "default.target" ];
+      };
+    };
   };
 }
