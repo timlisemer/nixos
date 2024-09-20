@@ -94,35 +94,33 @@
     ];
 
     # Files and folders to be symlinked into home
-    home.file.".config/ags".source = builtins.toPath ../files/ags;
-    home.file.".config/hypr".source = builtins.toPath ../files/hypr;
-    home.file.".config/starship.toml".source = builtins.toPath ../files/starship.toml;
-    home.file.".config/wireplumber".source = builtins.toPath ../files/wireplumber;
-    home.file."Pictures/Wallpapers".source = builtins.toPath ../files/Wallpapers;
-    home.file.".bash_profile".source = builtins.toPath ../files/bash_profile;
-    home.file.".bashrc".source = builtins.toPath ../files/bashrc;
-    home.file.".stignore".source = builtins.toPath ../files/stignore;
-    home.file.".vimrc".source = builtins.toPath ../files/vimrc;
+    home.file = {
+      ".config/ags".source = builtins.toPath ../files/ags;
+      ".config/hypr".source = builtins.toPath ../files/hypr;
+      ".config/starship.toml".source = builtins.toPath ../files/starship.toml;
+      ".config/wireplumber".source = builtins.toPath ../files/wireplumber;
+      "Pictures/Wallpapers".source = builtins.toPath ../files/Wallpapers;
+      ".bash_profile".source = builtins.toPath ../files/bash_profile;
+      ".bashrc".source = builtins.toPath ../files/bashrc;
+      ".stignore".source = builtins.toPath ../files/stignore;
+      ".vimrc".source = builtins.toPath ../files/vimrc;
 
-    # OpenRGB
-    home.file = { ".config/OpenRGB/ia.txt" = { text = '' ia! ''; executable = false; };};
-    # home.file.".config/OpenRGB/plugins".source = ../files/OpenRGB/plugins;
-    home.file.".config/OpenRGB/plugins/settings".source = ../files/OpenRGB/plugins/settings;
-    home.file.".config/OpenRGB/Off.orp".source = ../files/OpenRGB/Off.orp;
-    home.file.".config/OpenRGB/On.orp".source = ../files/OpenRGB/On.orp;
-    home.file.".config/OpenRGB/OpenRGB.json".source = ../files/OpenRGB/OpenRGB.json;
-    home.file.".config/OpenRGB/sizes.ors".source = ../files/OpenRGB/sizes.ors;
-    
-    # Folders from git into home
-    home.file = { ".config/nvim/ia.txt" = { text = '' ia! ''; executable = false; };};
-    home.file.".config/nvim/after".source = "${inputs.tim-nvim}/after";
-    home.file.".config/nvim/lua".source = "${inputs.tim-nvim}/lua";
-    home.file.".config/nvim/init.lua".source = "${inputs.tim-nvim}/init.lua";
-    home.file.".local/share/blesh".source = inputs.blesh;
+      # OpenRGB
+      ".config/OpenRGB/ia.txt" = { text = '' ia! ''; executable = false; };
+      ".config/OpenRGB/plugins/settings".source = ../files/OpenRGB/plugins/settings;
+      ".config/OpenRGB/Off.orp".source = ../files/OpenRGB/Off.orp;
+      ".config/OpenRGB/On.orp".source = ../files/OpenRGB/On.orp;
+      ".config/OpenRGB/OpenRGB.json".source = ../files/OpenRGB/OpenRGB.json;
+      ".config/OpenRGB/sizes.ors".source = ../files/OpenRGB/sizes.ors;
 
+      # nvim
+      ".config/nvim/ia.txt" = { text = '' ia! ''; executable = false; };
+      ".config/nvim/after".source = "${inputs.tim-nvim}/after";
+      ".config/nvim/lua".source = "${inputs.tim-nvim}/lua";
+      ".config/nvim/init.lua".source = "${inputs.tim-nvim}/init.lua";
 
-
-
-
+      # blesh
+      ".local/share/blesh".source = inputs.blesh;
+    };
   };
 }

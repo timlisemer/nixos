@@ -22,13 +22,10 @@
 !/.Calendar-Backup/
 !/.config/containers
 !/.config/fastfetch/
-!/.config/syncthing
-!/.config/wireplumber
 !/.factorio/
 !/.FiraxisLive/
 !/.fontconfig/
 !/.fonts/
-!/.gnupg/
 !/.go/
 !/.keras/
 !/.local/share/aspyr-media/
