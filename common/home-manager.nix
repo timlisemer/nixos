@@ -17,6 +17,7 @@
 
     imports = [ 
       ./dconf.nix 
+      ./qemu.nix
     ];
 
     # Sops Home Configuration

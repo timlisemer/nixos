@@ -65,12 +65,9 @@ in
                     size = "100%";
                     content = {
                       type = "btrfs";
-                      subvolumes = {
-                        "@" = { 
-                          mountpoint = "/data";
-                          mountOptions = [ "compress=zstd" "noatime" ];
-                        };
-                      };
+                      mountOptions = [ "compress=zstd" "noatime" ];
+                      extraArgs = [ "device add" (builtins.elemAt disks 1) ];
+                      mountpoint = "/"; # Added to the Btrfs pool on disk1
                     };
                   };
                 };
