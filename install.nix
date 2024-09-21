@@ -67,7 +67,7 @@ in
                       type = "btrfs";
                       mountOptions = [ "compress=zstd" "noatime" ];
                       extraArgs = [ "device add" (builtins.elemAt disks 1) ];
-                      mountpoint = "/"; # Added to the Btrfs pool on disk1
+                      mountpoint = "/";
                     };
                   };
                 };
