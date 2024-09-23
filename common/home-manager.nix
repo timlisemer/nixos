@@ -41,6 +41,20 @@
 
     # Firefox Theme
     home.file.".mozilla/firefox/default/chrome/firefox-gnome-theme".source = inputs.firefox-gnome-theme;
+    home.file.".mozilla/firefox/default/chrome/userChrome.css".text = ''
+      @import "firefox-gnome-theme/userChrome.css";
+      @import "firefox-gnome-theme/theme/colors/dark.css";
+    '';
+
+    home.activation = {
+      firefoxThemeActivation = ''
+        # Ensure userContent.css exists and is non-empty
+        [[ -s "$HOME/.mozilla/firefox/default/chrome/userContent.css" ]] || echo >> "$HOME/.mozilla/firefox/default/chrome/userContent.css"
+
+        # Insert @import statement at the beginning of userContent.css before any @namespace
+        sed -i '1s/^/@import "firefox-gnome-theme\/userContent.css";\n/' "$HOME/.mozilla/firefox/default/chrome/userContent.css"
+      '';
+    };
 
     programs.firefox = {
       enable = true;
@@ -59,13 +73,6 @@
             "svg.context-properties.content.enabled" = true;
             "widget.gtk.rounded-bottom-corners.enabled" = true;
           };
-          userChrome = ''
-            @import "firefox-gnome-theme/userChrome.css";
-            @import "firefox-gnome-theme/theme/colors/dark.css"; 
-          '';
-          userContent = ''
-            @import "firefox-gnome-theme/userContent.css";
-          '';
         };
       };
     };

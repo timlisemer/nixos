@@ -23,5 +23,6 @@
     gnome.yelp
     gnome.gnome-shell-extensions
     gnome.epiphany
+    gnome-console
   ];
 }
