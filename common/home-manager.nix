@@ -40,7 +40,6 @@
     };
 
     # Firefox Theme
-    # Add Firefox GNOME theme directory
     home.file.".mozilla/firefox/default/chrome/firefox-gnome-theme".source = inputs.firefox-gnome-theme;
 
     programs.firefox = {
@@ -64,9 +63,13 @@
             @import "firefox-gnome-theme/userChrome.css";
             @import "firefox-gnome-theme/theme/colors/dark.css"; 
           '';
+          userContent = ''
+            @import "firefox-gnome-theme/userContent.css";
+          '';
         };
       };
     };
+
 
     programs.atuin = {
       enable = true;
