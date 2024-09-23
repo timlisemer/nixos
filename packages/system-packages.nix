@@ -46,5 +46,10 @@
     mesa
     xorg.libxcb
     openal
+    spice
+    # spice-gtk
+    virt-viewer
+    libvirt
+    virt-manager
   ];
 }
