@@ -1,82 +1,61 @@
-{ disks ? [ "/dev/nvme0n1" ], ... }:
-let 
-  number_of_disks = if (builtins.length disks < 3) 
-                    then builtins.length disks 
-                    else throw "Error. Too many disks passed to disko.";
+{ pkgs ? import <nixpkgs> {} }:
+
+let
+  # Define the number of disks based on the passed argument
+  number_of_disks = builtins.length (import ./config.nix).disks;
+
 in
 {
-  disko.devices = {
-    disk = builtins.listToAttrs (
-      [
+  # Use disko to create partitions
+  networking = {
+    networkmanager.enable = true;
+  };
+
+  # Use disko to handle disk operations
+  disko = {
+    devices = [
+      {
+        device = "/dev/nvme0n1";
+        partitions = {
+          type = "gpt";
+          subvolumes = {
+            boot = {
+              mountPoint = "/boot";
+              fsType = "vfat";
+              extraArgs = [];
+              size = "500M";
+            };
+            root = {
+              mountPoint = "/";
+              fsType = "btrfs";
+              extraArgs = if number_of_disks > 1 then [ "-d" "raid0" "-m" "raid0" ] else [ "-f" ];
+              subvolumes = {};
+            };
+          };
+        };
+      }
+      # Include additional disks if necessary
+      (if number_of_disks > 1 then
         {
-          name = "disk1";
-          value = {
-            device = builtins.elemAt disks 0;
-            type = "disk";
-            content = {
-              type = "gpt";
-              partitions = {
-                ESP = {
-                  type = "EF00";
-                  size = "500M";
-                  content = {
-                    type = "filesystem";
-                    format = "vfat";
-                    mountpoint = "/boot";
-                  };
-                };
-                root = {
-                  size = "100%";
-                  content = {
-                    type = "btrfs";
-                    extraArgs = [ "-f" ]; 
-                    subvolumes = {
-                      "@" = { };
-                      "@/root" = {
-                        mountpoint = "/";
-                        mountOptions = [ "compress=zstd" "noatime" ];
-                      };
-                      "@/home" = {
-                        mountpoint = "/home";
-                        mountOptions = [ "compress=zstd" ];
-                      };
-                      "@/nix" = {
-                        mountpoint = "/nix";
-                        mountOptions = [ "compress=zstd" "noatime" ];
-                      };
-                    };
-                  };
-                };
+          device = "/dev/nvme1n1";
+          partitions = {
+            type = "gpt";
+            subvolumes = {
+              boot = {
+                mountPoint = "/boot";
+                fsType = "vfat";
+                extraArgs = [];
+                size = "500M";
+              };
+              root = {
+                mountPoint = "/";
+                fsType = "btrfs";
+                extraArgs = if number_of_disks > 1 then [ "-d" "raid0" "-m" "raid0" ] else [ "-f" ];
+                subvolumes = {};
               };
             };
           };
-        }
-      ] ++ (
-        if number_of_disks > 1 then [
-          {
-            name = "disk2";
-            value = {
-              device = builtins.elemAt disks 1;
-              type = "disk";
-              content = {
-                type = "gpt";
-                partitions = {
-                  DATA = {
-                    size = "100%";
-                    content = {
-                      type = "btrfs";
-                      extraArgs = [ "-f" ]; 
-                      mountOptions = [ "compress=zstd" "noatime" ];
-                      extraArgs = [ "device add" (builtins.elemAt disks 1) ];
-                      mountpoint = "/";
-                    };
-                  };
-                };
-              };
-            };
-          }
-        ] else []
-      )
-    );
+        } else null)
+    ];
   };
 }
