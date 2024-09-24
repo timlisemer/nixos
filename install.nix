@@ -65,6 +65,7 @@ in
                     size = "100%";
                     content = {
                       type = "btrfs";
+                      extraArgs = [ "-f" ]; 
                       mountOptions = [ "compress=zstd" "noatime" ];
                       extraArgs = [ "device add" (builtins.elemAt disks 1) ];
                       mountpoint = "/";
