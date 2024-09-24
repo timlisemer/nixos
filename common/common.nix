@@ -58,6 +58,13 @@
   # Allow broken packages
   nixpkgs.config.allowBroken = true;
 
+  # NixOs garbage collection
+  nix.gc = {
+		automatic = true;
+		dates = "weekly";
+		options = "--delete-older-than 7d";
+	};
+
   # Enable the X11 windowing system.
   services.xserver.enable = true;
 

@@ -6,6 +6,7 @@
     steam
     wireshark
     gnome.gnome-terminal
+    blackbox-terminal
     gnome.geary
     minecraft
     easyeffects
@@ -14,6 +15,8 @@
     timeshift
     gnome.gnome-boxes
     loupe
+    rpi-imager
+    mediawriter
   ];
 
   programs.steam.enable = true;
