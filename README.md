@@ -39,6 +39,10 @@ Clone the repository from GitHub to a temporary directory, such as `/tmp`.
 ```bash
 git clone https://github.com/TimLisemer/NixOs.git /tmp/nixos
 ```
+Delete flake.lock 
+```bash
+rm /tmp/nixos/flake.lock
+```
 
 ### 3.1 Optionally Generate Hardware Configuration:
 
