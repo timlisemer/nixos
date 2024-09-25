@@ -1,4 +1,4 @@
-{ lib, disks ? [ "/dev/nvme0n1" "/dev/nvme1n1" ], ... }:
+{ disks ? [ "/dev/nvme0n1" "/dev/nvme1n1" ], ... }:
 let
   rawdisk1 = builtins.elemAt disks 0;
   rawdisk2 = if (builtins.length disks) > 1 then builtins.elemAt disks 1 else null;
