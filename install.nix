@@ -1,55 +1,68 @@
-{ pkgs ? import <nixpkgs> {} }:
-
+{ disks ? [ "/dev/nvme0n1" "/dev/nvme1n1" ], ... }:
 let
-  # Define the number of disks based on the passed argument
-  number_of_disks = builtins.length (import ./config.nix).disks;
-
+  number_of_disks = builtins.length disks;
 in
 {
-  # Use disko to create partitions
-  networking = {
-    networkmanager.enable = true;
-  };
-
-  disko = {
-    devices = [
-      {
-        device = "/dev/nvme0n1";
-        partitions = {
-          type = "gpt";
-          subvolumes = {
-            boot = {
-              mountPoint = "/boot";
-              fsType = "vfat";
-              extraArgs = [];
-              size = "500M";
-            };
-            root = {
-              mountPoint = "/";
-              fsType = "btrfs";
-              # Set up RAID 0 across the two disks if there are more than one
-              extraArgs = if number_of_disks > 1 then [ "-d" "raid0" "-m" "raid0" ] else [ "-f" ];
-              subvolumes = {};
-            };
-          };
-        };
-      }
-      # Second disk is only included if there is more than one disk
-      (if number_of_disks > 1 then
+  disko.devices = {
+    disk = builtins.listToAttrs (
+      builtins.genList (index:
+        let
+          diskName = "disk${toString (index + 1)}";
+        in
         {
-          device = "/dev/nvme1n1";
-          partitions = {
-            type = "gpt";
-            subvolumes = {
-              root = {
-                mountPoint = "/"; # Mount point for the root filesystem is still "/"
-                fsType = "btrfs";
-                extraArgs = [ "-d" "raid0" "-m" "raid0" ]; # RAID 0 settings for the second disk
-                subvolumes = {};
+          name = diskName;
+          value = {
+            device = builtins.elemAt disks index;
+            type = "disk";
+            content = {
+              type = "gpt";
+              partitions = if index == 0 then {
+                boot = {
+                  size = "512M";
+                  type = "EF00";
+                  content = {
+                    type = "filesystem";
+                    format = "vfat";
+                    mountpoint = "/boot";
+                  };
+                };
+                root = {
+                  size = "100%";
+                  content = {
+                    type = "btrfs";
+                    extraArgs = if number_of_disks > 1 
+                                then [ "-f" "-d" "raid0" "-m" "raid0" ] 
+                                else [ "-f" ];
+                    subvolumes = {
+                      "@" = { };
+                      "@root" = {
+                        mountpoint = "/";
+                        mountOptions = [ "compress=zstd" "noatime" ];
+                      };
+                      "@home" = {
+                        mountpoint = "/home";
+                        mountOptions = [ "compress=zstd" ];
+                      };
+                      "@nix" = {
+                        mountpoint = "/nix";
+                        mountOptions = [ "compress=zstd" "noatime" ];
+                      };
+                    };
+                  };
+                };
+              } else {
+                root = {
+                  size = "100%";
+                  content = {
+                    type = "btrfs";
+                    extraArgs = [ "-f" ];
+                  };
+                };
               };
             };
           };
-        } else null)
-    ];
+        }
+      ) number_of_disks
+    );
   };
 }
