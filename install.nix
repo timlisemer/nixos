@@ -1,68 +1,60 @@
-{ disks ? [ "/dev/nvme0n1" "/dev/nvme1n1" ], ... }:
+{ lib, disks ? [ "/dev/nvme0n1" "/dev/nvme1n1" ], ... }:
 let
-  number_of_disks = builtins.length disks;
+  rawdisk1 = builtins.elemAt disks 0;
+  rawdisk2 = if (builtins.length disks) > 1 then builtins.elemAt disks 1 else null;
+  is_raid0 = rawdisk2 != null;
 in
 {
   disko.devices = {
-    disk = builtins.listToAttrs (
-      builtins.genList (index:
-        let
-          diskName = "disk${toString (index + 1)}";
-        in
-        {
-          name = diskName;
-          value = {
-            device = builtins.elemAt disks index;
-            type = "disk";
-            content = {
-              type = "gpt";
-              partitions = if index == 0 then {
-                boot = {
-                  size = "512M";
-                  type = "EF00";
-                  content = {
-                    type = "filesystem";
-                    format = "vfat";
-                    mountpoint = "/boot";
+    disk = {
+      ${rawdisk1} = {
+        device = "${rawdisk1}";
+        type = "disk";
+        content = {
+          type = "gpt";
+          partitions = {
+            ESP = {
+              label = "EFI";
+              name = "ESP";
+              size = "1024M";
+              type = "EF00" ;
+              content = {
+                type = "filesystem";
+                format = "vfat";
+                mountpoint = "/boot";
+              };
+            };
+            root = {
+              label = "rootfs";
+              name = "btrfs";
+              size = "100%";
+              content = {
+                type = "btrfs";
+                extraArgs = if is_raid0 then [ "-f" "-d" "raid0" "-m" "raid0" rawdisk2 ] else [ "-f" ]; # RAID0 if 2 disks, otherwise single disk
+                subvolumes = {
+                  "/root" = {
+                    mountOptions = [ "compress=zstd" "noatime" ];
                   };
-                };
-                root = {
-                  size = "100%";
-                  content = {
-                    type = "btrfs";
-                    extraArgs = if number_of_disks > 1 
-                                then [ "-f" "-d" "raid0" "-m" "raid0" ] 
-                                else [ "-f" ];
-                    subvolumes = {
-                      "@" = { };
-                      "@root" = {
-                        mountpoint = "/";
-                        mountOptions = [ "compress=zstd" "noatime" ];
-                      };
-                      "@home" = {
-                        mountpoint = "/home";
-                        mountOptions = [ "compress=zstd" ];
-                      };
-                      "@nix" = {
-                        mountpoint = "/nix";
-                        mountOptions = [ "compress=zstd" "noatime" ];
-                      };
-                    };
+                  "/home" = {
+                    mountOptions = [ "compress=zstd" "noatime" ];
                   };
-                };
-              } else {
-                root = {
-                  size = "100%";
-                  content = {
-                    type = "btrfs";
-                    extraArgs = [ "-f" ];
+                  "/nix" = {
+                    mountpoint = "/nix";
+                    mountOptions = [ "compress=zstd" "noatime" ];
+                  };
+                  "/var_local" = {
+                    mountOptions = [ "compress=zstd" "noatime" ];
+                  };
+                  "/var_log" = {
+                    mountpoint = "/var/log";
+                    mountOptions = [ "compress=zstd" "noatime" ];
                   };
                 };
               };
             };
           };
-        }
-      ) number_of_disks
-    );
+        };
+      };
+    };
   };
 }
