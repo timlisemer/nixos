@@ -7,7 +7,7 @@ in
 {
   disko.devices = {
     disk = {
-      ${rawdisk1} = {
+      "${rawdisk1}" = {
         device = "${rawdisk1}";
         type = "disk";
         content = {
@@ -58,39 +58,6 @@ in
           };
         };
       };
-    };
-  };
-
-  # Explicitly set the root filesystem for NixOS
-  fileSystems = {
-    "/" = {
-      device = "${rawdisk1}";
-      fsType = "btrfs";
-      options = [ "subvol=@" "compress=zstd" "noatime" ];
-    };
-    "/boot" = {
-      device = "/dev/disk/by-label/EFI";
-      fsType = "vfat";
-    };
-    "/home" = {
-      device = "${rawdisk1}";
-      fsType = "btrfs";
-      options = [ "subvol=@/home" "compress=zstd" "noatime" ];
-    };
-    "/nix" = {
-      device = "${rawdisk1}";
-      fsType = "btrfs";
-      options = [ "subvol=@/nix" "compress=zstd" "noatime" ];
-    };
-    "/var/local" = {
-      device = "${rawdisk1}";
-      fsType = "btrfs";
-      options = [ "subvol=@/var_local" "compress=zstd" "noatime" ];
-    };
-    "/var/log" = {
-      device = "${rawdisk1}";
-      fsType = "btrfs";
-      options = [ "subvol=@/var_log" "compress=zstd" "noatime" ];
     };
   };
 }
