@@ -351,11 +351,11 @@ with lib.hm.gvariant;
         {"0":100,"1":100,"2":100}
       '';
       panel-sizes = ''
-        {"0":48,"1":40,"2":40}
+        {"0":40,"1":40,"2":48}
       '';
-      primary-monitor = 0;
+      primary-monitor = 2;
       status-icon-padding = -1;
-      trans-panel-opacity = mkDouble "0.7000000000000001";
+      trans-panel-opacity = mkDouble "0.7";
       trans-use-custom-bg = false;
       trans-use-custom-gradient = false;
       trans-use-custom-opacity = true;
