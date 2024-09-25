@@ -1,4 +1,4 @@
-{ disks ? [ "/dev/nvme0n1" "/dev/nvme1n1" ], ... }:
+{ lib, disks ? [ "/dev/nvme0n1" "/dev/nvme1n1" ], ... }:
 let
   rawdisk1 = builtins.elemAt disks 0;
   rawdisk2 = if (builtins.length disks) > 1 then builtins.elemAt disks 1 else null;
@@ -32,20 +32,23 @@ in
                 type = "btrfs";
                 extraArgs = if is_raid0 then [ "-f" "-d" "raid0" "-m" "raid0" rawdisk2 ] else [ "-f" ]; # RAID0 if 2 disks, otherwise single disk
                 subvolumes = {
-                  "/root" = {
+                  "@" = {
+                    mountpoint = "/";
                     mountOptions = [ "compress=zstd" "noatime" ];
                   };
-                  "/home" = {
+                  "@/home" = {
+                    mountpoint = "/home";
                     mountOptions = [ "compress=zstd" "noatime" ];
                   };
-                  "/nix" = {
+                  "@/nix" = {
                     mountpoint = "/nix";
                     mountOptions = [ "compress=zstd" "noatime" ];
                   };
-                  "/var_local" = {
+                  "@/var_local" = {
+                    mountpoint = "/var/local";
                     mountOptions = [ "compress=zstd" "noatime" ];
                   };
-                  "/var_log" = {
+                  "@/var_log" = {
                     mountpoint = "/var/log";
                     mountOptions = [ "compress=zstd" "noatime" ];
                   };
@@ -55,6 +58,39 @@ in
           };
         };
       };
+    };
+  };
+
+  # Explicitly set the root filesystem for NixOS
+  fileSystems = {
+    "/" = {
+      device = "${rawdisk1}";
+      fsType = "btrfs";
+      options = [ "subvol=@" "compress=zstd" "noatime" ];
+    };
+    "/boot" = {
+      device = "/dev/disk/by-label/EFI";
+      fsType = "vfat";
+    };
+    "/home" = {
+      device = "${rawdisk1}";
+      fsType = "btrfs";
+      options = [ "subvol=@/home" "compress=zstd" "noatime" ];
+    };
+    "/nix" = {
+      device = "${rawdisk1}";
+      fsType = "btrfs";
+      options = [ "subvol=@/nix" "compress=zstd" "noatime" ];
+    };
+    "/var/local" = {
+      device = "${rawdisk1}";
+      fsType = "btrfs";
+      options = [ "subvol=@/var_local" "compress=zstd" "noatime" ];
+    };
+    "/var/log" = {
+      device = "${rawdisk1}";
+      fsType = "btrfs";
+      options = [ "subvol=@/var_log" "compress=zstd" "noatime" ];
     };
   };
 }
