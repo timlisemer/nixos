@@ -142,20 +142,20 @@
   services.logind.lidSwitchExternalPower = "ignore";
 
   # Comin
-  services.comin = {
-    enable = true;
-    remotes = [{
-      name = "origin";
-      url = "https://github.com/TimLisemer/NixOs.git";
-      auth.access_token_path = config.sops.secrets.github_token.path;
-      branches.main.name = "main";
-    }];
-  };
-  systemd.services.comin = {
-    serviceConfig = {
-      User = "root";
-    };
-  };
+  #services.comin = {
+  #  enable = true;
+  #  remotes = [{
+  #    name = "origin";
+  #    url = "https://github.com/TimLisemer/NixOs.git";
+  #    auth.access_token_path = config.sops.secrets.github_token.path;
+  #    branches.main.name = "main";
+  #  }];
+  #};
+  #systemd.services.comin = {
+  #  serviceConfig = {
+  #    User = "root";
+  #  };
+  #};
   
   # VsCode Server
   services.vscode-server.enable = true;

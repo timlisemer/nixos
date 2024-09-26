@@ -348,12 +348,11 @@ with lib.hm.gvariant;
       '';
       panel-element-positions-monitors-sync = false;
       panel-lengths = ''
-        {"1":100,"3":100,"2":100}
+        {"0":100,"1":100,"2":100}
       '';
       panel-sizes = ''
-        {"1":40,"3":48,"2":40}
+        {"0":40,"1":40,"2":48}
       '';
-      primary-monitor = 3;
       status-icon-padding = -1;
       trans-panel-opacity = mkDouble "0.7";
       trans-use-custom-bg = false;
