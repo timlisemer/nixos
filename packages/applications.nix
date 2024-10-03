@@ -17,6 +17,8 @@
     loupe
     rpi-imager
     mediawriter
+    arduino-ide
+    arduino-cli
   ];
 
   programs.steam.enable = true;
