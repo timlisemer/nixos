@@ -109,6 +109,7 @@
     # Files and folders to be symlinked into home
     home.file = {
       ".config/ags".source = builtins.toPath ../files/ags;
+      ".config/easyeffects".source = builtins.toPath ../files/easyeffects;
       ".config/hypr".source = builtins.toPath ../files/hypr;
       ".config/qemu/configs/windows-11.conf".source = builtins.toPath ../files/windows-11.conf;
       ".config/starship.toml".source = builtins.toPath ../files/starship.toml;
