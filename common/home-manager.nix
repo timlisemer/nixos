@@ -119,6 +119,10 @@
       ".stignore".source = builtins.toPath ../files/stignore;
       ".vimrc".source = builtins.toPath ../files/vimrc;
 
+      # Arduino
+      ".arduinoIDE/ia.txt" = { text = '' ia! ''; executable = false; };
+      ".arduinoIDE/arduino-cli.yaml".source = builtins.toPath ../files/arduino/arduino-cli.yaml;
+
       # EasyEffects
       ".config/easyeffects/ia.txt" = { text = '' ia! ''; executable = false; };
       ".config/easyeffects/autoload".source = builtins.toPath ../files/easyeffects/autoload;
