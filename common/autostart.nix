@@ -52,5 +52,15 @@
         Restart = "on-failure";
       };
     };
+
+    whatsapp-for-linux = {
+      description = "WhatsApp for Linux";
+      wantedBy = [ "graphical-session.target" ];
+      partOf = [ "graphical-session.target" ];
+      serviceConfig = {
+        ExecStart = "${pkgs.whatsapp-for-linux}/bin/whatsapp-for-linux";
+        Restart = "on-failure";
+      };
+    };
   };
 }

@@ -489,7 +489,7 @@ with lib.hm.gvariant;
     };
 
     "org/gnome/desktop/app-folders/folders/5d3de8f3-46d0-44d0-994e-34dcba42ba17" = {
-      apps = [ "org.gnome.SystemMonitor.desktop" "org.gnome.clocks.desktop" "org.gnome.Totem.desktop" "org.gnome.Music.desktop" "org.wireshark.Wireshark.desktop" "com.github.flxzt.rnote.desktop" "org.gnome.Snapshot.desktop" "simple-scan.desktop" "org.gnome.Calculator.desktop" "org.gnome.TextEditor.desktop" "org.gnome.Maps.desktop" "com.google.Chrome.desktop" "org.filezillaproject.Filezilla.desktop" "com.bitwarden.desktop.desktop" "com.raggesilver.BlackBox.desktop" "org.gnome.Boxes.desktop" "com.github.marhkb.Pods.desktop" "org.cvfosammmm.Setzer.desktop" "org.gnome.Software.desktop" "org.torproject.torbrowser-launcher.desktop" "dev.vencord.Vesktop.desktop" "org.pulseaudio.pavucontrol.desktop" ];
+      apps = [ "org.gnome.SystemMonitor.desktop" "org.gnome.clocks.desktop" "org.gnome.Totem.desktop" "org.gnome.Music.desktop" "org.wireshark.Wireshark.desktop" "com.github.flxzt.rnote.desktop" "org.gnome.Snapshot.desktop" "simple-scan.desktop" "org.gnome.Calculator.desktop" "org.gnome.TextEditor.desktop" "org.gnome.Maps.desktop" "com.google.Chrome.desktop" "org.filezillaproject.Filezilla.desktop" "com.bitwarden.desktop.desktop" "com.raggesilver.BlackBox.desktop" "org.gnome.Boxes.desktop" "com.github.marhkb.Pods.desktop" "org.cvfosammmm.Setzer.desktop" "org.gnome.Software.desktop" "org.torproject.torbrowser-launcher.desktop" "dev.vencord.Vesktop.desktop" "org.pulseaudio.pavucontrol.desktop" "com.github.eneshecan.WhatsAppForLinux.desktop" ];
       name = "Applications";
       translate = false;
     };

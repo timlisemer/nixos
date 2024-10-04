@@ -17,7 +17,7 @@
     loupe
     rpi-imager
     mediawriter
-    arduino-ide
+    whatsapp-for-linux
   ];
 
   programs.steam.enable = true;

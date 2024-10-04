@@ -16,6 +16,7 @@ in
       ];
     })
 
+    arduino-ide
     qtcreator
     libsForQt5.qt5.qtbase
     kdePackages.qtbase

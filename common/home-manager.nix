@@ -121,6 +121,7 @@
 
       # EasyEffects
       ".config/easyeffects/ia.txt" = { text = '' ia! ''; executable = false; };
+      ".config/easyeffects/autoload".source = builtins.toPath ../files/easyeffects/autoload;
       ".config/easyeffects/input".source = builtins.toPath ../files/easyeffects/input;
 
       # OpenRGB
@@ -139,6 +140,10 @@
 
       # blesh
       ".local/share/blesh".source = inputs.blesh;
+
+      # WhatsApp
+      ".config/whatsapp-for-linux/ia.txt" = { text = '' ia! ''; executable = false; };
+      ".config/whatsapp-for-linux/settings.conf".source = builtins.toPath ../files/whatsapp-for-linux/settings.conf;
     };
 
     # Steam adwaita theme
