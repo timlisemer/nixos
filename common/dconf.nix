@@ -484,7 +484,7 @@ with lib.hm.gvariant;
     };
 
     "org/gnome/desktop/app-folders/folders/22213c86-bf18-4d86-a47d-050ddec90177" = {
-      apps = [ "clion.desktop" "idea-community.desktop" "rust-rover.desktop" "rider.desktop" "code.desktop" "pycharm-community.desktop" "org.qt-project.qtcreator.desktop" "org.gnome.Builder.desktop" "arduino.desktop" ];
+      apps = [ "clion.desktop" "idea-community.desktop" "rust-rover.desktop" "rider.desktop" "code.desktop" "pycharm-community.desktop" "org.qt-project.qtcreator.desktop" "org.gnome.Builder.desktop" "arduino-ide.desktop" ];
       name = "Programming";
     };
 
