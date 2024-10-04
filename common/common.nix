@@ -34,8 +34,6 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  boot.kernelPackages = pkgs.linuxPackages_latest;
-
   # Enable networking
   networking.networkmanager.enable = true;
 
@@ -125,11 +123,6 @@
   };
 
   # List services that you want to enable:
-
-  # Enable Flatpaks
-  services.flatpak = {
-    enable = true;
-  };
 
   # Enable the OpenSSH daemon.
   services.openssh = {
