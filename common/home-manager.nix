@@ -109,7 +109,6 @@
     # Files and folders to be symlinked into home
     home.file = {
       ".config/ags".source = builtins.toPath ../files/ags;
-      ".config/easyeffects".source = builtins.toPath ../files/easyeffects;
       ".config/hypr".source = builtins.toPath ../files/hypr;
       ".config/qemu/configs/windows-11.conf".source = builtins.toPath ../files/windows-11.conf;
       ".config/starship.toml".source = builtins.toPath ../files/starship.toml;
@@ -119,6 +118,10 @@
       ".bashrc".source = builtins.toPath ../files/bashrc;
       ".stignore".source = builtins.toPath ../files/stignore;
       ".vimrc".source = builtins.toPath ../files/vimrc;
+
+      # EasyEffects
+      ".config/easyeffects/ia.txt" = { text = '' ia! ''; executable = false; };
+      ".config/easyeffects/input".source = builtins.toPath ../files/easyeffects/input;
 
       # OpenRGB
       ".config/OpenRGB/ia.txt" = { text = '' ia! ''; executable = false; };

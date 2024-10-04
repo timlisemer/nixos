@@ -106,7 +106,7 @@
   users.users.tim = {
     isNormalUser = true;
     description = "Tim Lisemer";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "networkmanager" "wheel" "dialout" ];
     packages = with pkgs; [
     #  thunderbird
     ];
