@@ -28,11 +28,14 @@
     SGX_ENCLAVE_SIZE = "4G";
     RUST_MIN_STACK = "268435456";
     PKG_CONFIG_PATH = "/usr/lib64/pkgconfig:/usr/share/pkgconfig";
+    ELECTRON_OZONE_PLATFORM_HINT = "auto";
   };
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
+  boot.loader.systemd-boot.configurationLimit = 5;
+  boot.loader.timeout = 1;
 
   # Enable networking
   networking.networkmanager.enable = true;

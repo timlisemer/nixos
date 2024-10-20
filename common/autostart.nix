@@ -7,7 +7,8 @@
       wantedBy = [ "graphical-session.target" ];
       partOf = [ "graphical-session.target" ];
       serviceConfig = {
-        ExecStart = "${pkgs.flatpak}/bin/flatpak run --branch=stable --arch=x86_64 --env=NODE_OPTIONS=--max-old-space-size=4096 --env=sgx.enclave_size=4G --command=run.sh io.github.spacingbat3.webcord -m";
+        # ExecStart = "${pkgs.flatpak}/bin/flatpak run --branch=stable --arch=x86_64 --env=NODE_OPTIONS=--max-old-space-size=4096 --env=sgx.enclave_size=4G --command=run.sh io.github.spacingbat3.webcord -m";
+        ExecStart = "${pkgs.webcord}/bin/webcord -m";
         Restart = "on-failure";
       };
     };
@@ -17,7 +18,8 @@
       wantedBy = [ "graphical-session.target" ];
       partOf = [ "graphical-session.target" ];
       serviceConfig = {
-        ExecStart = "${pkgs.easyeffects}/bin/easyeffects --gapplication-service";
+        # ExecStart = "${pkgs.easyeffects}/bin/easyeffects --gapplication-service";
+        ExecStart = "/bin/easyeffects --gapplication-service";
         Restart = "on-failure";
       };
     };
@@ -27,7 +29,8 @@
       wantedBy = [ "graphical-session.target" ];
       partOf = [ "graphical-session.target" ];
       serviceConfig = {
-        ExecStart = "${pkgs.gnome.geary}/bin/geary --gapplication-service";
+        # ExecStart = "${pkgs.gnome.geary}/bin/geary --gapplication-service";
+        ExecStart = "/bin/geary --gapplication-service";
         Restart = "on-failure";
       };
     };
@@ -58,7 +61,8 @@
       wantedBy = [ "graphical-session.target" ];
       partOf = [ "graphical-session.target" ];
       serviceConfig = {
-        ExecStart = "${pkgs.whatsapp-for-linux}/bin/whatsapp-for-linux";
+        # ExecStart = "${pkgs.whatsapp-for-linux}/bin/whatsapp-for-linux";
+        ExecStart = "/bin/whatsapp-for-linux";
         Restart = "on-failure";
       };
     };

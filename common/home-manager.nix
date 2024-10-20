@@ -125,7 +125,8 @@
 
       # EasyEffects
       ".config/easyeffects/ia.txt" = { text = '' ia! ''; executable = false; };
-      ".config/easyeffects/autoload".source = builtins.toPath ../files/easyeffects/autoload;
+      ".config/easyeffects/autoload/output/ia.txt" = { text = '' ia! ''; executable = false; };
+      ".config/easyeffects/autoload/input".source = builtins.toPath ../files/easyeffects/autoload/input;
       ".config/easyeffects/input".source = builtins.toPath ../files/easyeffects/input;
 
       # OpenRGB

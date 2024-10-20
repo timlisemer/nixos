@@ -20,7 +20,7 @@
     "flathub:app/com.spotify.Client//stable"
     "flathub:app/dev.vencord.Vesktop//stable"
     # "flathub:app/io.github.Foldex.AdwSteamGtk//stable"
-    "flathub:app/io.github.spacingbat3.webcord//stable"
+    # "flathub:app/io.github.spacingbat3.webcord//stable"
     "flathub:app/org.filezillaproject.Filezilla//stable"
     "flathub:app/org.gnome.Builder//stable"
     "flathub:app/org.pulseaudio.pavucontrol//stable"
