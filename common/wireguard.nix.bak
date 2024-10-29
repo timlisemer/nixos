@@ -1,13 +1,12 @@
 { config, pkgs, ... }: {
-  networking.wireguard.enable = true;
-  networking.wireguard.interfaces = let
+  networking.wg-quick.interfaces = let
     server_ip = "odalb8joqto3nnev.myfritz.net";
     wireguardKey = config.sops.secrets.wireguard_key.path; # Ensure this path is correct
     presharedKey = config.sops.secrets.wireguard_preshared_key.path;
   in {
     FritzBox = {
       # IP address of this machine in the *tunnel network*
-      ips = [
+      address = [
         "10.2.0.1/8"
       ];
 
@@ -30,14 +29,13 @@
         persistentKeepalive = 25;
       }];
 
-      postSetup = ''
-        ${pkgs.iptables}/bin/iptables -t nat -A POSTROUTING -s 10.0.0.2/8 -o eth0 -j MASQUERADE
-      '';
-
-      # This undoes the above command
-      postShutdown = ''
-        ${pkgs.iptables}/bin/iptables -t nat -D POSTROUTING -s 10.0.0.2/8 -o eth0 -j MASQUERADE
-      '';
+      # Optional: if you need to set DNS servers, you can add them like this
+      dns = [
+        "10.0.0.2"
+        "10.0.0.1"
+        "192.168.178.1"
+        "fritz.box"
+      ];
     };
   };
 }

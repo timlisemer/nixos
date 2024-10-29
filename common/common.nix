@@ -110,9 +110,6 @@
     isNormalUser = true;
     description = "Tim Lisemer";
     extraGroups = [ "networkmanager" "wheel" "dialout" ];
-    packages = with pkgs; [
-    #  thunderbird
-    ];
   };
 
   # Allow unfree packages
@@ -139,6 +136,9 @@
   # Laptop Lid Switch on External Power
   services.logind.lidSwitchExternalPower = "ignore";
 
+  # Enable Power Profile
+  services.power-profiles-daemon.enable = true;
+
   # Comin
   #services.comin = {
   #  enable = true;
@@ -164,6 +164,7 @@
 
   # Enable common container config files in /etc/containers
   virtualisation.containers.enable = true;
+  virtualisation.containers.registries.search = [ "docker.io" ];
   virtualisation = {
     podman = {
       enable = true;
@@ -174,6 +175,10 @@
       # Required for containers under podman-compose to be able to talk to each other.
       defaultNetwork.settings.dns_enabled = true;
     };
+  };
+  # Unrestrict ports below 1000.
+  boot.kernel.sysctl = {
+    "net.ipv4.ip_unprivileged_port_start" = 0;
   };
   
 

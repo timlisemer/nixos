@@ -31,12 +31,17 @@
   services.hardware.openrgb.enable = true;
   systemd.user.services.openrgb = {
     description = "OpenRGB";
-    wantedBy = [ "graphical-session.target" ];
-    partOf = [ "graphical-session.target" ];
+    wantedBy = [ "default.target" "graphical-session.target" ];
+      partOf = [ "graphical-session.target" ];
     serviceConfig = {
       # ExecStart = "${pkgs.openrgb-with-all-plugins}/bin/openrgb --startminimized --profile 'On'";
+      # ExecStartPre = "${pkgs.coreutils}/bin/sleep 10";
       ExecStart = "/bin/openrgb --startminimized --profile 'On'";
       Restart = "on-failure";
+      RestartSec = "5s";
+      StartLimitIntervalSec = "60s";
+      StartLimitBurst = "10";
+      After = [ "graphical-session.target" "network-online.target" ];
     };
   };
 }
