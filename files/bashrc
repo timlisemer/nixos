@@ -15,7 +15,7 @@ export MUTTER_DEBUG_KMS_THREAD_TYPE=user
 export NODE_OPTIONS="--max-old-space-size=4096"
 export SGX_ENCLAVE_SIZE="4G"
 export RUST_MIN_STACK=268435456
-export PKG_CONFIG_PATH=/usr/lib64/pkgconfig:/usr/share/pkgconfig
+# export PKG_CONFIG_PATH=/usr/lib64/pkgconfig:/usr/share/pkgconfig
 export ELECTRON_OZONE_PLATFORM_HINT=auto
 
 # User aliases

@@ -8,11 +8,17 @@ in
     (vscode-with-extensions.override {
       vscodeExtensions = with vscodeExtensions; [
         ms-python.python
+        ms-python.vscode-pylance
+        ms-python.debugpy
         ms-azuretools.vscode-docker
         ms-vscode-remote.remote-ssh
+        ms-vscode-remote.remote-containers
+        github.copilot
+        github.copilot-chat
         piousdeer.adwaita-theme
         bbenoist.nix
         rust-lang.rust-analyzer
+        njpwerner.autodocstring	
       ];
     })
 
@@ -47,12 +53,14 @@ in
     meson
     nodejs
     linux-pam
+    openssl
     perl
     php
     pixman
     podman
     podman-compose
     protobuf
+    pkg-config
     ruby
     typescript   
     gnumake

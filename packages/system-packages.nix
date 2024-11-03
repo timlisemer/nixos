@@ -23,6 +23,7 @@
     just
     unzip
     justbuild
+    pulseaudio
     sockdump
     qemu
     ripgrep

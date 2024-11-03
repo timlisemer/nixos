@@ -1,13 +1,12 @@
 { config, lib, pkgs, inputs, ... }:
 let
-  # Import the nixos-unstable channel with unfree packages enabled
+  # Import the unstable channel using the latest kernel packages
   unstable = import inputs.nixpkgs-unstable {
     config = { allowUnfree = true; };
-    system = "x86_64-linux";  # Explicit system string to avoid type mismatches
+    inherit (pkgs) system;
   };
 in
 {
-
   # Enable OpenGL
   hardware.opengl = {
     enable = true;
@@ -18,6 +17,9 @@ in
       nvidia-vaapi-driver
     ];
   };
+
+  # Kernel Version
+  boot.kernelPackages = unstable.linuxPackages_latest;
 
   # Load nvidia driver for Xorg and Wayland
   services.xserver.videoDrivers = ["nvidia"];
@@ -37,7 +39,7 @@ in
     open = false;
     nvidiaSettings = false;
 
-    # Explicitly use the stable Nvidia driver from unstable (which should be 560)
-    package = unstable.linuxPackages.nvidiaPackages.stable;
+    # Use the unstable Nvidia driver
+    package = unstable.linuxPackages_latest.nvidiaPackages.stable;
   };
 }

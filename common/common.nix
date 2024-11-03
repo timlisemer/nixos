@@ -27,7 +27,8 @@
     NODE_OPTIONS = "--max-old-space-size=4096";
     SGX_ENCLAVE_SIZE = "4G";
     RUST_MIN_STACK = "268435456";
-    PKG_CONFIG_PATH = "/usr/lib64/pkgconfig:/usr/share/pkgconfig";
+    # PKG_CONFIG_PATH = "/usr/lib64/pkgconfig:/usr/share/pkgconfig";
+    PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig";
     ELECTRON_OZONE_PLATFORM_HINT = "auto";
   };
 
@@ -180,7 +181,6 @@
   boot.kernel.sysctl = {
     "net.ipv4.ip_unprivileged_port_start" = 0;
   };
-  
 
   # Auto Updates
   system.autoUpgrade = {

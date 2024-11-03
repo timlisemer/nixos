@@ -17,6 +17,7 @@
     loupe
     rpi-imager
     mediawriter
+    postman
     webcord-vencord
     whatsapp-for-linux
   ];
