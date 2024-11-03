@@ -38,11 +38,6 @@
       inputs.nixpkgs.follows = "nixpkgs-stable";
     };
 
-    morewaita = {
-      url = "github:somepaulo/MoreWaita";
-      flake = false;
-    };
-
     firefox-gnome-theme = {
       url = "github:rafaelmardojai/firefox-gnome-theme";
       flake = false;
@@ -59,7 +54,7 @@
     };
   };
 
-  outputs = inputs@{ self, nixpkgs-stable, nixpkgs-unstable, flatpaks, disko, comin, sops-nix, vscode-server, home-manager, rust-overlay, firefox-gnome-theme, morewaita, blesh, tim-nvim, ... }: {
+  outputs = inputs@{ self, nixpkgs-stable, nixpkgs-unstable, flatpaks, disko, comin, sops-nix, vscode-server, home-manager, rust-overlay, firefox-gnome-theme, blesh, tim-nvim, ... }: {
 
     # Function to create configuration for any host
     mkSystem = hostFile: nixpkgs-stable.lib.nixosSystem {

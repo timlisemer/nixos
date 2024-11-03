@@ -2,6 +2,19 @@
 
 {
   systemd.user.services = {
+
+    steam-minimized = {
+      description = "Steam (Minimized)";
+      wantedBy = [ "default.target" "graphical-session.target" ];
+      partOf = [ "graphical-session.target" ];
+      serviceConfig = {
+        ExecStartPre = "${pkgs.coreutils}/bin/sleep 2";
+        ExecStart = "${pkgs.steam}/bin/steam -silent";
+        Restart = "on-failure";
+        After = [ "graphical-session.target" "network-online.target" ];
+      };
+    };
+
     webcord = {
       description = "WebCord Discord client";
       wantedBy = [ "default.target" "graphical-session.target" ];
@@ -58,17 +71,6 @@
         StartLimitIntervalSec = "60s";
         StartLimitBurst = "10";
         After = [ "graphical-session.target" "network-online.target" ];
-      };
-    };
-
-    steam-minimized = {
-      description = "Steam (Minimized)";
-      wantedBy = [ "default.target" "graphical-session.target" ];
-      partOf = [ "graphical-session.target" ];
-      serviceConfig = {
-        ExecStartPre = "${pkgs.coreutils}/bin/sleep 2";
-        ExecStart = "${pkgs.steam}/bin/steam -silent";
-        Restart = "on-failure";
       };
     };
 
