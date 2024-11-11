@@ -18,6 +18,7 @@
     rpi-imager
     mediawriter
     postman
+    vlc
     webcord-vencord
     whatsapp-for-linux
   ];

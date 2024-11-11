@@ -39,7 +39,7 @@
       ExecStart = "/bin/openrgb --startminimized --profile 'On'";
       Restart = "on-failure";
       RestartSec = "5s";
-      StartLimitIntervalSec = "60s";
+      StartLimitIntervalSec = "10s";
       StartLimitBurst = "10";
       After = [ "graphical-session.target" "network-online.target" ];
     };

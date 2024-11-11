@@ -24,7 +24,7 @@
         ExecStart = "${pkgs.webcord}/bin/webcord -m";
         Restart = "on-failure";
         RestartSec = "5s";
-        StartLimitIntervalSec = "60s";
+        StartLimitIntervalSec = "10s";
         StartLimitBurst = "10";
         After = [ "graphical-session.target" "network-online.target" ];
       };
@@ -39,7 +39,7 @@
         ExecStart = "/bin/easyeffects --gapplication-service";
         Restart = "on-failure";
         RestartSec = "5s";
-        StartLimitIntervalSec = "60s";
+        StartLimitIntervalSec = "10s";
         StartLimitBurst = "10";
         After = [ "graphical-session.target" "network-online.target" ];
       };
@@ -54,7 +54,7 @@
         ExecStart = "/bin/geary --gapplication-service";
         Restart = "on-failure";
         RestartSec = "5s";
-        StartLimitIntervalSec = "60s";
+        StartLimitIntervalSec = "10s";
         StartLimitBurst = "10";
         After = [ "graphical-session.target" "network-online.target" ];
       };
@@ -68,7 +68,7 @@
         ExecStart = "${pkgs.flatpak}/bin/flatpak run --command=pika-backup-monitor org.gnome.World.PikaBackup";
         Restart = "on-failure";
         RestartSec = "5s";
-        StartLimitIntervalSec = "60s";
+        StartLimitIntervalSec = "10s";
         StartLimitBurst = "10";
         After = [ "graphical-session.target" "network-online.target" ];
       };
@@ -83,7 +83,7 @@
         ExecStart = "/bin/whatsapp-for-linux";
         Restart = "on-failure";
         RestartSec = "5s";
-        StartLimitIntervalSec = "60s";
+        StartLimitIntervalSec = "10s";
         StartLimitBurst = "10";
         After = [ "graphical-session.target" "network-online.target" ];
       };

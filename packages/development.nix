@@ -19,6 +19,7 @@ in
         bbenoist.nix
         rust-lang.rust-analyzer
         njpwerner.autodocstring	
+        svelte.svelte-vscode
       ];
     })
 

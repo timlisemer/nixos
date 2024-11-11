@@ -16,6 +16,7 @@
     "flathub:app/com.bitwarden.desktop//stable"
     "flathub:app/com.github.marhkb.Pods//stable"
     "flathub:app/com.google.Chrome//stable"
+    "flathub:app/com.protonvpn.www//stable"
     # "flathub:app/com.raggesilver.BlackBox//stable"
     "flathub:app/com.spotify.Client//stable"
     "flathub:app/dev.vencord.Vesktop//stable"

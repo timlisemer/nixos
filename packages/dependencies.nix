@@ -12,13 +12,9 @@
     openssl
     pipewire
     socat
-    texlivePackages.acronym
-    texlivePackages.dejavu
-    texlivePackages.framed
-    texlivePackages.silence
-    texlivePackages.tex-gyre
-    texlivePackages.tex-gyre-math
-    texlivePackages.tocloft
     tree-sitter
+
+
+    texlive.combined.scheme-full
   ];
 }
