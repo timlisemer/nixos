@@ -1,0 +1,5 @@
+{
+    "update.mode": "none",
+    "extensions.autoUpdate": true,
+    "extensions.autoCheckUpdates": true
+}
