@@ -151,8 +151,8 @@
       ".config/whatsapp-for-linux/settings.conf".source = builtins.toPath ../files/whatsapp-for-linux/settings.conf;
 
       # Vscode
-      ".config/VSCodium/User/ia.txt" = { text = '' ia! ''; executable = false; };
-      ".config/VSCodium/User/settings.json".source = builtins.toPath ../files/vscode/settings.json;
+      ".config/Code/User/ia.txt" = { text = '' ia! ''; executable = false; };
+      ".config/Code/User/settings.json".source = builtins.toPath ../files/vscode/settings.json;
     };
 
     # Steam adwaita theme
