@@ -1,0 +1,14 @@
+{
+    "update.mode": "none",
+    "extensions.autoUpdate": true,
+    "extensions.autoCheckUpdates": true,
+    "git.autofetch": true,
+    "eslint.enable": true,
+    "eslint.run": "onSave",
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 1000,
+    "editor.formatOnSave": true,
+    "rust-analyzer.formatting.enable": true,
+    "rust-analyzer.formatting.command": "rustfmt",
+    "rust-analyzer.checkOnSave.command": "clippy"
+}

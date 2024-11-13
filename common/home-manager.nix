@@ -149,6 +149,10 @@
       # WhatsApp
       ".config/whatsapp-for-linux/ia.txt" = { text = '' ia! ''; executable = false; };
       ".config/whatsapp-for-linux/settings.conf".source = builtins.toPath ../files/whatsapp-for-linux/settings.conf;
+
+      # Vscode
+      ".config/Code/User/ia.txt" = { text = '' ia! ''; executable = false; };
+      ".config/Code/User/settings.json".source = builtins.toPath ../files/vscode/settings.json;
     };
 
     # Steam adwaita theme
