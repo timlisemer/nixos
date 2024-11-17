@@ -11,7 +11,8 @@
     minecraft
     easyeffects
     rnote
-    setzer
+    # setzer
+    gimp-with-plugins
     timeshift
     gnome.gnome-boxes
     loupe

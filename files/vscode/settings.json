@@ -10,5 +10,6 @@
     "editor.formatOnSave": true,
     "rust-analyzer.formatting.enable": true,
     "rust-analyzer.formatting.command": "rustfmt",
-    "rust-analyzer.checkOnSave.command": "clippy"
+    "rust-analyzer.checkOnSave.command": "clippy",
+    "svelte.enable-ts-plugin": true
 }

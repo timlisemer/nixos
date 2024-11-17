@@ -32,6 +32,7 @@
     wl-clipboard
     xorg.xeyes
     zoxide
+    distrobox
     starship
     nerdfonts
     switcheroo-control
