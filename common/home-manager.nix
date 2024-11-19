@@ -110,7 +110,7 @@
     home.file = {
       ".config/ags".source = builtins.toPath ../files/ags;
       ".config/hypr".source = builtins.toPath ../files/hypr;
-      ".config/qemu/configs/windows-11.conf".source = builtins.toPath ../files/windows-11.conf;
+      # ".config/qemu/configs/windows-11.conf".source = builtins.toPath ../files/windows-11.conf;
       ".config/starship.toml".source = builtins.toPath ../files/starship.toml;
       ".config/wireplumber".source = builtins.toPath ../files/wireplumber;
       "Pictures/Wallpapers".source = builtins.toPath ../files/Wallpapers;

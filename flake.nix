@@ -62,7 +62,7 @@
       specialArgs = { inherit inputs; };
       modules = [
         disko.nixosModules.disko
-        flatpaks.nixosModules.default
+        flatpaks.nixosModules.declarative-flatpak
         comin.nixosModules.comin
         # sops-nix.nixosModules.sops
         vscode-server.nixosModules.default
