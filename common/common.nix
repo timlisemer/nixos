@@ -164,6 +164,8 @@
 
 
   # Enable common container config files in /etc/containers
+  services.spice-vdagentd.enable = true;
+  virtualisation.spiceUSBRedirection.enable = true;
   virtualisation.containers.enable = true;
   virtualisation.containers.registries.search = [ "docker.io" ];
   virtualisation = {
