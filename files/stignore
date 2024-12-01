@@ -2,6 +2,9 @@
 /.local/share/gnome-shell/notifications
 /.minecraft/launcher_log*
 /Pictures/Wallpapers
+/*.sock
+/*.socket
+/*.log
 
 !/Bookmarks\ Backups/
 !/Coding/
@@ -20,7 +23,8 @@
 !/Videos/
 
 !/.Calendar-Backup/
-!/.config/containers
+!/.config/qemu/
+!/.config/containers/
 !/.config/fastfetch/
 !/.factorio/
 !/.FiraxisLive/

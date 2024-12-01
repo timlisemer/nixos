@@ -13,7 +13,7 @@
   # Home Manager configuration for the user 'tim'
   home-manager.users.tim = {
     # Specify the Home Manager state version
-    home.stateVersion = "24.05"; # Update to "24.11" if needed
+    home.stateVersion = "24.11";
 
     imports = [ 
       ./dconf.nix 
@@ -105,12 +105,12 @@
       atuin
       sops
     ];
-
+  
     # Files and folders to be symlinked into home
     home.file = {
+
       ".config/ags".source = builtins.toPath ../files/ags;
       ".config/hypr".source = builtins.toPath ../files/hypr;
-      # ".config/qemu/configs/windows-11.conf".source = builtins.toPath ../files/windows-11.conf;
       ".config/starship.toml".source = builtins.toPath ../files/starship.toml;
       ".config/wireplumber".source = builtins.toPath ../files/wireplumber;
       "Pictures/Wallpapers".source = builtins.toPath ../files/Wallpapers;
@@ -125,9 +125,11 @@
 
       # EasyEffects
       ".config/easyeffects/ia.txt" = { text = '' ia! ''; executable = false; };
-      ".config/easyeffects/autoload/output/ia.txt" = { text = '' ia! ''; executable = false; };
-      ".config/easyeffects/autoload/input".source = builtins.toPath ../files/easyeffects/autoload/input;
-      ".config/easyeffects/input".source = builtins.toPath ../files/easyeffects/input;
+      ".config/easyeffects/autoload/ia.txt" = { text = '' ia! ''; executable = false; };
+      ".config/easyeffects/autoload/input/ia.txt" = { text = '' ia! ''; executable = false; };
+      ".config/easyeffects/input/ia.txt" = { text = '' ia! ''; executable = false; };
+      ".config/easyeffects/autoload/input/alsa_input.usb-R__DE_R__DE_NT-USB__02447C32-00.mono-fallback:.json".source = builtins.toPath ../files/easyeffects/autoload/input;
+      ".config/easyeffects/input/Discord.json".source = builtins.toPath ../files/easyeffects/input;
 
       # OpenRGB
       ".config/OpenRGB/ia.txt" = { text = '' ia! ''; executable = false; };

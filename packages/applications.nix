@@ -5,16 +5,16 @@
     btop
     steam
     wireshark
-    gnome.gnome-terminal
+    gnome-terminal
     blackbox-terminal
-    gnome.geary
+    geary
     minecraft
     easyeffects
     rnote
-    # setzer
+    setzer
     gimp-with-plugins
     timeshift
-    gnome.gnome-boxes
+    gnome-boxes
     loupe
     rpi-imager
     mediawriter

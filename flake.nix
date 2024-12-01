@@ -1,6 +1,6 @@
 {
   inputs = {
-    nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-24.05"; # Stable channel for everything else
+    nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-24.11"; # Stable channel for everything else
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable"; # Unstable channel for the NVIDIA driver
 
     flatpaks = {
@@ -29,7 +29,7 @@
     };
 
     home-manager = {
-      url = "github:nix-community/home-manager/release-24.05";
+      url = "github:nix-community/home-manager/release-24.11";
       inputs.nixpkgs.follows = "nixpkgs-stable";
     };
 

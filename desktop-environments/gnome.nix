@@ -5,7 +5,7 @@
   services.xserver.desktopManager.gnome.enable = true;
 
   environment.systemPackages = with pkgs; [
-    gnome.gnome-tweaks
+    gnome-tweaks
     gnome-extension-manager
     gnomeExtensions.app-hider
     gnomeExtensions.appindicator
@@ -19,10 +19,10 @@
 
   environment.gnome.excludePackages = with pkgs; [
     gnome-tour
-    gnome.gnome-initial-setup
-    gnome.yelp
-    gnome.gnome-shell-extensions
-    gnome.epiphany
+    gnome-initial-setup
+    yelp
+    gnome-shell-extensions
+    epiphany
     gnome-console
   ];
 }

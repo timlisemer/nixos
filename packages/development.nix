@@ -27,9 +27,9 @@ in
     qtcreator
     libsForQt5.qt5.qtbase
     kdePackages.qtbase
-    jetbrains.clion
+    # jetbrains.clion   # Test if this works again in the future
+    # jetbrains.rider   # Test if this works again in the future
     jetbrains.rust-rover
-    jetbrains.rider
     jetbrains.idea-community
     jetbrains.pycharm-community
     conda
@@ -78,8 +78,8 @@ in
     python3Packages.isort
     stylua
     nodePackages.typescript-language-server
-    nodePackages.vscode-html-languageserver-bin
-    nodePackages.vscode-css-languageserver-bin
+    nodePackages.vscode-langservers-extracted
+    nodePackages.vscode-langservers-extracted
     nodePackages.svelte-language-server
     tailwindcss-language-server
     lua-language-server
