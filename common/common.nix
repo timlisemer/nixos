@@ -30,6 +30,7 @@
     # PKG_CONFIG_PATH = "/usr/lib64/pkgconfig:/usr/share/pkgconfig";
     PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig";
     # ELECTRON_OZONE_PLATFORM_HINT = "auto";
+    QT_QPA_PLATFORM = "wayland";
   };
 
   # Bootloader.
