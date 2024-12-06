@@ -182,5 +182,17 @@
         WantedBy = [ "default.target" ];
       };
     };
+
+    xdg.desktopEntries = {
+      discord = {
+        name = "Discord";
+        genericName = "All-in-one cross-platform voice and text chat for gamers";
+        exec = "discordcanary --enable-features=UseOzonePlatform --ozone-platform=wayland";
+        terminal = false;
+        icon = "discord";
+        categories = [ "Network" "InstantMessaging" ];
+        mimeType = [ "x-scheme-handler/discord" ];
+      };
+    };
   };
 }

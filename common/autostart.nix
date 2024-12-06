@@ -15,21 +15,6 @@
       };
     };
 
-    webcord = {
-      description = "WebCord Discord client";
-      wantedBy = [ "default.target" "graphical-session.target" ];
-      partOf = [ "graphical-session.target" ];
-      serviceConfig = {
-        # ExecStart = "${pkgs.flatpak}/bin/flatpak run --branch=stable --arch=x86_64 --env=NODE_OPTIONS=--max-old-space-size=4096 --env=sgx.enclave_size=4G --command=run.sh io.github.spacingbat3.webcord -m";
-        ExecStart = "${pkgs.webcord}/bin/webcord -m";
-        Restart = "on-failure";
-        RestartSec = "5s";
-        StartLimitIntervalSec = "10s";
-        StartLimitBurst = "10";
-        After = [ "graphical-session.target" "network-online.target" ];
-      };
-    };
-
     easyeffects = {
       description = "Easy Effects Service";
       wantedBy = [ "default.target" "graphical-session.target" ];
@@ -88,5 +73,34 @@
         After = [ "graphical-session.target" "network-online.target" ];
       };
     };
+
+    discord = {
+      description = "Discord client";
+      wantedBy = [ "default.target" "graphical-session.target" ];
+      partOf = [ "graphical-session.target" ];
+      serviceConfig = {
+        ExecStart = "${pkgs.discord-canary}/bin/discordcanary --enable-features=UseOzonePlatform --ozone-platform=wayland --start-minimized";
+        Restart = "on-failure";
+        RestartSec = "5s";
+        StartLimitIntervalSec = "10s";
+        StartLimitBurst = "10";
+        After = [ "graphical-session.target" "network-online.target" ];
+      };
+    };
+
+    #webcord = {
+    #  description = "WebCord Discord client";
+    #  wantedBy = [ "default.target" "graphical-session.target" ];
+    #  partOf = [ "graphical-session.target" ];
+    #  serviceConfig = {
+    #    # ExecStart = "${pkgs.flatpak}/bin/flatpak run --branch=stable --arch=x86_64 --env=NODE_OPTIONS=--max-old-space-size=4096 --env=sgx.enclave_size=4G --command=run.sh io.github.spacingbat3.webcord -m";
+    #    ExecStart = "${pkgs.webcord}/bin/webcord -m";
+    #    Restart = "on-failure";
+    #    RestartSec = "5s";
+    #    StartLimitIntervalSec = "10s";
+    #    StartLimitBurst = "10";
+    #    After = [ "graphical-session.target" "network-online.target" ];
+    #  };
+    #};
   };
 }
