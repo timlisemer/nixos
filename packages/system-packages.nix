@@ -31,6 +31,7 @@
     vdpauinfo
     wl-clipboard
     xorg.xeyes
+    dconf2nix
     zoxide
     distrobox
     starship

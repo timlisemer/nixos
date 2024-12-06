@@ -9,6 +9,7 @@
     blackbox-terminal
     geary
     minecraft
+    prismlauncher
     easyeffects
     rnote
     setzer

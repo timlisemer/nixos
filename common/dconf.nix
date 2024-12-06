@@ -290,23 +290,33 @@ with lib.hm.gvariant;
       show-activities-button = false;
     };
 
-    "org/gnome/shell/extensions/blur-my-shell" = {
+    "blur-my-shell" = {
       settings-version = 2;
     };
 
-    "org/gnome/shell/extensions/blur-my-shell/appfolder" = {
-      brightness = mkDouble "0.6";
-      sigma = 30;
+    "blur-my-shell/coverflow-alt-tab" = {
+      pipeline = "pipeline_default";
     };
 
-    "org/gnome/shell/extensions/blur-my-shell/panel" = {
-      brightness = mkDouble "0.6";
-      sigma = 30;
+    "blur-my-shell/dash-to-dock" = {
+      pipeline = "pipeline_default_rounded";
     };
 
-    "org/gnome/shell/extensions/blur-my-shell/window-list" = {
-      brightness = mkDouble "0.6";
-      sigma = 30;
+    "blur-my-shell/lockscreen" = {
+      pipeline = "pipeline_default";
+    };
+
+    "blur-my-shell/overview" = {
+      pipeline = "pipeline_default";
+    };
+
+    "blur-my-shell/panel" = {
+      blur = false;
+      pipeline = "pipeline_default";
+    };
+
+    "blur-my-shell/screenshot" = {
+      pipeline = "pipeline_default";
     };
 
     "org/gnome/shell/extensions/dash-to-panel" = {
@@ -332,14 +342,14 @@ with lib.hm.gvariant;
         (mkDictionaryEntry ["PLANK" (mkDouble "0.0")])
       ];
       animate-appicon-hover-animation-type = "SIMPLE";
-      appicon-margin = 8;
-      appicon-padding = 4;
+      # appicon-margin = 8;
+      # appicon-padding = 4;
       available-monitors = [ 0 1 2 ];
       dot-position = "BOTTOM";
       dot-style-focused = "SQUARES";
       dot-style-unfocused = "DOTS";
       hotkeys-overlay-combo = "TEMPORARILY";
-      leftbox-padding = -1;
+      # leftbox-padding = -1;
       panel-anchors = ''
         {"0":"MIDDLE","1":"MIDDLE","2":"MIDDLE"}
       '';
@@ -357,12 +367,12 @@ with lib.hm.gvariant;
         {"0":40,"1":40,"2":48}
       '';
       primary-monitor = 3;
-      status-icon-padding = -1;
+      # status-icon-padding = -1;
       trans-panel-opacity = mkDouble "0.7";
       trans-use-custom-bg = false;
       trans-use-custom-gradient = false;
       trans-use-custom-opacity = true;
-      tray-padding = -1;
+      # tray-padding = -1;
       window-preview-title-position = "TOP";
     };
 
@@ -379,10 +389,6 @@ with lib.hm.gvariant;
       show-link-emblem = false;
       show-trash = false;
       show-volumes = false;
-    };
-
-    "org/gnome/shell/extensions/phi" = {
-      url1 = "https://pihole.local.yakweide.de/admin/api.php";
     };
 
     "org/gnome/shell/extensions/sp-tray" = {
@@ -500,7 +506,7 @@ with lib.hm.gvariant;
     };
 
     "org/gnome/desktop/app-folders/folders/ebb4a864-8e0d-4efb-9cf3-396e9b66c109" = {
-      apps = [ "org.gnome.Extensions.desktop" "com.mattjakeman.ExtensionManager.desktop" "OpenRGB.desktop" "org.gnome.Weather.desktop" "org.gnome.Loupe.desktop" "org.gnome.DiskUtility.desktop" "org.gnome.baobab.desktop" "org.gnome.Evince.desktop" "org.gnome.Contacts.desktop" "com.github.wwmm.easyeffects.desktop" "org.gnome.Settings.desktop" "com.github.tchx84.Flatseal.desktop" "io.github.Foldex.AdwSteamGtk.desktop" "org.gnome.tweaks.desktop" "org.gnome.World.PikaBackup.desktop" "timeshift-gtk.desktop" "windows11-qemu.desktop" "windows10-qemu.desktop" "org.fedoraproject.MediaWriter.desktop" "org.raspberrypi.rpi-imager.desktop" "postman.desktop" "vlc.desktop" "com.protonvpn.www.desktop" ];
+      apps = [ "org.gnome.Extensions.desktop" "com.mattjakeman.ExtensionManager.desktop" "OpenRGB.desktop" "org.gnome.Weather.desktop" "org.gnome.Loupe.desktop" "org.gnome.DiskUtility.desktop" "org.gnome.baobab.desktop" "org.gnome.Evince.desktop" "org.gnome.Contacts.desktop" "com.github.wwmm.easyeffects.desktop" "org.gnome.Settings.desktop" "com.github.tchx84.Flatseal.desktop" "io.github.Foldex.AdwSteamGtk.desktop" "org.gnome.tweaks.desktop" "org.gnome.World.PikaBackup.desktop" "timeshift-gtk.desktop" "windows11-qemu.desktop" "windows10-qemu.desktop" "org.fedoraproject.MediaWriter.desktop" "org.raspberrypi.rpi-imager.desktop" "postman.desktop" "vlc.desktop" "com.protonvpn.www.desktop" "nvidia-settings.desktop" ];
       name = "Utilities";
       translate = false;
     };
