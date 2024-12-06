@@ -35,7 +35,7 @@
       wantedBy = [ "default.target" "graphical-session.target" ];
       partOf = [ "graphical-session.target" ];
       serviceConfig = {
-        ExecStart = "${pkgs.gnome.geary}/bin/geary --gapplication-service";
+        ExecStart = "${pkgs.geary}/bin/geary --gapplication-service";
         # ExecStart = "geary --gapplication-service";
         Restart = "on-failure";
         RestartSec = "5s";
