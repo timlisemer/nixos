@@ -576,15 +576,21 @@ with lib.hm.gvariant;
     };
 
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom6" = {
-      binding = "<Super>d";
+      binding = "<Super>k";
       command = "gnome-calendar";
-      name = "Calendar (D for Date)";
+      name = "Calendar";
     };
 
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom7" = {
       binding = "<Super>c";
       command = "gnome-calculator";
       name = "Calculator";
+    };
+
+    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom8" = {
+      binding = "<Super>d";
+      command = "discordcanary --enable-features=UseOzonePlatform --ozone-platform=wayland";
+      name = "Discord";
     };
 
 
