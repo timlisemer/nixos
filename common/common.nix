@@ -33,6 +33,9 @@
     QT_QPA_PLATFORM = "wayland";
   };
 
+  # Setup Path
+  environment.variables.PATH = "${pkgs.lib.makeBinPath [ pkgs.coreutils ]}:$HOME/.bin";
+
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;

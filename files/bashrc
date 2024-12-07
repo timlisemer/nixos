@@ -9,7 +9,6 @@ iatest=$(expr index "$-" i)
 # User aliases
 alias htop='btop'
 
-
 # Docker aliases
 # sudo ln -s /run/user/1000/podman/podman.sock /var/run/docker.sock
 alias docker='podman'

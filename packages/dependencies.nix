@@ -13,8 +13,5 @@
     pipewire
     socat
     tree-sitter
-
-
-    texlive.combined.scheme-full
   ];
 }
