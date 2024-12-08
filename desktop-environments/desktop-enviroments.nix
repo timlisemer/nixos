@@ -3,6 +3,6 @@
 {
   imports = [
     ./gnome.nix
-    ./cosmic.nix
+    # ./cosmic.nix
   ];
 }
