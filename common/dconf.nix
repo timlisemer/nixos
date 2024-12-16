@@ -217,6 +217,11 @@ with lib.hm.gvariant;
       enable-sound-alerts = true;
     };
 
+    "org/gnome/desktop/notifications/application/spotify" = {
+      enable = false;
+      enable-sound-alerts = true;
+    };
+
     "org/gnome/shell/extensions/arcmenu" = {
       arc-menu-icon = 71;
       arcmenu-hotkey = [ "Super_R" ];
@@ -529,7 +534,7 @@ with lib.hm.gvariant;
         ])])
       ] ];
       enabled-extensions = [ "app-hider@lynith.dev" "appindicatorsupport@rgcjonas.gmail.com" "blur-my-shell@aunetx" "dash-to-panel@jderose9.github.com" "ding@rastersoft.com" "user-theme@gnome-shell-extensions.gcampax.github.com" "sp-tray@sp-tray.esenliyim.github.com" ];
-      favorite-apps = [ "org.gnome.Nautilus.desktop" "firefox.desktop" "com.spotify.Client.desktop" "discord.desktop" "org.gnome.Geary.desktop" "org.gnome.Calendar.desktop" "org.gnome.Terminal.desktop" ];
+      favorite-apps = [ "org.gnome.Nautilus.desktop" "firefox.desktop" "discord.desktop" "spotify.desktop" "org.gnome.Geary.desktop" "org.gnome.Calendar.desktop" "org.gnome.Terminal.desktop" ];
     };
     # org.mozilla.firefox.desktop
 
@@ -559,7 +564,7 @@ with lib.hm.gvariant;
 
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3" = {
       binding = "<Super>m";
-      command = "flatpak run com.spotify.Client";
+      command = "spotify";
       name = "Media (Spotify)";
     };
 

@@ -25,6 +25,7 @@
     discord
     webcord-vencord
     whatsapp-for-linux
+    spotify
   ];
 
   programs.steam.enable = true;

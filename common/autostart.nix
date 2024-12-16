@@ -42,6 +42,7 @@
         StartLimitIntervalSec = "10s";
         StartLimitBurst = "10";
         After = [ "graphical-session.target" "network-online.target" ];
+        Environment = "DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u)/bus";
       };
     };
 
@@ -56,6 +57,7 @@
         StartLimitIntervalSec = "10s";
         StartLimitBurst = "10";
         After = [ "graphical-session.target" "network-online.target" ];
+        Environment = "DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u)/bus";
       };
     };
 
@@ -71,6 +73,7 @@
         StartLimitIntervalSec = "10s";
         StartLimitBurst = "10";
         After = [ "graphical-session.target" "network-online.target" ];
+        Environment = "DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u)/bus";
       };
     };
 
@@ -85,6 +88,7 @@
         StartLimitIntervalSec = "10s";
         StartLimitBurst = "10";
         After = [ "graphical-session.target" "network-online.target" ];
+        Environment = "DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u)/bus";
       };
     };
 
@@ -100,6 +104,7 @@
     #    StartLimitIntervalSec = "10s";
     #    StartLimitBurst = "10";
     #    After = [ "graphical-session.target" "network-online.target" ];
+    #    Environment = "DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u)/bus";
     #  };
     #};
   };
