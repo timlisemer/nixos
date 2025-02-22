@@ -30,12 +30,14 @@
       enable = true;
       userName = "timlisemer";
       userEmail = "timlisemer@gmail.com";
-
+    
       # Set the default branch name using the attribute set format
       extraConfig = {
         init.defaultBranch = "main";
         safe.directory = [ "/etc/nixos" "/tmp/NixOs" ];
         pull.rebase = "false";
+        push.autoSetupRemote = true;  
+        core.autocrlf = true;  # CRLF → LF on commit, LF → CRLF on checkout (includes pull)
       };
     };
 
