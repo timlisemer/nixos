@@ -252,7 +252,7 @@ with lib.hm.gvariant;
       ] [
         (mkDictionaryEntry ["name" "Discord"])
         (mkDictionaryEntry ["icon" "discord"])
-        (mkDictionaryEntry ["id" "discord.desktop"])
+        (mkDictionaryEntry ["id" "com.discordapp.Discord.desktop"])
       ] [
         (mkDictionaryEntry ["name" "Steam (Runtime)"])
         (mkDictionaryEntry ["icon" "steam"])
@@ -533,7 +533,7 @@ with lib.hm.gvariant;
         ])])
       ] ];
       enabled-extensions = [ "app-hider@lynith.dev" "appindicatorsupport@rgcjonas.gmail.com" "blur-my-shell@aunetx" "dash-to-panel@jderose9.github.com" "ding@rastersoft.com" "user-theme@gnome-shell-extensions.gcampax.github.com" "sp-tray@sp-tray.esenliyim.github.com" ];
-      favorite-apps = [ "org.gnome.Nautilus.desktop" "firefox.desktop" "discord.desktop" "spotify.desktop" "org.gnome.Geary.desktop" "org.gnome.Calendar.desktop" "org.gnome.Terminal.desktop" ];
+      favorite-apps = [ "org.gnome.Nautilus.desktop" "firefox.desktop" "com.discordapp.Discord.desktop" "spotify.desktop" "org.gnome.Geary.desktop" "org.gnome.Calendar.desktop" "org.gnome.Terminal.desktop" ];
     };
     # org.mozilla.firefox.desktop
 

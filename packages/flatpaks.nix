@@ -14,6 +14,7 @@
     "flathub:app/com.github.tchx84.Flatseal//stable"
     "flathub:app/org.gnome.World.PikaBackup//stable"
     "flathub:app/com.bitwarden.desktop//stable"
+    "flathub:app/com.discordapp.Discord//stable"
     "flathub:app/com.github.marhkb.Pods//stable"
     "flathub:app/com.google.Chrome//stable"
     "flathub:app/com.protonvpn.www//stable"

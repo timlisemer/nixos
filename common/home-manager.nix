@@ -88,14 +88,7 @@
       # https://github.com/nix-community/home-manager/issues/5734
     };
 
-    # GTK theme configuration
-    gtk = {
-      enable = true;
-      theme = {
-        name = "adw-gtk3-dark";
-        package = pkgs.adw-gtk3;
-      };
-    };
+
 
     services.gpg-agent = {
       enable = true;
@@ -103,10 +96,10 @@
       enableSshSupport = true;
     };
 
-
     home.packages = with pkgs; [
       atuin
       sops
+      adw-gtk3
     ];
   
     # Files and folders to be symlinked into home
@@ -153,11 +146,14 @@
 
       # WhatsApp
       ".config/whatsapp-for-linux/ia.txt" = { text = '' ia! ''; executable = false; };
-      # ".config/whatsapp-for-linux/settings.conf".source = builtins.toPath ../files/whatsapp-for-linux/settings.conf;
+      ".config/whatsapp-for-linux/settings.conf".source = builtins.toPath ../files/whatsapp-for-linux/settings.conf;
 
       # Vscode
       ".config/Code/User/ia.txt" = { text = '' ia! ''; executable = false; };
       ".config/Code/User/settings.json".source = builtins.toPath ../files/vscode/settings.json;
+
+      # Autostart
+      ".config/autostart".source = ../files/autostart;
     };
 
     # Steam adwaita theme

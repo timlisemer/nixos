@@ -595,58 +595,6 @@ lazyg() {
 
 
 #######################################################
-# Cursor
-#######################################################
-
-
-function launch_cursor_app() {
-    function run_app() {
-        # Set the environment variable and then run the app
-        /home/tim/.cursor/cursor.AppImage --enable-features=UseOzonePlatform --ozone-platform=wayland --disable-gpu --disable-gpu-sandbox "$@" </dev/null &>/dev/null &
-    }
-
-    case "$1" in
-        -d|--diff)
-            run_app --diff "$2" "$3"
-            ;;
-        -a|--add)
-            run_app --add "$2"
-            ;;
-        -g|--goto)
-            run_app --goto "$2"
-            ;;
-        -n|--new-window)
-            run_app --new-window
-            ;;
-        -r|--reuse-window)
-            run_app --reuse-window
-            ;;
-        -w|--wait)
-            run_app --wait
-            ;;
-        --locale)
-            run_app --locale "$2"
-            ;;
-        --user-data-dir)
-            run_app --user-data-dir "$2"
-            ;;
-        *)
-            if [ $# -eq 0 ]; then
-                run_app
-            else
-                run_app "$@"
-            fi
-            ;;
-    esac
-}
-
-alias cursor=launch_cursor_app
-# alias code=launch_cursor_app
-alias code="code ---enable-features=UseOzonePlatform --ozone-platform=wayland --disable-gpu --disable-gpu-sandbox"
-
-
-
-#######################################################
 # Set the ultimate amazing command prompt
 #######################################################
 

@@ -12,7 +12,6 @@
       ../desktop-environments/desktop-enviroments.nix
       inputs.sops-nix.nixosModules.sops
       ../secrets/sops.nix
-      ./autostart.nix
       # ./wireguard.nix
     ];
 
