@@ -1,15 +1,23 @@
 {
     "update.mode": "none",
+    "workbench.colorTheme": "Adwaita Dark & Github syntax highlighting",
     "extensions.autoUpdate": true,
     "extensions.autoCheckUpdates": true,
     "git.autofetch": true,
+    "git.enableSmartCommit": true,
     "eslint.enable": true,
     "eslint.run": "onSave",
     "files.autoSave": "afterDelay",
     "files.autoSaveDelay": 1000,
     "editor.formatOnSave": true,
-    "rust-analyzer.formatting.enable": true,
-    "rust-analyzer.formatting.command": "rustfmt",
-    "rust-analyzer.checkOnSave.command": "clippy",
+    "rust-analyzer.cargo.allTargets": true,
+    "rust-analyzer.checkOnSave": true,
+    "rust-analyzer.check.command": "clippy",
+    "rust-analyzer.rustfmt.overrideCommand": [
+        "cargo",
+        "fmt"
+    ],
+    "rust-analyzer.procMacro.enable": true,
+    "rust-analyzer.lens.enable": true,
     "svelte.enable-ts-plugin": true
 }

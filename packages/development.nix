@@ -2,6 +2,10 @@
 
 let
   vscodeExtensions = pkgs.vscode-extensions;
+  unstable = import inputs.nixpkgs-unstable {
+    config = { allowUnfree = true; };
+    inherit (pkgs) system;
+  };
 in
 {
   environment.systemPackages = with pkgs; [
@@ -15,7 +19,8 @@ in
         ms-vscode-remote.remote-containers
         github.copilot
         github.copilot-chat
-        piousdeer.adwaita-theme
+        unstable.vscode-extensions.egirlcatnip.adwaita-github-theme
+        dbaeumer.vscode-eslint
         bbenoist.nix
         rust-lang.rust-analyzer
         njpwerner.autodocstring	

@@ -88,8 +88,6 @@
       # https://github.com/nix-community/home-manager/issues/5734
     };
 
-
-
     services.gpg-agent = {
       enable = true;
       defaultCacheTtl = 1800;
@@ -99,7 +97,6 @@
     home.packages = with pkgs; [
       atuin
       sops
-      adw-gtk3
     ];
   
     # Files and folders to be symlinked into home

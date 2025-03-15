@@ -2,6 +2,7 @@
 
 {
   environment.systemPackages = with pkgs; [
+    adw-gtk3
     git
     curl
     wget

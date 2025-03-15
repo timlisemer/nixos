@@ -1,7 +1,7 @@
 {
   inputs = {
     nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-24.11"; # Stable channel for everything else
-    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable"; # Unstable channel for the NVIDIA driver
+    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable"; # Unstable channel
     # nixpkgs-stable.follows = "nixos-cosmic/nixpkgs-stable";
     # nixos-cosmic.url = "github:lilyinstarlight/nixos-cosmic";
 
