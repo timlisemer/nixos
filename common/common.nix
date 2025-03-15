@@ -33,6 +33,8 @@
     QT_QPA_PLATFORM = "wayland";
   };
 
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
   # Setup Path
   environment.variables.PATH = "${pkgs.lib.makeBinPath [ pkgs.coreutils ]}:$HOME/.bin";
 

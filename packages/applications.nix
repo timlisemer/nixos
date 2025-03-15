@@ -21,7 +21,6 @@
     mediawriter
     postman
     vlc
-    discord-canary
     discord
     webcord-vencord
     whatsapp-for-linux

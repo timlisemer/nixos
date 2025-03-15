@@ -347,14 +347,14 @@ with lib.hm.gvariant;
         (mkDictionaryEntry ["PLANK" (mkDouble "0.0")])
       ];
       animate-appicon-hover-animation-type = "SIMPLE";
-      # appicon-margin = 8;
-      # appicon-padding = 4;
-      available-monitors = [ 0 1 2 ];
+      appicon-margin = 8;
+      appicon-padding = 4;
+      available-monitors = [ 1 0 2 ];
       dot-position = "BOTTOM";
       dot-style-focused = "SQUARES";
       dot-style-unfocused = "DOTS";
       hotkeys-overlay-combo = "TEMPORARILY";
-      # leftbox-padding = -1;
+      leftbox-padding = -1;
       panel-anchors = ''
         {"0":"MIDDLE","1":"MIDDLE","2":"MIDDLE"}
       '';
@@ -367,17 +367,16 @@ with lib.hm.gvariant;
       panel-lengths = ''
         {"0":100,"1":100,"2":100}
       '';
-      #{"0":40,"1":40,"2":48,"3":48}
       panel-sizes = ''
-        {"0":40,"1":40,"2":48}
+        {"0":40,"1":48,"2":40}
       '';
-      primary-monitor = 3;
-      # status-icon-padding = -1;
+      primary-monitor = 1;
+      status-icon-padding = -1;
       trans-panel-opacity = mkDouble "0.7";
       trans-use-custom-bg = false;
       trans-use-custom-gradient = false;
       trans-use-custom-opacity = true;
-      # tray-padding = -1;
+      tray-padding = -1;
       window-preview-title-position = "TOP";
     };
 
@@ -539,8 +538,8 @@ with lib.hm.gvariant;
     # org.mozilla.firefox.desktop
 
     "org/gnome/shell/extensions/app-hider" = {
-      hidden-apps = [ "org.gnome.Characters.desktop" "cups.desktop" "org.gnome.font-viewer.desktop" "nvim.desktop" "org.gnome.FileRoller.desktop" "org.gnome.Logs.desktop" "xterm.desktop" "org.gnome.Console.desktop" "org.gnome.seahorse.Application.desktop" "org.gnome.Connections.desktop" "nixos-manual.desktop" "org.torproject.torbrowser-launcher.settings.desktop" "btop.desktop" "julia.desktop" "org.gnome.Console.desktop" "Steam Linux Runtime 3.0 (sniper).desktop" "Proton EasyAntiCheat Runtime.desktop" "Proton Experimental.desktop" "remote-viewer.desktop" "virt-manager.desktop" "Steam Linux Runtime 1.0 (scout).desktop" "Steam Linux Runtime 2.0 (soldier).desktop" "discord-canary.desktop" ];
-      hidden-search-apps = [ "org.gnome.Characters.desktop" "cups.desktop" "org.gnome.font-viewer.desktop" "nvim.desktop" "org.gnome.FileRoller.desktop" "org.gnome.Logs.desktop" "xterm.desktop" "org.gnome.Connections.desktop" "nixos-manual.desktop" "org.torproject.torbrowser-launcher.settings.desktop" "btop.desktop" "julia.desktop" "org.gnome.Console.desktop" "org.gnome.seahorse.Application.desktop" "Steam Linux Runtime 3.0 (sniper).desktop" "Proton EasyAntiCheat Runtime.desktop" "Proton Experimental.desktop" "remote-viewer.desktop" "virt-manager.desktop" "Steam Linux Runtime 1.0 (scout).desktop" "Steam Linux Runtime 2.0 (soldier).desktop" "discord-canary.desktop" ];
+      hidden-apps = [ "org.gnome.Characters.desktop" "cups.desktop" "org.gnome.font-viewer.desktop" "nvim.desktop" "org.gnome.FileRoller.desktop" "org.gnome.Logs.desktop" "xterm.desktop" "org.gnome.Console.desktop" "org.gnome.seahorse.Application.desktop" "org.gnome.Connections.desktop" "nixos-manual.desktop" "org.torproject.torbrowser-launcher.settings.desktop" "btop.desktop" "julia.desktop" "org.gnome.Console.desktop" "Steam Linux Runtime 3.0 (sniper).desktop" "Proton EasyAntiCheat Runtime.desktop" "Proton Experimental.desktop" "remote-viewer.desktop" "virt-manager.desktop" "Steam Linux Runtime 1.0 (scout).desktop" "Steam Linux Runtime 2.0 (soldier).desktop" ];
+      hidden-search-apps = [ "org.gnome.Characters.desktop" "cups.desktop" "org.gnome.font-viewer.desktop" "nvim.desktop" "org.gnome.FileRoller.desktop" "org.gnome.Logs.desktop" "xterm.desktop" "org.gnome.Connections.desktop" "nixos-manual.desktop" "org.torproject.torbrowser-launcher.settings.desktop" "btop.desktop" "julia.desktop" "org.gnome.Console.desktop" "org.gnome.seahorse.Application.desktop" "Steam Linux Runtime 3.0 (sniper).desktop" "Proton EasyAntiCheat Runtime.desktop" "Proton Experimental.desktop" "remote-viewer.desktop" "virt-manager.desktop" "Steam Linux Runtime 1.0 (scout).desktop" "Steam Linux Runtime 2.0 (soldier).desktop" ];
     };
 
 
@@ -594,7 +593,7 @@ with lib.hm.gvariant;
 
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom8" = {
       binding = "<Super>d";
-      command = "discordcanary --enable-features=UseOzonePlatform --ozone-platform=wayland";
+      command = "discord --enable-features=UseOzonePlatform --ozone-platform=wayland";
       name = "Discord";
     };
 

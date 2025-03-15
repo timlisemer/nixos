@@ -37,7 +37,8 @@
         safe.directory = [ "/etc/nixos" "/tmp/NixOs" ];
         pull.rebase = "false";
         push.autoSetupRemote = true;  
-        core.autocrlf = true;  # CRLF → LF on commit, LF → CRLF on checkout (includes pull)
+        core.autocrlf = "input";
+        core.eol = "lf";
       };
     };
 
@@ -152,7 +153,7 @@
 
       # WhatsApp
       ".config/whatsapp-for-linux/ia.txt" = { text = '' ia! ''; executable = false; };
-      ".config/whatsapp-for-linux/settings.conf".source = builtins.toPath ../files/whatsapp-for-linux/settings.conf;
+      # ".config/whatsapp-for-linux/settings.conf".source = builtins.toPath ../files/whatsapp-for-linux/settings.conf;
 
       # Vscode
       ".config/Code/User/ia.txt" = { text = '' ia! ''; executable = false; };
@@ -182,18 +183,6 @@
       };
       Install = {
         WantedBy = [ "default.target" ];
-      };
-    };
-
-    xdg.desktopEntries = {
-      discord = {
-        name = "Discord";
-        genericName = "All-in-one cross-platform voice and text chat for gamers";
-        exec = "discordcanary --enable-features=UseOzonePlatform --ozone-platform=wayland";
-        terminal = false;
-        icon = "discord";
-        categories = [ "Network" "InstantMessaging" ];
-        mimeType = [ "x-scheme-handler/discord" ];
       };
     };
   };

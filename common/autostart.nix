@@ -82,7 +82,7 @@
       wantedBy = [ "default.target" "graphical-session.target" ];
       partOf = [ "graphical-session.target" ];
       serviceConfig = {
-        ExecStart = "${pkgs.discord-canary}/bin/discordcanary --enable-features=UseOzonePlatform --ozone-platform=wayland --start-minimized";
+        ExecStart = "${pkgs.discord}/bin/discord --enable-features=UseOzonePlatform --ozone-platform=wayland --start-minimized";
         Restart = "on-failure";
         RestartSec = "5s";
         StartLimitIntervalSec = "10s";
