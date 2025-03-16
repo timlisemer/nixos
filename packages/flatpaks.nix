@@ -13,12 +13,12 @@
   services.flatpak.packages = [
     "flathub:app/com.github.tchx84.Flatseal//stable"
     "flathub:app/org.gnome.World.PikaBackup//stable"
+    "flathub:app/com.cassidyjames.butler//stable"
     "flathub:app/com.bitwarden.desktop//stable"
     "flathub:app/com.discordapp.Discord//stable"
     "flathub:app/com.github.marhkb.Pods//stable"
     "flathub:app/com.google.Chrome//stable"
     "flathub:app/com.protonvpn.www//stable"
-    # "flathub:app/com.raggesilver.BlackBox//stable"
     # "flathub:app/com.spotify.Client//stable"
     # "flathub:app/dev.vencord.Vesktop//stable"
     # "flathub:app/io.github.Foldex.AdwSteamGtk//stable"

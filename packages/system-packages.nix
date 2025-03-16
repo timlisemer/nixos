@@ -21,6 +21,7 @@
     ffmpeg
     fzf
     gamemode
+    gamescope
     just
     unzip
     justbuild
@@ -48,6 +49,7 @@
     glxinfo
     libglvnd
     mesa
+    nixpkgs-fmt
     xorg.libxcb
     openal
     spice

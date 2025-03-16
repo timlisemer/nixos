@@ -6,7 +6,7 @@
     steam
     wireshark
     gnome-terminal
-    blackbox-terminal
+    ghostty
     geary
     minecraft
     prismlauncher

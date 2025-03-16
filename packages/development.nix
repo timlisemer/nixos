@@ -32,8 +32,8 @@ in
     qtcreator
     libsForQt5.qt5.qtbase
     kdePackages.qtbase
-    # jetbrains.clion   # Test if this works again in the future
-    # jetbrains.rider   # Test if this works again in the future
+    jetbrains.clion
+    jetbrains.rider
     jetbrains.rust-rover
     jetbrains.idea-community
     jetbrains.pycharm-community
