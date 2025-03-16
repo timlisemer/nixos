@@ -9,7 +9,6 @@
     libdvdcss
     vaapiVdpau
     libva-utils
-    openssl
     pipewire
     socat
     tree-sitter

@@ -181,6 +181,21 @@
 
     xdg = {
       enable = true;
+
+      
+      desktopEntries = {
+        terminal = {
+          name = "Terminal";
+          genericName = "Default Terminal";
+          exec = "ghostty";
+          terminal = false;
+          icon = "org.gnome.Terminal";
+          categories = [ "System" "Utility" "TerminalEmulator" ];
+          mimeType = [ "application/x-shellscript" "x-scheme-handler/terminal" ];
+        };
+      };
+
+
       mimeApps = {
         enable = true;
         defaultApplications = {
