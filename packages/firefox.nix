@@ -38,6 +38,11 @@
         DisplayMenuBar = "default-off"; # alternatives: "always", "never" or "default-on"
         SearchBar = "unified"; # alternative: "separate"
 
+        /* ---- PKCS#11 Module for YubiKey ---- */
+        SecurityDevices = {
+          "YubiKey PKCS#11 Module" = "${pkgs.opensc}/lib/opensc-pkcs11.so";
+        };
+
         /* ---- EXTENSIONS ---- */
         # Check about:support for extension/add-on ID strings.
         # Valid strings for installation_mode are "allowed", "blocked",

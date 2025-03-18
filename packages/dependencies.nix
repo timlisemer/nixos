@@ -12,5 +12,15 @@
     pipewire
     socat
     tree-sitter
+    yubikey-manager
+    pam_u2f
+    opensc
+    libfido2
+    yubikey-personalization
+    pam_u2f
+    chromium
+    pcsclite
+    pcsc-tools
+    yubico-piv-tool
   ];
 }

@@ -27,10 +27,12 @@
     SGX_ENCLAVE_SIZE = "4G";
     RUST_MIN_STACK = "268435456";
     QT_QPA_PLATFORM = "wayland";
+    NIXPKGS_ALLOW_UNFREE = "1"; # Duplication with nixpkgs.config.allowUnfree needed
     WEBKIT_DISABLE_DMABUF_RENDERER = "1"; # Tauri Apps couldnt run because of this on nixos nvidia
   };
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nixpkgs.config.allowUnfree = true;
 
   # Setup Path
   environment.variables.PATH = "${pkgs.lib.makeBinPath [ pkgs.coreutils ]}:$HOME/.bin";
@@ -90,6 +92,11 @@
   # Enable CUPS to print documents.
   services.printing.enable = true;
 
+  # Enable Smartcard Support
+  hardware.gpgSmartcards.enable = true;
+  services.pcscd.enable = true;
+  services.udev.packages = [ pkgs.yubikey-manager ];
+
   # Enable sound with pipewire.
   hardware.pulseaudio.enable = false;
   security.rtkit.enable = true;
@@ -115,9 +122,6 @@
     description = "Tim Lisemer";
     extraGroups = [ "networkmanager" "wheel" "dialout" ];
   };
-
-  # Allow unfree packages
-  nixpkgs.config.allowUnfree = true;
 
   # Some programs need SUID wrappers, can be configured further or are started in user sessions.
   programs.mtr.enable = true;

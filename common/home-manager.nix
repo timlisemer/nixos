@@ -77,6 +77,9 @@
             "browser.tabs.drawInTitlebar" = true;
             "svg.context-properties.content.enabled" = true;
             "widget.gtk.rounded-bottom-corners.enabled" = true;
+
+            # Automatically load the YubiKey PKCS#11 module
+            "security.osclientcerts.autoload" = true;
           };
         };
       };
