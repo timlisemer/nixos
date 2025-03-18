@@ -41,6 +41,7 @@
         /* ---- PKCS#11 Module for YubiKey ---- */
         SecurityDevices = {
           "YubiKey PKCS#11 Module" = "${pkgs.opensc}/lib/opensc-pkcs11.so";
+          p11-kit-proxy = "${pkgs.p11-kit}/lib/p11-kit-proxy.so";
         };
 
         /* ---- EXTENSIONS ---- */

@@ -21,6 +21,8 @@
     chromium
     pcsclite
     pcsc-tools
+    nss
     yubico-piv-tool
+    nssTools
   ];
 }

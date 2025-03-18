@@ -63,6 +63,7 @@
 
     programs.firefox = {
       enable = true;
+      nativeMessagingHosts = [ pkgs.web-eid-app ];
       profiles = {
         default = {
           id = 0;

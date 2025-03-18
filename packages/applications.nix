@@ -8,6 +8,7 @@
     gnome-terminal
     ghostty
     geary
+    intune-portal
     minecraft
     prismlauncher
     easyeffects
@@ -21,6 +22,7 @@
     mediawriter
     postman
     vlc
+    google-chrome
     # discord
     webcord-vencord
     whatsapp-for-linux
