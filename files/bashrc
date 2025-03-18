@@ -8,6 +8,8 @@ iatest=$(expr index "$-" i)
 
 # User aliases
 alias htop='btop'
+alias gitree='git ls-files --cached --others --exclude-standard | tree --fromfile'
+alias gittree='git ls-files --cached --others --exclude-standard | tree --fromfile'
 
 # Docker aliases
 # sudo ln -s /run/user/1000/podman/podman.sock /var/run/docker.sock

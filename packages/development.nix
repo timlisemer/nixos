@@ -22,6 +22,7 @@ in
         unstable.vscode-extensions.egirlcatnip.adwaita-github-theme
         dbaeumer.vscode-eslint
         bbenoist.nix
+        tauri-apps.tauri-vscode
         rust-lang.rust-analyzer
         njpwerner.autodocstring	
         svelte.svelte-vscode
@@ -67,7 +68,6 @@ in
     podman
     podman-compose
     protobuf
-    pkg-config
     ruby
     typescript   
     gnumake
@@ -103,6 +103,24 @@ in
     rust-analyzer 
     prettierd
     eslint_d
+    pkg-config
+    gobject-introspection
+    cargo
+    cargo-tauri
+    nodejs
+    at-spi2-atk
+    atkmm
+    cairo
+    gdk-pixbuf
+    glib
+    gtk3
+    harfbuzz
+    librsvg
+    libsoup_3
+    pango
+    webkitgtk_4_1
+    openssl
+    zlib
   ];
 
 

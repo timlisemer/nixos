@@ -100,5 +100,17 @@
     # Configurations for tim-laptop and tim-pc
     nixosConfigurations.tim-laptop = self.mkSystem ./hosts/tim-laptop.nix;
     nixosConfigurations.tim-pc = self.mkSystem ./hosts/tim-pc.nix;
+
+    devShells.default = nixpkgs-stable.legacyPackages.x86_64-linux.mkShell {
+      nativeBuildInputs = with nixpkgs-stable; [
+        pkg-config
+        cargo
+        nodejs
+      ];
+
+      buildInputs = with nixpkgs-stable;[
+        openssl
+      ];
+    };
   };
 }

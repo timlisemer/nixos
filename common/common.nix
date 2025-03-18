@@ -26,10 +26,8 @@
     NODE_OPTIONS = "--max-old-space-size=4096";
     SGX_ENCLAVE_SIZE = "4G";
     RUST_MIN_STACK = "268435456";
-    # PKG_CONFIG_PATH = "/usr/lib64/pkgconfig:/usr/share/pkgconfig";
-    PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig";
-    # ELECTRON_OZONE_PLATFORM_HINT = "auto";
     QT_QPA_PLATFORM = "wayland";
+    WEBKIT_DISABLE_DMABUF_RENDERER = "1"; # Tauri Apps couldnt run because of this on nixos nvidia
   };
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
