@@ -20,7 +20,7 @@
     pam_u2f
     chromium
     pcsclite
-    pcsc-tools
+    # pcsc-tools
     nss
     yubico-piv-tool
     nssTools

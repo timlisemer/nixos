@@ -21,7 +21,6 @@
     NVD_BACKEND = "direct";
     MOZ_DISABLE_RDD_SANDBOX = "1";
     LIBVA_DRIVER_NAME = "nvidia";
-    DOCKER_HOST = "unix:///run/user/1000/podman/podman.sock";
     MUTTER_DEBUG_KMS_THREAD_TYPE = "user";
     NODE_OPTIONS = "--max-old-space-size=4096";
     SGX_ENCLAVE_SIZE = "4G";
@@ -142,7 +141,7 @@
   users.users.tim = {
     isNormalUser = true;
     description = "Tim Lisemer";
-    extraGroups = [ "networkmanager" "wheel" "dialout" ];
+    extraGroups = [ "networkmanager" "wheel" "dialout" "docker" ];
   };
 
   # Some programs need SUID wrappers, can be configured further or are started in user sessions.
@@ -198,14 +197,18 @@
   virtualisation.containers.enable = true;
   virtualisation.containers.registries.search = [ "docker.io" ];
   virtualisation = {
-    podman = {
+    docker = {
       enable = true;
 
-      # Create a `docker` alias for podman, to use it as a drop-in replacement
-      dockerCompat = true;
+      rootless = {
+        enable = true;
+        setSocketVariable = true;
+      };
 
-      # Required for containers under podman-compose to be able to talk to each other.
-      defaultNetwork.settings.dns_enabled = true;
+      # daemon.settings.ipv6 = true;
+
+      # Needed if using btrfs as storage driver which we do.
+      storageDriver = "btrfs";
     };
   };
   # Unrestrict ports below 1000.

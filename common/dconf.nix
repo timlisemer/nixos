@@ -379,15 +379,17 @@ with lib.hm.gvariant;
       window-preview-title-position = "TOP";
     };
 
-    "org/gnome/shell/extensions/ding" = {
-      check-x11wayland = true;
-      show-home = false;
-      show-trash = false;
-      show-volumes = false;
+    "org/gnome/shell/extensions/phi" = {
+      hideui = false;
+      interval = mkUint32 10;
+      url1 = "https://pihole.local.yakweide.de/admin/api.php";
     };
 
     "org/gnome/shell/extensions/gtk4-ding" = {
       add-volumes-opposite = false;
+      dark-text-in-labels = false;
+      icon-size = "standard";
+      show-drop-place = true;
       show-home = false;
       show-link-emblem = false;
       show-trash = false;
@@ -397,13 +399,14 @@ with lib.hm.gvariant;
     "org/gnome/shell/extensions/sp-tray" = {
       album-max-length = 50;
       artist-max-length = 50;
+      title-max-length = 50;
       display-mode = 0;
       hidden-when-inactive = true;
       hidden-when-paused = false;
       logo-position = 0;
+      position = 2;
       metadata-when-paused = true;
       paused = "";
-      title-max-length = 50;
     };
 
     "org/gnome/shell/weather" = {
@@ -498,18 +501,18 @@ with lib.hm.gvariant;
     };
 
     "org/gnome/desktop/app-folders/folders/5d3de8f3-46d0-44d0-994e-34dcba42ba17" = {
-      apps = [ "org.gnome.SystemMonitor.desktop" "org.gnome.clocks.desktop" "org.gnome.Totem.desktop" "org.gnome.Music.desktop" "org.wireshark.Wireshark.desktop" "com.github.flxzt.rnote.desktop" "org.gnome.Snapshot.desktop" "simple-scan.desktop" "org.gnome.Calculator.desktop" "org.gnome.TextEditor.desktop" "org.gnome.Maps.desktop" "com.google.Chrome.desktop" "org.filezillaproject.Filezilla.desktop" "com.bitwarden.desktop.desktop" "org.gnome.Boxes.desktop" "com.github.marhkb.Pods.desktop" "org.cvfosammmm.Setzer.desktop" "org.gnome.Software.desktop" "org.torproject.torbrowser-launcher.desktop" "dev.vencord.Vesktop.desktop" "org.pulseaudio.pavucontrol.desktop" "com.github.eneshecan.WhatsAppForLinux.desktop" "gimp.desktop" "webcord.desktop" ];
+      apps = [ "org.gnome.SystemMonitor.desktop" "org.gnome.clocks.desktop" "org.gnome.Totem.desktop" "org.gnome.Music.desktop" "org.wireshark.Wireshark.desktop" "com.github.flxzt.rnote.desktop" "org.gnome.Snapshot.desktop" "simple-scan.desktop" "org.gnome.Calculator.desktop" "org.gnome.TextEditor.desktop" "org.gnome.Maps.desktop" "com.google.Chrome.desktop" "org.filezillaproject.Filezilla.desktop" "com.bitwarden.desktop.desktop" "org.gnome.Boxes.desktop" "com.github.marhkb.Pods.desktop" "org.cvfosammmm.Setzer.desktop" "org.gnome.Software.desktop" "org.torproject.torbrowser-launcher.desktop" "dev.vencord.Vesktop.desktop" "org.pulseaudio.pavucontrol.desktop" "com.github.eneshecan.WhatsAppForLinux.desktop" "gimp.desktop" "webcord.desktop" "com.cassidyjames.butler.desktop" "google-chrome.desktop" "com.mitchellh.ghostty.desktop" ];
       name = "Applications";
       translate = false;
     };
 
     "org/gnome/desktop/app-folders/folders/b7f1bd08-58dc-44cd-9a8b-439e07678f8f" = {
-      apps = [ "minecraft-launcher.desktop" "steam.desktop" "Anno 1800.desktop" "Counter-Strike 2.desktop" "Crusader Kings III.desktop" "Cyberpunk 2077.desktop" "Europa Universalis IV.desktop" "Factorio.desktop" "Fall Guys.desktop" "Farthest Frontier.desktop" "Hearts of Iron IV.desktop" "Hogwarts Legacy.desktop" "Horizon Forbidden West Complete Edition.desktop" "Marvels Spider-Man Remastered.desktop" "Palworld.desktop" "Pummel Party.desktop" "Rise of the Tomb Raider.desktop" "Rocket League.desktop" "Sid Meier's Civilization VI.desktop" "Stardew Valley.desktop" "Stellaris.desktop" "Total War PHARAOH.desktop" "Victoria 3.desktop" "org.prismlauncher.PrismLauncher.desktop" ];
+      apps = [ "minecraft-launcher.desktop" "steam.desktop" "Anno 1800.desktop" "Counter-Strike 2.desktop" "Crusader Kings III.desktop" "Cyberpunk 2077.desktop" "Europa Universalis IV.desktop" "Factorio.desktop" "Fall Guys.desktop" "Farthest Frontier.desktop" "Hearts of Iron IV.desktop" "Hogwarts Legacy.desktop" "Horizon Forbidden West Complete Edition.desktop" "Marvels Spider-Man Remastered.desktop" "Palworld.desktop" "Pummel Party.desktop" "Rise of the Tomb Raider.desktop" "Rocket League.desktop" "Sid Meier's Civilization VI.desktop" "Stardew Valley.desktop" "Stellaris.desktop" "Total War PHARAOH.desktop" "Victoria 3.desktop" "org.prismlauncher.PrismLauncher.desktop" "Diablo IV.desktop" ];
       name = "Games";
     };
 
     "org/gnome/desktop/app-folders/folders/ebb4a864-8e0d-4efb-9cf3-396e9b66c109" = {
-      apps = [ "org.gnome.Extensions.desktop" "com.mattjakeman.ExtensionManager.desktop" "OpenRGB.desktop" "org.gnome.Weather.desktop" "org.gnome.Loupe.desktop" "org.gnome.DiskUtility.desktop" "org.gnome.baobab.desktop" "org.gnome.Evince.desktop" "org.gnome.Contacts.desktop" "com.github.wwmm.easyeffects.desktop" "org.gnome.Settings.desktop" "com.github.tchx84.Flatseal.desktop" "io.github.Foldex.AdwSteamGtk.desktop" "org.gnome.tweaks.desktop" "org.gnome.World.PikaBackup.desktop" "timeshift-gtk.desktop" "windows11-qemu.desktop" "windows10-qemu.desktop" "org.fedoraproject.MediaWriter.desktop" "org.raspberrypi.rpi-imager.desktop" "postman.desktop" "vlc.desktop" "com.protonvpn.www.desktop" "nvidia-settings.desktop" ];
+      apps = [ "org.gnome.Extensions.desktop" "com.mattjakeman.ExtensionManager.desktop" "OpenRGB.desktop" "org.gnome.Weather.desktop" "org.gnome.Loupe.desktop" "org.gnome.DiskUtility.desktop" "org.gnome.baobab.desktop" "org.gnome.Evince.desktop" "org.gnome.Contacts.desktop" "com.github.wwmm.easyeffects.desktop" "org.gnome.Settings.desktop" "com.github.tchx84.Flatseal.desktop" "io.github.Foldex.AdwSteamGtk.desktop" "org.gnome.tweaks.desktop" "org.gnome.World.PikaBackup.desktop" "timeshift-gtk.desktop" "windows11-qemu.desktop" "windows10-qemu.desktop" "org.fedoraproject.MediaWriter.desktop" "org.raspberrypi.rpi-imager.desktop" "postman.desktop" "vlc.desktop" "com.protonvpn.www.desktop" "nvidia-settings.desktop" "chromium-browser.desktop" "intune-portal.desktop" ];
       name = "Utilities";
       translate = false;
     };
@@ -531,7 +534,7 @@ with lib.hm.gvariant;
           (mkDictionaryEntry ["position" (mkVariant 3)])
         ])])
       ] ];
-      enabled-extensions = [ "app-hider@lynith.dev" "appindicatorsupport@rgcjonas.gmail.com" "blur-my-shell@aunetx" "dash-to-panel@jderose9.github.com" "ding@rastersoft.com" "user-theme@gnome-shell-extensions.gcampax.github.com" "sp-tray@sp-tray.esenliyim.github.com" ];
+      enabled-extensions = [ "app-hider@lynith.dev" "appindicatorsupport@rgcjonas.gmail.com" "blur-my-shell@aunetx" "dash-to-panel@jderose9.github.com" "gtk4-ding@smedius.gitlab.com" "phi@ziyagenc.github.com" "user-theme@gnome-shell-extensions.gcampax.github.com" "sp-tray@sp-tray.esenliyim.github.com" ];
       favorite-apps = [ "org.gnome.Nautilus.desktop" "firefox.desktop" "com.discordapp.Discord.desktop" "spotify.desktop" "org.gnome.Geary.desktop" "org.gnome.Calendar.desktop" "org.gnome.Terminal.desktop" ];
     };
     # org.mozilla.firefox.desktop

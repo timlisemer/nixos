@@ -41,9 +41,8 @@
     switcheroo-control
     dconf2nix
     dive
-    podman-tui
+    docker
     docker-compose
-    podman-compose
     i2c-tools
     liquidctl
     glxinfo

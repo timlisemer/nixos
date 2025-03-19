@@ -11,40 +11,6 @@ alias htop='btop'
 alias gitree='git ls-files --cached --others --exclude-standard | tree --fromfile'
 alias gittree='git ls-files --cached --others --exclude-standard | tree --fromfile'
 
-# Docker aliases
-# sudo ln -s /run/user/1000/podman/podman.sock /var/run/docker.sock
-alias docker='podman'
-alias docker-compose='podman-compose'
-
-alias docker-run='podman run'
-alias docker-stop='podman stop'
-alias docker-start='podman start'
-alias docker-restart='podman restart'
-alias docker-ps='podman ps'
-alias docker-images='podman images'
-alias docker-pull='podman pull'
-alias docker-push='podman push'
-alias docker-rm='podman rm'
-alias docker-rmi='podman rmi'
-alias docker-exec='podman exec'
-alias docker-logs='podman logs'
-alias docker-inspect='podman inspect'
-alias docker-build='podman build'
-alias docker-info='podman info'
-alias docker-network='podman network'
-alias docker-volume='podman volume'
-alias docker-tag='podman tag'
-alias docker-save='podman save'
-alias docker-load='podman load'
-alias docker-stats='podman stats'
-alias docker-top='podman top'
-alias docker-events='podman events'
-alias docker-port='podman port'
-alias docker-attach='podman attach'
-alias docker-cp='podman cp'
-alias docker-login='podman login'
-alias docker-logout='podman logout'
-
 #######################################################
 # SOURCED ALIAS'S AND SCRIPTS BY zachbrowne.me
 #######################################################

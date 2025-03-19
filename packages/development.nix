@@ -65,8 +65,6 @@ in
     perl
     php
     pixman
-    podman
-    podman-compose
     protobuf
     ruby
     typescript   
