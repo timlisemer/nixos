@@ -25,8 +25,40 @@ with lib.hm.gvariant;
       ask-open-attachment = true;
       compose-as-html = true;
       formatting-toolbar-visible = false;
+      images-trusted-domains = [
+        "linkedin.com"
+        "amazon.de"
+        "hoefer-shop.de"
+        "magentatv.telekom.de"
+        "telekom.de"
+        "doctolib.de"
+        "steampowered.com"
+        "indeed.com"
+        "mail.clark.de"
+        "battle.net"
+        "ebay.com"
+        "my.tado.com"
+        "immobilienscout24.de"
+        "e-mails.microsoft.com"
+        "info.ebay.de"
+        "paypal.de"
+        "email.openai.com"
+        "github.com"
+        "freenet-mobilfunk.de"
+        "news.traderepublic.com"
+        "spotify.com"
+        "hetzner.com"
+        "google.com"
+        "accounts.google.com"
+        "firefox.com"
+        "mail.instagram.com"
+        "mail.adobe.com"
+        "kovenuk.com"
+        "privacy.faceit.com"
+      ];
       migrated-config = true;
       run-in-background = true;
+      window-maximize = true;
     };
 
     "org/gnome/Snapshot" = {
