@@ -10,6 +10,9 @@ iatest=$(expr index "$-" i)
 alias htop='btop'
 alias gitree='git ls-files --cached --others --exclude-standard | tree --fromfile'
 alias gittree='git ls-files --cached --others --exclude-standard | tree --fromfile'
+alias term='ghostty'
+alias terminal='ghostty'
+alias logout='loginctl terminate-user $USER'
 
 #######################################################
 # SOURCED ALIAS'S AND SCRIPTS BY zachbrowne.me

@@ -163,8 +163,13 @@
       ".config/gnome-initial-setup-done" = { text = ''yes''; executable = false; };
 
       # Terminals
-      ".config/GNOME-xdg-terminals.list".source = builtins.toPath ../files/GNOME-xdg-terminals.list;
-      ".config/xdg-terminals.list".source = builtins.toPath ../files/xdg-terminals.list;
+      ".config/ghostty/config".source = builtins.toPath ../files/ghostty/config;
+      ".local/share/icons/hicolor/16x16/apps/com.mitchellh.ghostty.png".source = builtins.toPath ../files/icons/ghostty/com.mitchellh.ghostty_16.png;
+      ".local/share/icons/hicolor/32x32/apps/com.mitchellh.ghostty.png".source = builtins.toPath ../files/icons/ghostty/com.mitchellh.ghostty_32.png;
+      ".local/share/icons/hicolor/128x128/apps/com.mitchellh.ghostty.png".source = builtins.toPath ../files/icons/ghostty/com.mitchellh.ghostty_128.png;
+      ".local/share/icons/hicolor/256x256/apps/com.mitchellh.ghostty.png".source = builtins.toPath ../files/icons/ghostty/com.mitchellh.ghostty_256.png;
+      ".local/share/icons/hicolor/512x512/apps/com.mitchellh.ghostty.png".source = builtins.toPath ../files/icons/ghostty/com.mitchellh.ghostty_512.png;
+      ".local/share/icons/hicolor/1024x1024/apps/com.mitchellh.ghostty.png".source = builtins.toPath ../files/icons/ghostty/com.mitchellh.ghostty_1024.png;
 
     };
 
@@ -191,23 +196,6 @@
       };
       Install = {
         WantedBy = [ "default.target" ];
-      };
-    };
-
-    xdg = {
-      enable = true;
-
-      
-      desktopEntries = {
-        terminal = {
-          name = "Terminal";
-          genericName = "Default Terminal";
-          exec = "ghostty";
-          terminal = false;
-          icon = "org.gnome.Terminal";
-          categories = [ "System" "Utility" "TerminalEmulator" ];
-          mimeType = [ "application/x-shellscript" "x-scheme-handler/terminal" ];
-        };
       };
     };
   };

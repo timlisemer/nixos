@@ -97,6 +97,10 @@ with lib.hm.gvariant;
       ] ];
     };
 
+    "org/gnome/desktop/default-applications/terminal" = {
+      exec = "ghostty";
+    };
+
     "org/gnome/clocks/state/window" = {
       maximized = false;
       panel-id = "world";
@@ -319,8 +323,8 @@ with lib.hm.gvariant;
         (mkDictionaryEntry ["id" "gnome-system-monitor.desktop"])
       ] [
         (mkDictionaryEntry ["name" "Terminal"])
-        (mkDictionaryEntry ["icon" "org.gnome.Terminal"])
-        (mkDictionaryEntry ["id" "org.gnome.Terminal.desktop"])
+        (mkDictionaryEntry ["icon" "com.mitchellh.ghostty"])
+        (mkDictionaryEntry ["id" "com.mitchellh.ghostty.desktop"])
       ] ];
       prefs-visible-page = 0;
       search-entry-border-radius = mkTuple [ true 25 ];
@@ -533,7 +537,7 @@ with lib.hm.gvariant;
     };
 
     "org/gnome/desktop/app-folders/folders/5d3de8f3-46d0-44d0-994e-34dcba42ba17" = {
-      apps = [ "org.gnome.SystemMonitor.desktop" "org.gnome.clocks.desktop" "org.gnome.Totem.desktop" "org.gnome.Music.desktop" "org.wireshark.Wireshark.desktop" "com.github.flxzt.rnote.desktop" "org.gnome.Snapshot.desktop" "simple-scan.desktop" "org.gnome.Calculator.desktop" "org.gnome.TextEditor.desktop" "org.gnome.Maps.desktop" "com.google.Chrome.desktop" "org.filezillaproject.Filezilla.desktop" "com.bitwarden.desktop.desktop" "org.gnome.Boxes.desktop" "com.github.marhkb.Pods.desktop" "org.cvfosammmm.Setzer.desktop" "org.gnome.Software.desktop" "org.torproject.torbrowser-launcher.desktop" "dev.vencord.Vesktop.desktop" "org.pulseaudio.pavucontrol.desktop" "com.github.eneshecan.WhatsAppForLinux.desktop" "gimp.desktop" "webcord.desktop" "com.cassidyjames.butler.desktop" "google-chrome.desktop" "com.mitchellh.ghostty.desktop" ];
+      apps = [ "org.gnome.SystemMonitor.desktop" "org.gnome.clocks.desktop" "org.gnome.Totem.desktop" "org.gnome.Music.desktop" "org.wireshark.Wireshark.desktop" "com.github.flxzt.rnote.desktop" "org.gnome.Snapshot.desktop" "simple-scan.desktop" "org.gnome.Calculator.desktop" "org.gnome.TextEditor.desktop" "org.gnome.Maps.desktop" "com.google.Chrome.desktop" "org.filezillaproject.Filezilla.desktop" "com.bitwarden.desktop.desktop" "org.gnome.Boxes.desktop" "com.github.marhkb.Pods.desktop" "org.cvfosammmm.Setzer.desktop" "org.gnome.Software.desktop" "org.torproject.torbrowser-launcher.desktop" "dev.vencord.Vesktop.desktop" "org.pulseaudio.pavucontrol.desktop" "com.github.eneshecan.WhatsAppForLinux.desktop" "gimp.desktop" "webcord.desktop" "com.cassidyjames.butler.desktop" "google-chrome.desktop" "org.gnome.Terminal.desktop" ];
       name = "Applications";
       translate = false;
     };
@@ -567,7 +571,7 @@ with lib.hm.gvariant;
         ])])
       ] ];
       enabled-extensions = [ "app-hider@lynith.dev" "appindicatorsupport@rgcjonas.gmail.com" "blur-my-shell@aunetx" "dash-to-panel@jderose9.github.com" "gtk4-ding@smedius.gitlab.com" "phi@ziyagenc.github.com" "user-theme@gnome-shell-extensions.gcampax.github.com" "sp-tray@sp-tray.esenliyim.github.com" ];
-      favorite-apps = [ "org.gnome.Nautilus.desktop" "firefox.desktop" "com.discordapp.Discord.desktop" "spotify.desktop" "org.gnome.Geary.desktop" "org.gnome.Calendar.desktop" "org.gnome.Terminal.desktop" ];
+      favorite-apps = [ "org.gnome.Nautilus.desktop" "firefox.desktop" "com.discordapp.Discord.desktop" "spotify.desktop" "org.gnome.Geary.desktop" "org.gnome.Calendar.desktop" "com.mitchellh.ghostty.desktop" ];
     };
     # org.mozilla.firefox.desktop
 

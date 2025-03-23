@@ -5,7 +5,7 @@
     btop
     steam
     wireshark
-    gnome-terminal
+    # gnome-terminal
     ghostty
     geary
     intune-portal
@@ -30,4 +30,8 @@
   ];
 
   programs.steam.enable = true;
+  programs.nautilus-open-any-terminal = {
+    enable = true;
+    terminal = "ghostty";
+  };
 }
