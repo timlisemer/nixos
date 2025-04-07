@@ -581,3 +581,10 @@ eval "$(atuin init bash)"
 
 
 # . "$HOME/.cargo/env"
+
+
+# Terminal stuff
+
+if [[ "$TERM" == "xterm-ghostty" ]]; then
+  export TERM=xterm-256color
+fi
