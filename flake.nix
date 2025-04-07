@@ -79,7 +79,10 @@
         vscode-server.nixosModules.default
         (import ./install.nix { disks = [ "/dev/nvme0n1" ]; })
 
-        ({ pkgs, ... }: {
+        ({ pkgs, lib, inputs, ... }: {
+        
+           environment.variables.NIX_PATH = lib.mkForce "nixpkgs=${inputs.nixpkgs-stable.outPath}";
+
            nixpkgs.overlays = [
              rust-overlay.overlays.default
            ];
@@ -101,16 +104,35 @@
     nixosConfigurations.tim-laptop = self.mkSystem ./hosts/tim-laptop.nix;
     nixosConfigurations.tim-pc = self.mkSystem ./hosts/tim-pc.nix;
 
-    devShells.default = nixpkgs-stable.legacyPackages.x86_64-linux.mkShell {
-      nativeBuildInputs = with nixpkgs-stable; [
-        pkg-config
-        cargo
-        nodejs
-      ];
+    devShells = {
+      remote-support-tool = nixpkgs-unstable.legacyPackages.x86_64-linux.mkShell {
+        nativeBuildInputs = with nixpkgs-unstable; [
+          pkg-config
+          gobject-introspection
+          cargo
+          cargo-tauri
+          nodejs
+        ];
 
-      buildInputs = with nixpkgs-stable;[
-        openssl
-      ];
+        buildInputs = with nixpkgs-unstable; [
+          at-spi2-atk
+          atkmm
+          cairo
+          gdk-pixbuf
+          glib
+          gtk3
+          harfbuzz
+          librsvg
+          libsoup_3
+          pango
+          webkitgtk_4_1
+          openssl
+        ];
+
+        shellHook = ''
+          echo "Nix shell environment loaded"
+        '';
+      };
     };
   };
 }

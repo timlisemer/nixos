@@ -31,6 +31,7 @@
     ripgrep
     trash-cli
     vdpauinfo
+    resources
     wl-clipboard
     xorg.xeyes
     dconf2nix

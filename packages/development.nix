@@ -1,11 +1,11 @@
 { config, pkgs, inputs, ... }:
 
 let
-  vscodeExtensions = pkgs.vscode-extensions;
   unstable = import inputs.nixpkgs-unstable {
     config = { allowUnfree = true; };
     inherit (pkgs) system;
   };
+  vscodeExtensions = unstable.vscode-extensions;
 in
 {
   environment.systemPackages = with pkgs; [

@@ -548,7 +548,7 @@ with lib.hm.gvariant;
     };
 
     "org/gnome/desktop/app-folders/folders/ebb4a864-8e0d-4efb-9cf3-396e9b66c109" = {
-      apps = [ "org.gnome.Extensions.desktop" "com.mattjakeman.ExtensionManager.desktop" "OpenRGB.desktop" "org.gnome.Weather.desktop" "org.gnome.Loupe.desktop" "org.gnome.DiskUtility.desktop" "org.gnome.baobab.desktop" "org.gnome.Evince.desktop" "org.gnome.Contacts.desktop" "com.github.wwmm.easyeffects.desktop" "org.gnome.Settings.desktop" "com.github.tchx84.Flatseal.desktop" "io.github.Foldex.AdwSteamGtk.desktop" "org.gnome.tweaks.desktop" "org.gnome.World.PikaBackup.desktop" "timeshift-gtk.desktop" "windows11-qemu.desktop" "windows10-qemu.desktop" "org.fedoraproject.MediaWriter.desktop" "org.raspberrypi.rpi-imager.desktop" "postman.desktop" "vlc.desktop" "com.protonvpn.www.desktop" "nvidia-settings.desktop" "chromium-browser.desktop" "intune-portal.desktop" ];
+      apps = [ "org.gnome.Extensions.desktop" "com.mattjakeman.ExtensionManager.desktop" "OpenRGB.desktop" "org.gnome.Weather.desktop" "org.gnome.Loupe.desktop" "org.gnome.DiskUtility.desktop" "org.gnome.baobab.desktop" "org.gnome.Evince.desktop" "org.gnome.Contacts.desktop" "com.github.wwmm.easyeffects.desktop" "org.gnome.Settings.desktop" "com.github.tchx84.Flatseal.desktop" "io.github.Foldex.AdwSteamGtk.desktop" "org.gnome.tweaks.desktop" "org.gnome.World.PikaBackup.desktop" "timeshift-gtk.desktop" "windows11-qemu.desktop" "windows10-qemu.desktop" "org.fedoraproject.MediaWriter.desktop" "org.raspberrypi.rpi-imager.desktop" "postman.desktop" "vlc.desktop" "com.protonvpn.www.desktop" "nvidia-settings.desktop" "chromium-browser.desktop" "intune-portal.desktop" "net.nokyan.Resources.desktop" ];
       name = "Utilities";
       translate = false;
     };
@@ -579,62 +579,6 @@ with lib.hm.gvariant;
       hidden-apps = [ "org.gnome.Characters.desktop" "cups.desktop" "org.gnome.font-viewer.desktop" "nvim.desktop" "org.gnome.FileRoller.desktop" "org.gnome.Logs.desktop" "xterm.desktop" "org.gnome.Console.desktop" "org.gnome.seahorse.Application.desktop" "org.gnome.Connections.desktop" "nixos-manual.desktop" "org.torproject.torbrowser-launcher.settings.desktop" "btop.desktop" "julia.desktop" "org.gnome.Console.desktop" "Steam Linux Runtime 3.0 (sniper).desktop" "Proton EasyAntiCheat Runtime.desktop" "Proton Experimental.desktop" "remote-viewer.desktop" "virt-manager.desktop" "Steam Linux Runtime 1.0 (scout).desktop" "Steam Linux Runtime 2.0 (soldier).desktop" ];
       hidden-search-apps = [ "org.gnome.Characters.desktop" "cups.desktop" "org.gnome.font-viewer.desktop" "nvim.desktop" "org.gnome.FileRoller.desktop" "org.gnome.Logs.desktop" "xterm.desktop" "org.gnome.Connections.desktop" "nixos-manual.desktop" "org.torproject.torbrowser-launcher.settings.desktop" "btop.desktop" "julia.desktop" "org.gnome.Console.desktop" "org.gnome.seahorse.Application.desktop" "Steam Linux Runtime 3.0 (sniper).desktop" "Proton EasyAntiCheat Runtime.desktop" "Proton Experimental.desktop" "remote-viewer.desktop" "virt-manager.desktop" "Steam Linux Runtime 1.0 (scout).desktop" "Steam Linux Runtime 2.0 (soldier).desktop" ];
     };
-
-
-    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0" = {
-      binding = "<Super>t";
-      command = "gnome-terminal";
-      name = "Terminal";
-    };
-
-    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1" = {
-      binding = "<Super>b";
-      command = "firefox";
-      name = "Firefox";
-    };
-
-    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2" = {
-      binding = "<Super>f";
-      command = "nautilus";
-      name = "File Explorer";
-    };
-
-    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3" = {
-      binding = "<Super>m";
-      command = "spotify";
-      name = "Media (Spotify)";
-    };
-
-    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom4" = {
-      binding = "<Super>s";
-      command = "steam";
-      name = "Steam";
-    };
-
-    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom5" = {
-      binding = "<Super>e";
-      command = "geary";
-      name = "Email";
-    };
-
-    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom6" = {
-      binding = "<Super>k";
-      command = "gnome-calendar";
-      name = "Calendar";
-    };
-
-    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom7" = {
-      binding = "<Super>c";
-      command = "gnome-calculator";
-      name = "Calculator";
-    };
-
-    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom8" = {
-      binding = "<Super>d";
-      command = "discord --enable-features=UseOzonePlatform --ozone-platform=wayland";
-      name = "Discord";
-    };
-
 
   };
 }
