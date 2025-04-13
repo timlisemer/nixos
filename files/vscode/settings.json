@@ -6,6 +6,7 @@
       }
     },
     "terminal.integrated.defaultProfile.linux": "bash",
+    "terminal.integrated.fontFamily": "JetBrainsMono Nerd Font",
     "terminal.external.linuxExec": "ghostty",
     "update.mode": "none",
     "workbench.colorTheme": "Adwaita Dark & Github syntax highlighting",
