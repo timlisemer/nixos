@@ -27,6 +27,9 @@ in
         njpwerner.autodocstring	
         svelte.svelte-vscode
         tamasfe.even-better-toml
+        esbenp.prettier-vscode
+        dbaeumer.vscode-eslint
+        foxundermoon.shell-format
       ];
     })
 
