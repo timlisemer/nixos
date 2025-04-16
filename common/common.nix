@@ -242,8 +242,8 @@
       overrideFolders = true;                       # overrides any folders added or deleted through the WebUI
       settings = {
         devices = {
-          "Tim-Server" = { 
-            id = "NG4UP3Z-BG5SHNT-CBZC6EJ-KYYWRTH-6UFZWWC-XFMKCWM-IXTRKBJ-ULPMUAX";
+          "tim-server" = { 
+            id = "ZKX6K7U-XPIMO7N-QM7KBU7-5OPVX7S-3E4UDW7-YKQBR2P-ZU4DC3F-ZYC34A3";
             autoAcceptFolders = true;
           };
           # "device2" = { id = "DEVICE-ID-GOES-HERE"; };
