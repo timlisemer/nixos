@@ -252,6 +252,7 @@
           "Home" = {                                # Folder ID in Syncthing, also the name of folder (label) by default
             path = "/home/tim";                     # Which folder to add to Syncthing
             devices = [ "tim-server" ];             # Which devices to share the folder with
+            addresses = [ "tcp://10.0.0.2:22000" ];
           };
         };
       };
