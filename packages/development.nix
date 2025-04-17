@@ -30,6 +30,7 @@ in
         esbenp.prettier-vscode
         dbaeumer.vscode-eslint
         foxundermoon.shell-format
+        bradlc.vscode-tailwindcss
       ];
     })
 

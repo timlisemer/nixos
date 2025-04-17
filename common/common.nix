@@ -251,7 +251,7 @@
         folders = {
           "Home" = {                                # Folder ID in Syncthing, also the name of folder (label) by default
             path = "/home/tim";                     # Which folder to add to Syncthing
-            devices = [ "Tim-Server" ];             # Which devices to share the folder with
+            devices = [ "tim-server" ];             # Which devices to share the folder with
           };
         };
       };
