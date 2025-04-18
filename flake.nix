@@ -10,6 +10,12 @@
       inputs.nixpkgs.follows = "nixpkgs-stable";
     };
 
+    alejandra = {
+      # Nix formatter -> https://drakerossman.com/blog/overview-of-nix-formatters-ecosystem
+      url = "github:kamadorueda/alejandra/4.0.0";
+      inputs.nixpkgs.follows = "nixpkgs-stable";
+    };
+
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs-stable";
@@ -56,49 +62,69 @@
     };
   };
 
-  outputs = inputs@{ self, nixpkgs-stable, nixpkgs-unstable, flatpaks, disko, comin, sops-nix, vscode-server, home-manager, rust-overlay, firefox-gnome-theme, blesh, tim-nvim, ... }: {
-
+  outputs = inputs @ {
+    self,
+    nixpkgs-stable,
+    nixpkgs-unstable,
+    flatpaks,
+    disko,
+    alejandra,
+    comin,
+    sops-nix,
+    vscode-server,
+    home-manager,
+    rust-overlay,
+    firefox-gnome-theme,
+    blesh,
+    tim-nvim,
+    ...
+  }: {
     # Function to create configuration for any host
-    mkSystem = hostFile: nixpkgs-stable.lib.nixosSystem {
-      system = "x86_64-linux";
-      specialArgs = { inherit inputs; };
-      modules = [
-        disko.nixosModules.disko
-        flatpaks.nixosModules.declarative-flatpak
-        comin.nixosModules.comin
-        # sops-nix.nixosModules.sops
+    mkSystem = hostFile:
+      nixpkgs-stable.lib.nixosSystem {
+        system = "x86_64-linux";
+        specialArgs = {inherit inputs;};
+        modules = [
+          disko.nixosModules.disko
+          flatpaks.nixosModules.declarative-flatpak
+          comin.nixosModules.comin
+          # sops-nix.nixosModules.sops
 
-        #{
-        #  nix.settings = {
-        #    substituters = [ "https://cosmic.cachix.org/" ];
-        #    trusted-public-keys = [ "cosmic.cachix.org-1:Dya9IyXD4xdBehWjrkPv6rtxpmMdRel02smYzA85dPE=" ];
-        #  };
-        #}
-        #nixos-cosmic.nixosModules.default
+          #{
+          #  nix.settings = {
+          #    substituters = [ "https://cosmic.cachix.org/" ];
+          #    trusted-public-keys = [ "cosmic.cachix.org-1:Dya9IyXD4xdBehWjrkPv6rtxpmMdRel02smYzA85dPE=" ];
+          #  };
+          #}
+          #nixos-cosmic.nixosModules.default
 
-        vscode-server.nixosModules.default
-        (import ./install.nix { disks = [ "/dev/nvme0n1" ]; })
+          vscode-server.nixosModules.default
+          (import ./install.nix {disks = ["/dev/nvme0n1"];})
 
-        ({ pkgs, lib, inputs, ... }: {
-        
-           environment.variables.NIX_PATH = lib.mkForce "nixpkgs=${inputs.nixpkgs-stable.outPath}";
+          ({
+            pkgs,
+            lib,
+            inputs,
+            ...
+          }: {
+            environment.variables.NIX_PATH = lib.mkForce "nixpkgs=${inputs.nixpkgs-stable.outPath}";
 
-           nixpkgs.overlays = [
-             rust-overlay.overlays.default
-           ];
+            nixpkgs.overlays = [
+              rust-overlay.overlays.default
+            ];
 
-           environment.systemPackages = [ 
-             (pkgs.rust-bin.stable.latest.default.overrideAttrs (old: {
-               extensions = [ "rustfmt" "clippy" "rust-src" "rustc-dev" "llvm-tools-preview" "cargo" "rust-analyzer" ];
-               targets = [ "x86_64-unknown-linux-gnu" ];
-             }))
-           ];
-         })
+            environment.systemPackages = [
+              (pkgs.rust-bin.stable.latest.default.overrideAttrs (old: {
+                extensions = ["rustfmt" "clippy" "rust-src" "rustc-dev" "llvm-tools-preview" "cargo" "rust-analyzer"];
+                targets = ["x86_64-unknown-linux-gnu"];
+              }))
+            ];
+          })
 
-        # Include the specific host configuration
-        (import hostFile)
-      ];
-    };
+          # Include the specific host configuration
+          (import hostFile)
+        ];
+      };
 
     # Configurations for tim-laptop and tim-pc
     nixosConfigurations.tim-laptop = self.mkSystem ./hosts/tim-laptop.nix;

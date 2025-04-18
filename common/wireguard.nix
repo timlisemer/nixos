@@ -1,4 +1,8 @@
-{ config, pkgs, ... }: {
+{
+  config,
+  pkgs,
+  ...
+}: {
   networking.wireguard.enable = true;
   networking.wireguard.interfaces = let
     server_ip = "odalb8joqto3nnev.myfritz.net";
@@ -18,17 +22,19 @@
       # Path to the private key file.
       privateKeyFile = wireguardKey;
 
-      peers = [{
-        publicKey = "KurEHrUhn1j117Abf4ESMMqAwm5YO1QiGe/jeY+OcTs=";
-        presharedKeyFile = presharedKey;
-        allowedIPs = [ 
-          "10.0.0.0/8"
-          "192.168.178.0/24"
-          "0.0.0.0/0"
-        ];
-        endpoint = "${server_ip}:57189";
-        persistentKeepalive = 25;
-      }];
+      peers = [
+        {
+          publicKey = "KurEHrUhn1j117Abf4ESMMqAwm5YO1QiGe/jeY+OcTs=";
+          presharedKeyFile = presharedKey;
+          allowedIPs = [
+            "10.0.0.0/8"
+            "192.168.178.0/24"
+            "0.0.0.0/0"
+          ];
+          endpoint = "${server_ip}:57189";
+          persistentKeepalive = 25;
+        }
+      ];
 
       postSetup = ''
         ${pkgs.iptables}/bin/iptables -t nat -A POSTROUTING -s 10.0.0.2/8 -o eth0 -j MASQUERADE

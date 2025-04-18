@@ -91,6 +91,9 @@
   "[dockerfile]": {
     "editor.defaultFormatter": "ms-azuretools.vscode-docker"
   },
+  "[nix]": {
+    "editor.defaultFormatter": "kamadorueda.alejandra"
+  },
 
   // Prettier config (optional overrides)
   "prettier.singleQuote": true,

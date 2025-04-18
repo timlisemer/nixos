@@ -1,6 +1,8 @@
-{ config, pkgs, ... }:
-
 {
+  config,
+  pkgs,
+  ...
+}: {
   programs.dconf.enable = true;
   services.xserver.desktopManager.gnome.enable = true;
 

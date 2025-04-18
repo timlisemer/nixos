@@ -1,13 +1,15 @@
-{ config, pkgs, ... }:
-
 {
+  config,
+  pkgs,
+  ...
+}: {
   home.packages = with pkgs; [
     qemu
     quickemu
     (writeShellScriptBin "qemu-system-x86_64-uefi" ''
-        qemu-system-x86_64 \
-        -bios ${OVMF.fd}/FV/OVMF.fd \
-        "$@"
+      qemu-system-x86_64 \
+      -bios ${OVMF.fd}/FV/OVMF.fd \
+      "$@"
     '')
   ];
 
@@ -40,5 +42,4 @@
   # Ensure the Windows 11 icon is placed in the correct location
   home.file.".local/share/icons/windows11-48.png".source = builtins.toPath ../files/icons/windows11-48.png;
   home.file.".local/share/icons/windows10-48.png".source = builtins.toPath ../files/icons/windows10-48.png;
-
 }

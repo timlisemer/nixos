@@ -1,5 +1,11 @@
-{ config, pkgs, inputs, home-manager, lib, ... }:
 {
+  config,
+  pkgs,
+  inputs,
+  home-manager,
+  lib,
+  ...
+}: {
   # Import the Home Manager NixOS module
   imports = [
     inputs.home-manager.nixosModules.home-manager
@@ -15,28 +21,28 @@
     # Specify the Home Manager state version
     home.stateVersion = "24.11";
 
-    imports = [ 
-      ./dconf.nix 
+    imports = [
+      ./dconf.nix
       ./qemu.nix
     ];
 
     # Sops Home Configuration
     sops.defaultSopsFile = ../secrets/secrets.yaml;
     sops.defaultSopsFormat = "yaml";
-    sops.age.sshKeyPaths = [ "/home/tim/.ssh/id_ed25519y" ];
+    sops.age.sshKeyPaths = ["/home/tim/.ssh/id_ed25519y"];
 
     # Git configuration
     programs.git = {
       enable = true;
       userName = "timlisemer";
       userEmail = "timlisemer@gmail.com";
-    
+
       # Set the default branch name using the attribute set format
       extraConfig = {
         init.defaultBranch = "main";
-        safe.directory = [ "/etc/nixos" "/tmp/NixOs" ];
+        safe.directory = ["/etc/nixos" "/tmp/NixOs"];
         pull.rebase = "false";
-        push.autoSetupRemote = true;  
+        push.autoSetupRemote = true;
         core.autocrlf = "input";
         core.eol = "lf";
       };
@@ -52,7 +58,7 @@
     home.activation = {
       firefoxThemeActivation = ''
         # Ensure userContent.css exists and is non-empty
-        
+
         mkdir -p $HOME/.mozilla/firefox/default/chrome/
         [[ -s "$HOME/.mozilla/firefox/default/chrome/userContent.css" ]] || echo >> "$HOME/.mozilla/firefox/default/chrome/userContent.css"
 
@@ -63,7 +69,7 @@
 
     programs.firefox = {
       enable = true;
-      nativeMessagingHosts = [ pkgs.web-eid-app ];
+      nativeMessagingHosts = [pkgs.web-eid-app];
       profiles = {
         default = {
           id = 0;
@@ -86,7 +92,6 @@
       };
     };
 
-
     programs.atuin = {
       enable = true;
       # https://github.com/nix-community/home-manager/issues/5734
@@ -102,10 +107,9 @@
       atuin
       sops
     ];
-  
+
     # Files and folders to be symlinked into home
     home.file = {
-
       ".config/ags".source = builtins.toPath ../files/ags;
       ".config/hypr".source = builtins.toPath ../files/hypr;
       ".config/starship.toml".source = builtins.toPath ../files/starship.toml;
@@ -117,19 +121,37 @@
       ".vimrc".source = builtins.toPath ../files/vimrc;
 
       # Arduino
-      ".arduinoIDE/ia.txt" = { text = '' ia! ''; executable = false; };
+      ".arduinoIDE/ia.txt" = {
+        text = ''ia! '';
+        executable = false;
+      };
       ".arduinoIDE/arduino-cli.yaml".source = builtins.toPath ../files/arduino/arduino-cli.yaml;
 
       # EasyEffects
-      ".config/easyeffects/ia.txt" = { text = '' ia! ''; executable = false; };
-      ".config/easyeffects/autoload/ia.txt" = { text = '' ia! ''; executable = false; };
-      ".config/easyeffects/autoload/input/ia.txt" = { text = '' ia! ''; executable = false; };
-      ".config/easyeffects/input/ia.txt" = { text = '' ia! ''; executable = false; };
+      ".config/easyeffects/ia.txt" = {
+        text = ''ia! '';
+        executable = false;
+      };
+      ".config/easyeffects/autoload/ia.txt" = {
+        text = ''ia! '';
+        executable = false;
+      };
+      ".config/easyeffects/autoload/input/ia.txt" = {
+        text = ''ia! '';
+        executable = false;
+      };
+      ".config/easyeffects/input/ia.txt" = {
+        text = ''ia! '';
+        executable = false;
+      };
       ".config/easyeffects/autoload/input/alsa_input.usb-R__DE_R__DE_NT-USB__02447C32-00.mono-fallback:.json".source = builtins.toPath ../files/easyeffects/autoload/input;
       ".config/easyeffects/input/Discord.json".source = builtins.toPath ../files/easyeffects/input;
 
       # OpenRGB
-      ".config/OpenRGB/ia.txt" = { text = '' ia! ''; executable = false; };
+      ".config/OpenRGB/ia.txt" = {
+        text = ''ia! '';
+        executable = false;
+      };
       ".config/OpenRGB/plugins/settings".source = ../files/OpenRGB/plugins/settings;
       ".config/OpenRGB/Off.orp".source = ../files/OpenRGB/Off.orp;
       ".config/OpenRGB/On.orp".source = ../files/OpenRGB/On.orp;
@@ -137,7 +159,10 @@
       ".config/OpenRGB/sizes.ors".source = ../files/OpenRGB/sizes.ors;
 
       # nvim
-      ".config/nvim/ia.txt" = { text = '' ia! ''; executable = false; };
+      ".config/nvim/ia.txt" = {
+        text = ''ia! '';
+        executable = false;
+      };
       ".config/nvim/after".source = "${inputs.tim-nvim}/after";
       ".config/nvim/lua".source = "${inputs.tim-nvim}/lua";
       ".config/nvim/init.lua".source = "${inputs.tim-nvim}/init.lua";
@@ -146,11 +171,17 @@
       ".local/share/blesh".source = inputs.blesh;
 
       # WhatsApp
-      ".config/whatsapp-for-linux/ia.txt" = { text = '' ia! ''; executable = false; };
+      ".config/whatsapp-for-linux/ia.txt" = {
+        text = ''ia! '';
+        executable = false;
+      };
       ".config/whatsapp-for-linux/settings.conf".source = builtins.toPath ../files/whatsapp-for-linux/settings.conf;
 
       # Vscode
-      ".config/Code/User/ia.txt" = { text = '' ia! ''; executable = false; };
+      ".config/Code/User/ia.txt" = {
+        text = ''ia! '';
+        executable = false;
+      };
       ".config/Code/User/settings.json".source = builtins.toPath ../files/vscode/settings.json;
       ".config/Code/User/keybindings.json".source = builtins.toPath ../files/vscode/keybindings.json;
 
@@ -161,7 +192,10 @@
       ".config/mimeapps.list".source = builtins.toPath ../files/mimeapps.list;
 
       # Gnome
-      ".config/gnome-initial-setup-done" = { text = ''yes''; executable = false; };
+      ".config/gnome-initial-setup-done" = {
+        text = ''yes'';
+        executable = false;
+      };
 
       # Terminals
       ".config/ghostty/config".source = builtins.toPath ../files/ghostty/config;
@@ -171,15 +205,14 @@
       ".local/share/icons/hicolor/256x256/apps/com.mitchellh.ghostty.png".source = builtins.toPath ../files/icons/ghostty/com.mitchellh.ghostty_256.png;
       ".local/share/icons/hicolor/512x512/apps/com.mitchellh.ghostty.png".source = builtins.toPath ../files/icons/ghostty/com.mitchellh.ghostty_512.png;
       ".local/share/icons/hicolor/1024x1024/apps/com.mitchellh.ghostty.png".source = builtins.toPath ../files/icons/ghostty/com.mitchellh.ghostty_1024.png;
-
     };
 
     # Steam adwaita theme
     systemd.user.services.installAdwaitaTheme = {
       Unit = {
         Description = "Install Adwaita Theme for Steam";
-        After = [ "network-online.target" ];
-        Wants = [ "network-online.target" ];
+        After = ["network-online.target"];
+        Wants = ["network-online.target"];
       };
       Service = {
         Type = "oneshot";
@@ -196,7 +229,7 @@
         ''}";
       };
       Install = {
-        WantedBy = [ "default.target" ];
+        WantedBy = ["default.target"];
       };
     };
   };

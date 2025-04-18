@@ -1,19 +1,20 @@
 # Edit this configuration file to define what should be installed on
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
-
-{ config, pkgs, inputs, ... }:
-
 {
-  imports =
-    [ 
-      ./home-manager.nix
-      ../packages/packages.nix
-      ../desktop-environments/desktop-enviroments.nix
-      inputs.sops-nix.nixosModules.sops
-      ../secrets/sops.nix
-      # ./wireguard.nix
-    ];
+  config,
+  pkgs,
+  inputs,
+  ...
+}: {
+  imports = [
+    ./home-manager.nix
+    ../packages/packages.nix
+    ../desktop-environments/desktop-enviroments.nix
+    inputs.sops-nix.nixosModules.sops
+    ../secrets/sops.nix
+    # ./wireguard.nix
+  ];
 
   # Enviroment Variables
   environment.variables = {
@@ -30,11 +31,11 @@
     WEBKIT_DISABLE_DMABUF_RENDERER = "1"; # Tauri Apps couldnt run because of this on nixos nvidia
   };
 
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.experimental-features = ["nix-command" "flakes"];
   nixpkgs.config.allowUnfree = true;
 
   # Setup Path
-  environment.variables.PATH = "${pkgs.lib.makeBinPath [ pkgs.coreutils ]}:$HOME/.bin";
+  environment.variables.PATH = "${pkgs.lib.makeBinPath [pkgs.coreutils]}:$HOME/.bin";
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
@@ -68,10 +69,10 @@
 
   # NixOs garbage collection
   nix.gc = {
-		automatic = true;
-		dates = "weekly";
-		options = "--delete-older-than 7d";
-	};
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 7d";
+  };
 
   # Enable the X11 windowing system.
   services.xserver.enable = true;
@@ -94,7 +95,7 @@
   # Enable Smartcard Support
   hardware.gpgSmartcards.enable = true;
   services.pcscd.enable = true;
-  services.udev.packages = [ pkgs.yubikey-manager ];
+  services.udev.packages = [pkgs.yubikey-manager];
   environment.etc."chromium/native-messaging-hosts/eu.webeid.json".source = "${pkgs.web-eid-app}/share/web-eid/eu.webeid.json";
   environment.etc."opt/chrome/native-messaging-hosts/eu.webeid.json".source = "${pkgs.web-eid-app}/share/web-eid/eu.webeid.json";
   # Tell p11-kit to load/proxy opensc-pkcs11.so, providing all available slots
@@ -141,14 +142,14 @@
   users.users.tim = {
     isNormalUser = true;
     description = "Tim Lisemer";
-    extraGroups = [ "networkmanager" "wheel" "dialout" "docker" ];
+    extraGroups = ["networkmanager" "wheel" "dialout" "docker"];
   };
 
   # Some programs need SUID wrappers, can be configured further or are started in user sessions.
   programs.mtr.enable = true;
   programs.gnupg.agent = {
-     enable = true;
-     enableSSHSupport = true;
+    enable = true;
+    enableSSHSupport = true;
   };
 
   # List services that you want to enable:
@@ -183,19 +184,18 @@
   #    User = "root";
   #  };
   #};
-  
+
   # VsCode Server
   services.vscode-server.enable = true;
 
   # Fix Shebang
   services.envfs.enable = true;
 
-
   # Enable common container config files in /etc/containers
   services.spice-vdagentd.enable = true;
   virtualisation.spiceUSBRedirection.enable = true;
   virtualisation.containers.enable = true;
-  virtualisation.containers.registries.search = [ "docker.io" ];
+  virtualisation.containers.registries.search = ["docker.io"];
   virtualisation = {
     docker = {
       enable = true;
@@ -238,21 +238,22 @@
       user = "tim";
       dataDir = "/home/tim";
       configDir = "/home/tim/.config/syncthing";
-      overrideDevices = true;                       # overrides any devices added or deleted through the WebUI
-      overrideFolders = true;                       # overrides any folders added or deleted through the WebUI
+      overrideDevices = true; # overrides any devices added or deleted through the WebUI
+      overrideFolders = true; # overrides any folders added or deleted through the WebUI
       settings = {
         devices = {
-          "tim-server" = { 
+          "tim-server" = {
             id = "ZKX6K7U-XPIMO7N-QM7KBU7-5OPVX7S-3E4UDW7-YKQBR2P-ZU4DC3F-ZYC34A3";
             autoAcceptFolders = true;
           };
           # "device2" = { id = "DEVICE-ID-GOES-HERE"; };
         };
         folders = {
-          "Home" = {                                # Folder ID in Syncthing, also the name of folder (label) by default
-            path = "/home/tim";                     # Which folder to add to Syncthing
-            devices = [ "tim-server" ];             # Which devices to share the folder with
-            addresses = [ "tcp://10.0.0.2:22000" ];
+          "Home" = {
+            # Folder ID in Syncthing, also the name of folder (label) by default
+            path = "/home/tim"; # Which folder to add to Syncthing
+            devices = ["tim-server"]; # Which devices to share the folder with
+            addresses = ["tcp://10.0.0.2:22000"];
           };
         };
       };
@@ -272,5 +273,4 @@
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = "24.05"; # Did you read the comment?
-
 }

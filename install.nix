@@ -1,10 +1,11 @@
-{ disks ? [ "/dev/nvme0n1" "/dev/nvme1n1" ], ... }:
-let
+{disks ? ["/dev/nvme0n1" "/dev/nvme1n1"], ...}: let
   rawdisk1 = builtins.elemAt disks 0;
-  rawdisk2 = if (builtins.length disks) > 1 then builtins.elemAt disks 1 else null;
+  rawdisk2 =
+    if (builtins.length disks) > 1
+    then builtins.elemAt disks 1
+    else null;
   is_raid0 = rawdisk2 != null;
-in
-{
+in {
   disko.devices = {
     disk = {
       "${rawdisk1}" = {
@@ -17,7 +18,7 @@ in
               label = "EFI";
               name = "ESP";
               size = "1024M";
-              type = "EF00" ;
+              type = "EF00";
               content = {
                 type = "filesystem";
                 format = "vfat";
@@ -30,27 +31,30 @@ in
               size = "100%";
               content = {
                 type = "btrfs";
-                extraArgs = if is_raid0 then [ "-f" "-d" "raid0" "-m" "raid0" rawdisk2 ] else [ "-f" ]; # RAID0 if 2 disks, otherwise single disk
+                extraArgs =
+                  if is_raid0
+                  then ["-f" "-d" "raid0" "-m" "raid0" rawdisk2]
+                  else ["-f"]; # RAID0 if 2 disks, otherwise single disk
                 subvolumes = {
                   "@" = {
                     mountpoint = "/";
-                    mountOptions = [ "compress=zstd" "noatime" ];
+                    mountOptions = ["compress=zstd" "noatime"];
                   };
                   "@/home" = {
                     mountpoint = "/home";
-                    mountOptions = [ "compress=zstd" "noatime" ];
+                    mountOptions = ["compress=zstd" "noatime"];
                   };
                   "@/nix" = {
                     mountpoint = "/nix";
-                    mountOptions = [ "compress=zstd" "noatime" ];
+                    mountOptions = ["compress=zstd" "noatime"];
                   };
                   "@/var_local" = {
                     mountpoint = "/var/local";
-                    mountOptions = [ "compress=zstd" "noatime" ];
+                    mountOptions = ["compress=zstd" "noatime"];
                   };
                   "@/var_log" = {
                     mountpoint = "/var/log";
-                    mountOptions = [ "compress=zstd" "noatime" ];
+                    mountOptions = ["compress=zstd" "noatime"];
                   };
                 };
               };

@@ -1,7 +1,8 @@
-{ config, pkgs, ... }:
-
 {
-
+  config,
+  pkgs,
+  ...
+}: {
   # Import the common configuration shared across all machines
   imports = [
     ../common/common.nix
@@ -11,11 +12,11 @@
 
   # Machine specific configurations
 
-  networking.hostName = "tim-pc";  
+  networking.hostName = "tim-pc";
 
   boot = {
-    kernelParams = [ "acpi_enforce_resources=lax" ];
-    kernelModules = [ "i2c-dev" "i2c-piix4" ];
+    kernelParams = ["acpi_enforce_resources=lax"];
+    kernelModules = ["i2c-dev" "i2c-piix4"];
   };
 
   hardware = {
@@ -26,13 +27,13 @@
 
   # services.udev.extraRules = builtins.readFile ../files/OpenRGB/60-openrgb.rules;
 
-  environment.systemPackages = with pkgs; [ openrgb-with-all-plugins ];
+  environment.systemPackages = with pkgs; [openrgb-with-all-plugins];
 
   services.hardware.openrgb.enable = true;
   systemd.user.services.openrgb = {
     description = "OpenRGB";
-    wantedBy = [ "default.target" "graphical-session.target" ];
-      partOf = [ "graphical-session.target" ];
+    wantedBy = ["default.target" "graphical-session.target"];
+    partOf = ["graphical-session.target"];
     serviceConfig = {
       # ExecStart = "${pkgs.openrgb-with-all-plugins}/bin/openrgb --startminimized --profile 'On'";
       # ExecStartPre = "${pkgs.coreutils}/bin/sleep 10";
@@ -41,7 +42,7 @@
       RestartSec = "5s";
       StartLimitIntervalSec = "10s";
       StartLimitBurst = "10";
-      After = [ "graphical-session.target" "network-online.target" ];
+      After = ["graphical-session.target" "network-online.target"];
     };
   };
 }

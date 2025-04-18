@@ -1,13 +1,15 @@
-{ config, pkgs, inputs, ... }:
-
-let
+{
+  config,
+  pkgs,
+  inputs,
+  ...
+}: let
   unstable = import inputs.nixpkgs-unstable {
-    config = { allowUnfree = true; };
+    config = {allowUnfree = true;};
     inherit (pkgs) system;
   };
   vscodeExtensions = unstable.vscode-extensions;
-in
-{
+in {
   environment.systemPackages = with pkgs; [
     (vscode-with-extensions.override {
       vscodeExtensions = with vscodeExtensions; [
@@ -24,13 +26,14 @@ in
         bbenoist.nix
         tauri-apps.tauri-vscode
         rust-lang.rust-analyzer
-        njpwerner.autodocstring	
+        njpwerner.autodocstring
         svelte.svelte-vscode
         tamasfe.even-better-toml
         esbenp.prettier-vscode
         dbaeumer.vscode-eslint
         foxundermoon.shell-format
         bradlc.vscode-tailwindcss
+        kamadorueda.alejandra
       ];
     })
 
@@ -72,7 +75,7 @@ in
     pixman
     protobuf
     ruby
-    typescript   
+    typescript
     gnumake
     neovim
     gcc
@@ -93,7 +96,7 @@ in
     tailwindcss-language-server
     lua-language-server
     nodePackages.graphql-language-service-cli
-    emmet-ls 
+    emmet-ls
     vimPlugins.nvim-treesitter-parsers.prisma
     tree-sitter-grammars.tree-sitter-prisma
     vimPlugins.vim-prisma
@@ -102,8 +105,8 @@ in
     vimPlugins.nvim-treesitter-parsers.markdown
     vimPlugins.nvim-treesitter-parsers.markdown_inline
     vimPlugins.mini-nvim
-    pyright 
-    rust-analyzer 
+    pyright
+    rust-analyzer
     prettierd
     eslint_d
     pkg-config
@@ -125,6 +128,4 @@ in
     openssl
     zlib
   ];
-
-
 }
