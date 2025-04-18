@@ -152,6 +152,7 @@
       # Vscode
       ".config/Code/User/ia.txt" = { text = '' ia! ''; executable = false; };
       ".config/Code/User/settings.json".source = builtins.toPath ../files/vscode/settings.json;
+      ".config/Code/User/keybindings.json".source = builtins.toPath ../files/vscode/keybindings.json;
 
       # Autostart
       ".config/autostart".source = ../files/autostart;
