@@ -234,7 +234,7 @@
   # Syncthing
   services = {
     syncthing = {
-      enable = true;
+      enable = false;
       user = "tim";
       dataDir = "/home/tim";
       configDir = "/home/tim/.config/syncthing";
