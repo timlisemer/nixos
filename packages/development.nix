@@ -11,7 +11,7 @@
   vscodeExtensions = unstable.vscode-extensions;
 in {
   environment.systemPackages = with pkgs; [
-    (vscode-with-extensions.override {
+    (unstable.vscode-with-extensions.override {
       vscodeExtensions = with vscodeExtensions; [
         ms-python.python
         ms-python.vscode-pylance
