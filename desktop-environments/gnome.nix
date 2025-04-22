@@ -18,6 +18,9 @@
     gnomeExtensions.phi-pi-hole-indicator
     gnomeExtensions.spotify-tray
     gnomeExtensions.user-themes
+    gnomeExtensions.switch-workspaces-on-active-monitor
+    gnomeExtensions.current-monitor-windowapp-switcher
+    gnomeExtensions.primary-input-on-lockscreen
   ];
 
   environment.gnome.excludePackages = with pkgs; [

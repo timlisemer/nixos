@@ -215,9 +215,9 @@ with lib.hm.gvariant; {
     "org/gnome/mutter" = {
       edge-tiling = true;
       center-new-windows = true;
-      dynamic-workspaces = true;
+      dynamic-workspaces = false;
       overlay-key = "Super_L";
-      workspaces-only-on-primary = true;
+      workspaces-only-on-primary = false;
     };
 
     "org/gnome/nautilus/compression" = {
@@ -596,7 +596,19 @@ with lib.hm.gvariant; {
           ])
         ]
       ];
-      enabled-extensions = ["app-hider@lynith.dev" "appindicatorsupport@rgcjonas.gmail.com" "blur-my-shell@aunetx" "dash-to-panel@jderose9.github.com" "gtk4-ding@smedius.gitlab.com" "phi@ziyagenc.github.com" "user-theme@gnome-shell-extensions.gcampax.github.com" "sp-tray@sp-tray.esenliyim.github.com"];
+      enabled-extensions = [
+        "user-theme@gnome-shell-extensions.gcampax.github.com"
+        "sp-tray@sp-tray.esenliyim.github.com"
+        "primary_input_on_lockscreen@sagidayan.com"
+        "phi@ziyagenc.github.com"
+        "gtk4-ding@smedius.gitlab.com"
+        "dash-to-panel@jderose9.github.com"
+        "simulate-switching-workspaces-on-active-monitor@micheledaros.com"
+        "current-monitor-window-app-switcher@thmatosbr"
+        "blur-my-shell@aunetx"
+        "appindicatorsupport@rgcjonas.gmail.com"
+        "app-hider@lynith.dev"
+      ];
       favorite-apps = ["org.gnome.Nautilus.desktop" "firefox.desktop" "com.discordapp.Discord.desktop" "spotify.desktop" "org.gnome.Geary.desktop" "org.gnome.Calendar.desktop" "com.mitchellh.ghostty.desktop"];
     };
     # org.mozilla.firefox.desktop
