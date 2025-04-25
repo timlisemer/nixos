@@ -215,7 +215,7 @@ with lib.hm.gvariant; {
     "org/gnome/mutter" = {
       edge-tiling = true;
       center-new-windows = true;
-      dynamic-workspaces = false;
+      dynamic-workspaces = true;
       overlay-key = "Super_L";
       workspaces-only-on-primary = false;
     };
@@ -599,12 +599,9 @@ with lib.hm.gvariant; {
       enabled-extensions = [
         "user-theme@gnome-shell-extensions.gcampax.github.com"
         "sp-tray@sp-tray.esenliyim.github.com"
-        "primary_input_on_lockscreen@sagidayan.com"
         "phi@ziyagenc.github.com"
         "gtk4-ding@smedius.gitlab.com"
         "dash-to-panel@jderose9.github.com"
-        "simulate-switching-workspaces-on-active-monitor@micheledaros.com"
-        "current-monitor-window-app-switcher@thmatosbr"
         "blur-my-shell@aunetx"
         "appindicatorsupport@rgcjonas.gmail.com"
         "app-hider@lynith.dev"

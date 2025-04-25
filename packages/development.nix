@@ -8,7 +8,7 @@
     config = {allowUnfree = true;};
     inherit (pkgs) system;
   };
-  vscodeExtensions = unstable.vscode-extensions;
+  vscodeExtensions = pkgs.vscode-extensions;
 in {
   environment.systemPackages = with pkgs; [
     (unstable.vscode-with-extensions.override {
