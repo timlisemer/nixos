@@ -41,7 +41,7 @@
       extraConfig = {
         init.defaultBranch = "main";
         safe.directory = ["/etc/nixos" "/tmp/NixOs"];
-        pull.rebase = "false";
+        pull.rebase = "true";
         push.autoSetupRemote = true;
         core.autocrlf = "input";
         core.eol = "lf";
