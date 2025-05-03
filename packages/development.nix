@@ -8,10 +8,14 @@
     config = {allowUnfree = true;};
     inherit (pkgs) system;
   };
+  oldvscode = import inputs.nixpkgs-oldvscode {
+    config = {allowUnfree = true;};
+    inherit (pkgs) system;
+  };
   vscodeExtensions = pkgs.vscode-extensions;
 in {
   environment.systemPackages = with pkgs; [
-    (unstable.vscode-with-extensions.override {
+    (oldvscode.vscode-with-extensions.override {
       vscodeExtensions = with vscodeExtensions; [
         ms-python.python
         ms-python.vscode-pylance
@@ -20,7 +24,7 @@ in {
         ms-vscode-remote.remote-ssh
         ms-vscode-remote.remote-containers
         github.copilot
-        github.copilot-chat
+        unstable.vscode-extensions.github.copilot-chat
         unstable.vscode-extensions.egirlcatnip.adwaita-github-theme
         dbaeumer.vscode-eslint
         bbenoist.nix

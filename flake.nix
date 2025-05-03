@@ -2,6 +2,7 @@
   inputs = {
     nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-24.11"; # Stable channel for everything else
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable"; # Unstable channel
+    nixpkgs-oldvscode.url = "github:NixOS/nixpkgs/333d19c8b58402b94834ec7e0b58d83c0a0ba658"; # vscode 1.98.2
     # nixpkgs-stable.follows = "nixos-cosmic/nixpkgs-stable";
     # nixos-cosmic.url = "github:lilyinstarlight/nixos-cosmic";
 
@@ -66,6 +67,7 @@
     self,
     nixpkgs-stable,
     nixpkgs-unstable,
+    nixpkgs-oldvscode,
     flatpaks,
     disko,
     alejandra,
