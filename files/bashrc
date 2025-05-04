@@ -1,7 +1,6 @@
 #!/bin/bash
 iatest=$(expr index "$-" i)
 
-
 #######################################################
 # Custom Edits
 #######################################################
@@ -13,6 +12,7 @@ alias gittree='git ls-files --cached --others --exclude-standard | tree --fromfi
 alias term='ghostty'
 alias terminal='ghostty'
 alias logout='loginctl terminate-user $USER'
+alias rebuild='sudo cp -a /home/tim/Coding/Other/nixos/* /etc/nixos/ && sudo nixos-rebuild switch'
 
 #######################################################
 # SOURCED ALIAS'S AND SCRIPTS BY zachbrowne.me
@@ -339,8 +339,7 @@ up() {
 }
 
 # Automatically do an ls after each cd, z, or zoxide
-cd ()
-{
+cd() {
 	if [ -n "$1" ]; then
 		builtin cd "$@" && ls
 	else
@@ -354,35 +353,34 @@ pwdtail() {
 }
 
 # Show the current distribution
-distribution ()
-{
-	local dtype="unknown"  # Default to unknown
+distribution() {
+	local dtype="unknown" # Default to unknown
 
 	# Use /etc/os-release for modern distro identification
 	if [ -r /etc/os-release ]; then
 		source /etc/os-release
 		case $ID in
-			fedora|rhel|centos)
-				dtype="redhat"
-				;;
-			sles|opensuse*)
-				dtype="suse"
-				;;
-			ubuntu|debian)
-				dtype="debian"
-				;;
-			gentoo)
-				dtype="gentoo"
-				;;
-			arch)
-				dtype="arch"
-				;;
-			slackware)
-				dtype="slackware"
-				;;
-			*)
-				# If ID is not recognized, keep dtype as unknown
-				;;
+		fedora | rhel | centos)
+			dtype="redhat"
+			;;
+		sles | opensuse*)
+			dtype="suse"
+			;;
+		ubuntu | debian)
+			dtype="debian"
+			;;
+		gentoo)
+			dtype="gentoo"
+			;;
+		arch)
+			dtype="arch"
+			;;
+		slackware)
+			dtype="slackware"
+			;;
+		*)
+			# If ID is not recognized, keep dtype as unknown
+			;;
 		esac
 	fi
 
@@ -395,37 +393,37 @@ ver() {
 	dtype=$(distribution)
 
 	case $dtype in
-		"redhat")
-			if [ -s /etc/redhat-release ]; then
-				cat /etc/redhat-release
-			else
-				cat /etc/issue
-			fi
-			uname -a
-			;;
-		"suse")
-			cat /etc/SuSE-release
-			;;
-		"debian")
-			lsb_release -a
-			;;
-		"gentoo")
-			cat /etc/gentoo-release
-			;;
-		"arch")
-			cat /etc/os-release
-			;;
-		"slackware")
-			cat /etc/slackware-version
-			;;
-		*)
-			if [ -s /etc/issue ]; then
-				cat /etc/issue
-			else
-				echo "Error: Unknown distribution"
-				exit 1
-			fi
-			;;
+	"redhat")
+		if [ -s /etc/redhat-release ]; then
+			cat /etc/redhat-release
+		else
+			cat /etc/issue
+		fi
+		uname -a
+		;;
+	"suse")
+		cat /etc/SuSE-release
+		;;
+	"debian")
+		lsb_release -a
+		;;
+	"gentoo")
+		cat /etc/gentoo-release
+		;;
+	"arch")
+		cat /etc/os-release
+		;;
+	"slackware")
+		cat /etc/slackware-version
+		;;
+	*)
+		if [ -s /etc/issue ]; then
+			cat /etc/issue
+		else
+			echo "Error: Unknown distribution"
+			exit 1
+		fi
+		;;
 	esac
 }
 
@@ -435,39 +433,38 @@ install_bashrc_support() {
 	dtype=$(distribution)
 
 	case $dtype in
-		"redhat")
-			sudo yum install multitail tree zoxide trash-cli fzf bash-completion fastfetch
-			;;
-		"suse")
-			sudo zypper install multitail tree zoxide trash-cli fzf bash-completion fastfetch
-			;;
-		"debian")
-			sudo apt-get install multitail tree zoxide trash-cli fzf bash-completion
-			# Fetch the latest fastfetch release URL for linux-amd64 deb file
-			FASTFETCH_URL=$(curl -s https://api.github.com/repos/fastfetch-cli/fastfetch/releases/latest | grep "browser_download_url.*linux-amd64.deb" | cut -d '"' -f 4)
-			
-			# Download the latest fastfetch deb file
-			curl -sL $FASTFETCH_URL -o /tmp/fastfetch_latest_amd64.deb
-			
-			# Install the downloaded deb file using apt-get
-			sudo apt-get install /tmp/fastfetch_latest_amd64.deb
-			;;
-		"arch")
-			sudo paru multitail tree zoxide trash-cli fzf bash-completion fastfetch
-			;;
-		"slackware")
-			echo "No install support for Slackware"
-			;;
-		*)
-			echo "Unknown distribution"
-			;;
+	"redhat")
+		sudo yum install multitail tree zoxide trash-cli fzf bash-completion fastfetch
+		;;
+	"suse")
+		sudo zypper install multitail tree zoxide trash-cli fzf bash-completion fastfetch
+		;;
+	"debian")
+		sudo apt-get install multitail tree zoxide trash-cli fzf bash-completion
+		# Fetch the latest fastfetch release URL for linux-amd64 deb file
+		FASTFETCH_URL=$(curl -s https://api.github.com/repos/fastfetch-cli/fastfetch/releases/latest | grep "browser_download_url.*linux-amd64.deb" | cut -d '"' -f 4)
+
+		# Download the latest fastfetch deb file
+		curl -sL $FASTFETCH_URL -o /tmp/fastfetch_latest_amd64.deb
+
+		# Install the downloaded deb file using apt-get
+		sudo apt-get install /tmp/fastfetch_latest_amd64.deb
+		;;
+	"arch")
+		sudo paru multitail tree zoxide trash-cli fzf bash-completion fastfetch
+		;;
+	"slackware")
+		echo "No install support for Slackware"
+		;;
+	*)
+		echo "Unknown distribution"
+		;;
 	esac
 }
 
 # IP address lookup
 alias whatismyip="whatsmyip"
-function whatsmyip ()
-{
+function whatsmyip() {
 	# Internal IP Lookup.
 	if [ -e /sbin/ip ]; then
 		echo -n "Internal IP: "
@@ -544,7 +541,6 @@ mysqlconfig() {
 	fi
 }
 
-
 # Trim leading and trailing spaces (for scripts)
 trim() {
 	local var=$*
@@ -552,18 +548,29 @@ trim() {
 	var="${var%"${var##*[![:space:]]}"}" # remove trailing whitespace characters
 	echo -n "$var"
 }
-# GitHub Titus Additions
+# GitHub Additions
 
 gcom() {
 	git add .
 	git commit -m "$1"
 }
-lazyg() {
+gacp() {
 	git add .
 	git commit -m "$1"
 	git push
 }
 
+git() {
+	if [[ "$1" == "clone" && "$2" == git@github.com:iocto-gmbh/remote-support-tool.git ]]; then
+		command git clone --recurse-submodules --remote-submodules "$2"
+	elif [[ "$1" == "pull" ]]; then
+		command git pull --recurse-submodules && command git submodule update --remote --merge
+	else
+		command git "$@"
+	fi
+}
+
+alias gclean='git clean -fdn'
 
 #######################################################
 # Set the ultimate amazing command prompt
@@ -579,12 +586,10 @@ eval "$(zoxide init bash)"
 source ~/.local/share/blesh/ble.sh
 eval "$(atuin init bash)"
 
-
 # . "$HOME/.cargo/env"
-
 
 # Terminal stuff
 
 if [[ "$TERM" == "xterm-ghostty" ]]; then
-  export TERM=xterm-256color
+	export TERM=xterm-256color
 fi
