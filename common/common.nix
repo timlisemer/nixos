@@ -1,12 +1,4 @@
 { config, pkgs, inputs, ... }: {
-  imports = [
-    ./home-manager.nix
-    ../packages/packages.nix
-    ../desktop-environments/desktop-environments.nix
-    inputs.sops-nix.nixosModules.sops
-    ../secrets/sops.nix
-    # ./wireguard.nix
-  ];
 
   # Enviroment Variables
   environment.variables = {

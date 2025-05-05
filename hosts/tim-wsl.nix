@@ -1,6 +1,8 @@
 {
   config,
   pkgs,
+  inputs,
+  lib,
   ...
 }: {
   # Import the common configuration shared across all machines
