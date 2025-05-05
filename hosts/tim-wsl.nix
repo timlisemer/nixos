@@ -18,4 +18,8 @@
 
   wsl.enable = true;
   wsl.defaultUser = "tim";
+
+  environment.systemPackages = with pkgs; [
+    git
+  ];
 }
