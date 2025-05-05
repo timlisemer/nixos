@@ -218,6 +218,7 @@ with lib.hm.gvariant; {
       dynamic-workspaces = true;
       overlay-key = "Super_L";
       workspaces-only-on-primary = false;
+      check-alive-timeout = mkUint32 15000;
     };
 
     "org/gnome/nautilus/compression" = {
