@@ -55,13 +55,6 @@
   # Enable touchpad support (libinput default)
   # services.xserver.libinput.enable = true;
 
-  # Define a user account. Don’t forget to set a password with ‘passwd’.
-  users.users.tim = {
-    isNormalUser = true;
-    description  = "Tim Lisemer";
-    extraGroups  = [ "networkmanager" "wheel" "dialout" "docker" ];
-  };
-
   # Enable Switcheroo
   services.switcherooControl.enable = true;
 

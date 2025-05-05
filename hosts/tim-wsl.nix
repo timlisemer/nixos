@@ -9,7 +9,7 @@
   imports = [
     inputs.nixos-wsl.nixosModules.default
     ../common/common.nix
-    # ../common/home-manager.nix
+    ../common/home-manager.nix
   ];
 
   # Machine specific configurations

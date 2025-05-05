@@ -96,6 +96,13 @@
     };
   };
 
+  # Define a user account. Don’t forget to set a password with ‘passwd’.
+  users.users.tim = {
+    isNormalUser = true;
+    description  = "Tim Lisemer";
+    extraGroups  = [ "networkmanager" "wheel" "dialout" "docker" ];
+  };
+
   # Open ports in the firewall
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
