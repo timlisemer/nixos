@@ -5,7 +5,7 @@
 }: {
   # Import the common configuration shared across all machines
   imports = [
-    ../common/common.nix
+    ./desktop-only-imports.nix
     ./tim-laptop-hardware-configuration.nix
   ];
 
