@@ -15,7 +15,7 @@
     WEBKIT_DISABLE_DMABUF_RENDERER = "1";  # Tauri Apps couldn’t run on NixOS NVIDIA
 
     # Ensure coreutils are in $PATH
-    PATH = "${pkgs.lib.makeBinPath [ pkgs.coreutils ]}:$HOME/.bin";
+    # PATH = "${pkgs.lib.makeBinPath [ pkgs.coreutils ]}:$HOME/.bin";
   };
 
   # Enable experimental nix-command and flakes
