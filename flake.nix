@@ -2,6 +2,7 @@
   inputs = {
     nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-24.11"; # Stable channel for everything else
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable"; # Unstable channel
+    nixos-wsl.url = "github:nix-community/NixOS-WSL";   # NixOS WSL
     nixpkgs-oldvscode.url = "github:NixOS/nixpkgs/333d19c8b58402b94834ec7e0b58d83c0a0ba658"; # vscode 1.98.2
     # nixpkgs-stable.follows = "nixos-cosmic/nixpkgs-stable";
     # nixos-cosmic.url = "github:lilyinstarlight/nixos-cosmic";
@@ -131,6 +132,7 @@
     # Configurations for tim-laptop and tim-pc
     nixosConfigurations.tim-laptop = self.mkSystem ./hosts/tim-laptop.nix;
     nixosConfigurations.tim-pc = self.mkSystem ./hosts/tim-pc.nix;
+    nixosConfigurations.tim-wsl = self.mkSystem ./hosts/tim-wsl.nix;
 
     devShells = {
       remote-support-tool = nixpkgs-unstable.legacyPackages.x86_64-linux.mkShell {
