@@ -62,11 +62,6 @@ with lib.hm.gvariant; {
       is-maximized = false;
     };
 
-    "org/gnome/Totem" = {
-      active-plugins = ["vimeo" "variable-rate" "skipto" "screenshot" "screensaver" "save-file" "rotation" "recent" "movie-properties" "open-directory" "mpris" "autoload-subtitles" "apple-trailers"];
-      subtitle-encoding = "UTF-8";
-    };
-
     "org/gnome/Weather" = {
       locations = [(mkVariant (mkTuple [(mkUint32 2) (mkVariant (mkTuple ["Frankfurt" "EDDF" false [(mkTuple [(mkDouble "0.8735372906231619") (mkDouble "0.15009831567151233")])] (mkArray "(dd)" [])]))])) (mkVariant (mkTuple [(mkUint32 2) (mkVariant (mkTuple ["Frankfurt" "EDDF" true [(mkTuple [(mkDouble "0.8735372906231619") (mkDouble "0.15009831567151233")])] [(mkTuple [(mkDouble "0.874700849275589") (mkDouble "0.15155275089707676")])]]))]))];
       window-height = 512;
@@ -552,7 +547,7 @@ with lib.hm.gvariant; {
     };
 
     "org/gnome/desktop/app-folders/folders/5d3de8f3-46d0-44d0-994e-34dcba42ba17" = {
-      apps = ["org.gnome.SystemMonitor.desktop" "org.gnome.clocks.desktop" "org.gnome.Totem.desktop" "org.gnome.Music.desktop" "org.wireshark.Wireshark.desktop" "com.github.flxzt.rnote.desktop" "org.gnome.Snapshot.desktop" "simple-scan.desktop" "org.gnome.Calculator.desktop" "org.gnome.TextEditor.desktop" "org.gnome.Maps.desktop" "com.google.Chrome.desktop" "org.filezillaproject.Filezilla.desktop" "com.bitwarden.desktop.desktop" "org.gnome.Boxes.desktop" "com.github.marhkb.Pods.desktop" "org.cvfosammmm.Setzer.desktop" "org.gnome.Software.desktop" "org.torproject.torbrowser-launcher.desktop" "dev.vencord.Vesktop.desktop" "org.pulseaudio.pavucontrol.desktop" "com.github.eneshecan.WhatsAppForLinux.desktop" "gimp.desktop" "webcord.desktop" "com.cassidyjames.butler.desktop" "google-chrome.desktop" "org.gnome.Terminal.desktop"];
+      apps = ["org.gnome.SystemMonitor.desktop" "org.gnome.clocks.desktop" "org.gnome.Totem.desktop" "org.gnome.Music.desktop" "org.wireshark.Wireshark.desktop" "com.github.flxzt.rnote.desktop" "org.gnome.Snapshot.desktop" "simple-scan.desktop" "org.gnome.Calculator.desktop" "org.gnome.TextEditor.desktop" "org.gnome.Maps.desktop" "com.google.Chrome.desktop" "org.filezillaproject.Filezilla.desktop" "com.bitwarden.desktop.desktop" "org.gnome.Boxes.desktop" "com.github.marhkb.Pods.desktop" "org.cvfosammmm.Setzer.desktop" "org.gnome.Software.desktop" "org.torproject.torbrowser-launcher.desktop" "dev.vencord.Vesktop.desktop" "org.pulseaudio.pavucontrol.desktop" "com.github.eneshecan.WhatsAppForLinux.desktop" "gimp.desktop" "webcord.desktop" "com.cassidyjames.butler.desktop" "google-chrome.desktop" "org.gnome.Terminal.desktop" "org.gnome.Showtime.desktop"];
       name = "Applications";
       translate = false;
     };

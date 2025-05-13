@@ -27,5 +27,7 @@
     gnome-shell-extensions
     epiphany
     gnome-console
+    gnome-system-monitor
+    totem
   ];
 }

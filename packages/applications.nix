@@ -24,6 +24,7 @@
     mediawriter
     postman
     vlc
+    showtime
     google-chrome
     # discord
     webcord-vencord
