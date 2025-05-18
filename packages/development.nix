@@ -116,6 +116,7 @@ in {
     pkg-config
     gobject-introspection
     cargo
+    cargo-edit
     cargo-tauri
     nodejs
     at-spi2-atk
