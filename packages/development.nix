@@ -29,7 +29,7 @@ in {
         dbaeumer.vscode-eslint
         bbenoist.nix
         tauri-apps.tauri-vscode
-        rust-lang.rust-analyzer
+        unstable.vscode-extensions.rust-lang.rust-analyzer
         njpwerner.autodocstring
         svelte.svelte-vscode
         tamasfe.even-better-toml
@@ -115,9 +115,9 @@ in {
     eslint_d
     pkg-config
     gobject-introspection
-    cargo
-    cargo-edit
-    cargo-tauri
+    unstable.cargo
+    unstable.cargo-edit
+    unstable.cargo-tauri
     nodejs
     at-spi2-atk
     atkmm
