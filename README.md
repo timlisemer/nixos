@@ -1,6 +1,6 @@
 # NixOS Configuration Repository
 
-This repository contains my personal configuration for NixOS, a Linux distribution known for its declarative configuration model and reliable system management. 
+This repository contains my personal configuration for NixOS, a Linux distribution known for its declarative configuration model and reliable system management.
 
 ## How to Use This Configuration
 
@@ -39,7 +39,9 @@ Clone the repository from GitHub to a temporary directory, such as `/tmp`.
 ```bash
 git clone https://github.com/TimLisemer/NixOs.git /tmp/nixos
 ```
-Delete flake.lock 
+
+Delete flake.lock
+
 ```bash
 rm /tmp/nixos/flake.lock
 ```
@@ -56,18 +58,10 @@ Move the generated file, for example, into `/tmp/nixos/hosts` with an appropriat
 
 ### 4. Mount the Filesystem Using Disko:
 
-Use Disko to mount the filesystem by running the following commands. Ensure you specify the correct disk(s) for your machine.
-
-- **For `tim-laptop` (single disk):**
+Use Disko to mount the filesystem by running the following commands.
 
 ```bash
-sudo nix --extra-experimental-features 'nix-command flakes' run github:nix-community/disko -- --mode zap_create_mount /tmp/nixos/install.nix --arg disks '[ "/dev/nvme0n1" ]'
-```
-
-- **For `tim-pc` (dual disk):**
-
-```bash
-sudo nix --extra-experimental-features 'nix-command flakes' run github:nix-community/disko -- --mode zap_create_mount /tmp/nixos/install.nix --arg disks '[ "/dev/nvme0n1" "/dev/nvme1n1" ]'
+sudo nix --extra-experimental-features 'nix-command flakes' run github:nix-community/disko -- --mode zap_create_mount /tmp/nixos/install.nix --arg disk_path '[ "/dev/nvme0n1" ]'
 ```
 
 ### 5. Install NixOS:
