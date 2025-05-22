@@ -102,7 +102,6 @@
           #nixos-cosmic.nixosModules.default
 
           vscode-server.nixosModules.default
-          (import ./install.nix {disks = ["/dev/nvme0n1"];})
 
           ({
             pkgs,

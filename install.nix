@@ -1,10 +1,15 @@
-{disks ? ["/dev/nvme0n1"], ...}: let
-  disk_path = builtins.elemAt disks 0;
+{disks ? ["/dev/nvme0n1" "/dev/nvme1n1"], ...}: let
+  rawdisk1 = builtins.elemAt disks 0;
+  rawdisk2 =
+    if (builtins.length disks) > 1
+    then builtins.elemAt disks 1
+    else null;
+  is_raid0 = rawdisk2 != null;
 in {
   disko.devices = {
     disk = {
-      "${disk_path}" = {
-        device = "${disk_path}";
+      "${rawdisk1}" = {
+        device = "${rawdisk1}";
         type = "disk";
         content = {
           type = "gpt";
@@ -26,6 +31,10 @@ in {
               size = "100%";
               content = {
                 type = "btrfs";
+                extraArgs =
+                  if is_raid0
+                  then ["-f" "-d" "raid0" "-m" "raid0" rawdisk2]
+                  else ["-f"]; # RAID0 if 2 disks, otherwise single disk
                 subvolumes = {
                   "@" = {
                     mountpoint = "/";

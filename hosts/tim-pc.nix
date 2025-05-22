@@ -5,6 +5,7 @@
 }: {
   # Import the common configuration shared across all machines
   imports = [
+    (import ../install.nix {disks = [["/dev/nvme0n1" "/dev/nvme1n1"]];})
     ./desktop-only-imports.nix
     ./tim-pc-hardware-configuration.nix
     ../common/nvidia.nix
