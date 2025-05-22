@@ -1,5 +1,5 @@
-{disk_path}: let
-  disk_path = builtins.disk_path 0;
+{disks ? ["/dev/nvme0n1"], ...}: let
+  disk_path = builtins.elemAt disks 0;
 in {
   disko.devices = {
     disk = {
