@@ -1,21 +1,22 @@
 {
   config,
   pkgs,
+  system,
   inputs,
   ...
 }: let
   unstable = import inputs.nixpkgs-unstable {
     config = {allowUnfree = true;};
-    inherit (pkgs) system;
+    inherit system;
   };
-  oldvscode = import inputs.nixpkgs-oldvscode {
+  pkgs = import inputs.nixpkgs-stable {
     config = {allowUnfree = true;};
-    inherit (pkgs) system;
+    inherit system;
   };
   vscodeExtensions = pkgs.vscode-extensions;
 in {
   environment.systemPackages = with pkgs; [
-    (oldvscode.vscode-with-extensions.override {
+    (vscode-with-extensions.override {
       vscodeExtensions = with vscodeExtensions; [
         ms-python.python
         ms-python.vscode-pylance
@@ -24,8 +25,8 @@ in {
         ms-vscode-remote.remote-ssh
         ms-vscode-remote.remote-containers
         github.copilot
-        unstable.vscode-extensions.github.copilot-chat
-        unstable.vscode-extensions.egirlcatnip.adwaita-github-theme
+        github.copilot-chat
+        egirlcatnip.adwaita-github-theme
         dbaeumer.vscode-eslint
         bbenoist.nix
         tauri-apps.tauri-vscode
@@ -71,9 +72,9 @@ in {
     luarocks
     lua
     meson
-    nodejs
     linux-pam
     openssl
+    openssl.dev
     perl
     php
     pixman
@@ -115,7 +116,9 @@ in {
     eslint_d
     pkg-config
     gobject-introspection
+    rustc
     cargo
+    clippy
     cargo-edit
     cargo-tauri
     nodejs
@@ -130,7 +133,6 @@ in {
     libsoup_3
     pango
     webkitgtk_4_1
-    openssl
     zlib
   ];
 }

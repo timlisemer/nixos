@@ -1,6 +1,6 @@
 {
   inputs = {
-    nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-24.11"; # Stable channel for everything else
+    nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-25.05"; # Stable channel for everything else
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable"; # Unstable channel
     nixos-wsl.url = "github:nix-community/NixOS-WSL"; # NixOS WSL
     nixpkgs-oldvscode.url = "github:NixOS/nixpkgs/333d19c8b58402b94834ec7e0b58d83c0a0ba658"; # vscode 1.98.2
@@ -39,7 +39,7 @@
     };
 
     home-manager = {
-      url = "github:nix-community/home-manager/release-24.11";
+      url = "github:nix-community/home-manager/release-25.05";
       inputs.nixpkgs.follows = "nixpkgs-stable";
     };
 
@@ -83,10 +83,12 @@
     ...
   }: {
     # Function to create configuration for any host
-    mkSystem = hostFile:
+    mkSystem = hostFile: let
+      system = "x86_64-linux";
+    in
       nixpkgs-stable.lib.nixosSystem {
-        system = "x86_64-linux";
-        specialArgs = {inherit inputs;};
+        inherit system;
+        specialArgs = {inherit inputs system;};
         modules = [
           disko.nixosModules.disko
           flatpaks.nixosModules.declarative-flatpak
@@ -113,13 +115,6 @@
 
             nixpkgs.overlays = [
               rust-overlay.overlays.default
-            ];
-
-            environment.systemPackages = [
-              (pkgs.rust-bin.stable.latest.default.overrideAttrs (old: {
-                extensions = ["rustfmt" "clippy" "rust-src" "rustc-dev" "llvm-tools-preview" "cargo" "rust-analyzer"];
-                targets = ["x86_64-unknown-linux-gnu"];
-              }))
             ];
           })
 

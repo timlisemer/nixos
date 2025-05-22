@@ -41,7 +41,7 @@
     zoxide
     distrobox
     starship
-    nerdfonts
+    nerd-fonts.jetbrains-mono
     switcheroo-control
     dconf2nix
     dive

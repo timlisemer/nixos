@@ -19,7 +19,7 @@
   # Home Manager configuration for the user 'tim'
   home-manager.users.tim = {
     # Specify the Home Manager state version
-    home.stateVersion = "24.11";
+    home.stateVersion = "25.05";
 
     imports = [
       ./dconf.nix

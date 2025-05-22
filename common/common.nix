@@ -4,7 +4,7 @@
   inputs,
   ...
 }: {
-  # Enviroment Variables
+  # Environment Variables
   environment.variables = {
     RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
     NVD_BACKEND = "direct";
@@ -17,6 +17,7 @@
     QT_QPA_PLATFORM = "wayland";
     NIXPKGS_ALLOW_UNFREE = "1"; # duplication with nixpkgs.config.allowUnfree
     WEBKIT_DISABLE_DMABUF_RENDERER = "1"; # Tauri Apps couldn’t run on NixOS NVIDIA
+    PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig";
 
     # Ensure coreutils are in $PATH
     # PATH = "${pkgs.lib.makeBinPath [ pkgs.coreutils ]}:$HOME/.bin";

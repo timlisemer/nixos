@@ -1,10 +1,14 @@
 # Stuff that only makes sense on bare-metal / desktop NixOS, not inside WSL
-{ config, pkgs, ... }: {
+{
+  config,
+  pkgs,
+  ...
+}: {
   # Bootloader
-  boot.loader.systemd-boot.enable        = true;
-  boot.loader.efi.canTouchEfiVariables   = true;
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.systemd-boot.configurationLimit = 5;
-  boot.loader.timeout                    = 1;
+  boot.loader.timeout = 1;
 
   # Enable networking
   networking.networkmanager.enable = true;
@@ -17,12 +21,10 @@
 
   # Enable Smartcard Support
   hardware.gpgSmartcards.enable = true;
-  services.pcscd.enable           = true;
-  services.udev.packages          = [ pkgs.yubikey-manager ];
-  environment.etc."chromium/native-messaging-hosts/eu.webeid.json".source =
-    "${pkgs.web-eid-app}/share/web-eid/eu.webeid.json";
-  environment.etc."opt/chrome/native-messaging-hosts/eu.webeid.json".source =
-    "${pkgs.web-eid-app}/share/web-eid/eu.webeid.json";
+  services.pcscd.enable = true;
+  services.udev.packages = [pkgs.yubikey-manager];
+  environment.etc."chromium/native-messaging-hosts/eu.webeid.json".source = "${pkgs.web-eid-app}/share/web-eid/eu.webeid.json";
+  environment.etc."opt/chrome/native-messaging-hosts/eu.webeid.json".source = "${pkgs.web-eid-app}/share/web-eid/eu.webeid.json";
   # Tell p11-kit to load/proxy opensc-pkcs11.so, providing all slots
   # (PIN1 for auth/decrypt, PIN2 for signing).
   environment.etc."pkcs11/modules/opensc-pkcs11".text = ''
@@ -40,13 +42,13 @@
   ];
 
   # Enable sound with PipeWire
-  hardware.pulseaudio.enable = false;
-  security.rtkit.enable     = true;
+  services.pulseaudio.enable = false;
+  security.rtkit.enable = true;
   services.pipewire = {
-    enable            = true;
-    alsa.enable       = true;
+    enable = true;
+    alsa.enable = true;
     alsa.support32Bit = true;
-    pulse.enable      = true;
+    pulse.enable = true;
     # jack.enable = true  # If you want JACK apps
 
     # media-session.enable = true  # default session manager
@@ -72,10 +74,10 @@
   services.spice-vdagentd.enable = true;
   virtualisation.spiceUSBRedirection.enable = true;
   virtualisation.containers.enable = true;
-  virtualisation.containers.registries.search = [ "docker.io" ];
+  virtualisation.containers.registries.search = ["docker.io"];
   virtualisation.docker = {
     enable = true;
-    rootless.enable        = true;
+    rootless.enable = true;
     rootless.setSocketVariable = true;
     # daemon.settings.ipv6 = true
     storageDriver = "btrfs";
@@ -86,12 +88,12 @@
 
   # Auto-updates
   system.autoUpgrade = {
-    enable             = true;
-    flake              = "/etc/nixos";
-    flags              = [ "--update-input" "nixpkgs" "-L" ];  # print build logs
-    dates              = "02:00";
+    enable = true;
+    flake = "/etc/nixos";
+    flags = ["--update-input" "nixpkgs" "-L"]; # print build logs
+    dates = "02:00";
     randomizedDelaySec = "45min";
-    persistent         = true;
-    allowReboot        = false;
+    persistent = true;
+    allowReboot = false;
   };
 }
