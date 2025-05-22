@@ -2,7 +2,7 @@
   inputs = {
     nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-24.11"; # Stable channel for everything else
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable"; # Unstable channel
-    nixos-wsl.url = "github:nix-community/NixOS-WSL";   # NixOS WSL
+    nixos-wsl.url = "github:nix-community/NixOS-WSL"; # NixOS WSL
     nixpkgs-oldvscode.url = "github:NixOS/nixpkgs/333d19c8b58402b94834ec7e0b58d83c0a0ba658"; # vscode 1.98.2
     # nixpkgs-stable.follows = "nixos-cosmic/nixpkgs-stable";
     # nixos-cosmic.url = "github:lilyinstarlight/nixos-cosmic";
@@ -133,36 +133,5 @@
     nixosConfigurations.tim-laptop = self.mkSystem ./hosts/tim-laptop.nix;
     nixosConfigurations.tim-pc = self.mkSystem ./hosts/tim-pc.nix;
     nixosConfigurations.tim-wsl = self.mkSystem ./hosts/tim-wsl.nix;
-
-    devShells = {
-      remote-support-tool = nixpkgs-unstable.legacyPackages.x86_64-linux.mkShell {
-        nativeBuildInputs = with nixpkgs-unstable; [
-          pkg-config
-          gobject-introspection
-          cargo
-          cargo-tauri
-          nodejs
-        ];
-
-        buildInputs = with nixpkgs-unstable; [
-          at-spi2-atk
-          atkmm
-          cairo
-          gdk-pixbuf
-          glib
-          gtk3
-          harfbuzz
-          librsvg
-          libsoup_3
-          pango
-          webkitgtk_4_1
-          openssl
-        ];
-
-        shellHook = ''
-          echo "Nix shell environment loaded"
-        '';
-      };
-    };
   };
 }
