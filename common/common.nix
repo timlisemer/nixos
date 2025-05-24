@@ -117,6 +117,14 @@
   # Or disable entirely:
   networking.firewall.enable = false;
 
+  # TTY Console
+  console = {
+    earlySetup = true;            # apply before the login prompt
+    font       = "ter-v32n";      # 16 × 32 Terminus, good for Hi-DPI
+    packages   = with pkgs; [ terminus_font ];  # make sure the PSF is present
+    keyMap     = "de";            
+  };
+
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
   # on your system were taken. It’s perfectly fine and recommended to leave
