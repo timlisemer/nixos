@@ -7,7 +7,7 @@
     ./flatpaks.nix
     ./applications.nix
     ./system-packages.nix
-    ./development.nix
+    ./vscode.nix
     ./dependencies.nix
     ./firefox.nix
   ];

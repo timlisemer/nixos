@@ -14,4 +14,6 @@
     ../secrets/sops.nix
     # ./wireguard.nix
   ];
+
+  environment.variables.WSL = "0";
 }

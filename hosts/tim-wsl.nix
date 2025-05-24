@@ -10,6 +10,9 @@
   imports = [
     inputs.nixos-wsl.nixosModules.default
     ../common/common.nix
+    ../packages/system-packages.nix
+    ../packages/vscode.nix
+    ../packages/dependencies.nix
     (import ../common/home-manager.nix ({ inherit config pkgs inputs home-manager lib; isWsl = true; }))
   ];
 
@@ -19,8 +22,14 @@
 
   wsl.enable = true;
   wsl.defaultUser = "tim";
+  environment.variables.WSL = "1";
+
+  programs.nix-ld = {
+      enable = true;
+      package = pkgs.nix-ld-rs;
+  };
 
   environment.systemPackages = with pkgs; [
-    git
+    wslu
   ];
 }

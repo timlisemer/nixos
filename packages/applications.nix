@@ -30,6 +30,14 @@
     webcord-vencord
     whatsapp-for-linux
     spotify
+
+    arduino-ide
+    qtcreator
+    jetbrains.clion
+    jetbrains.rider
+    jetbrains.rust-rover
+    jetbrains.idea-community
+    jetbrains.pycharm-community
   ];
 
   programs.steam.enable = true;
