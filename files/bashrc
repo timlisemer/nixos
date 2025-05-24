@@ -578,41 +578,37 @@ alias gclean='git clean -fdn'
 
 # --- wslcode: open Windows-side VS Code directly in a WSL window ----------
 wslcode() {
-	# Resolve Windows username (requires wslvar from the wslu package)
-	local win_user
-	win_user=$(wslvar USERNAME | tr -d '\r')
+    local win_user distro vscode args abs uri
 
-	# Absolute path to Code.exe on Windows (adjust if you installed elsewhere)
-	local vscode="/mnt/c/Users/${win_user}/AppData/Local/Programs/Microsoft VS Code/Code.exe"
-	if [[ ! -x "$vscode" ]]; then
-		echo "wslcode: VS Code not found at $vscode" >&2
-		return 1
-	fi
+    win_user=$(wslvar USERNAME | tr -d '\r')
+    vscode="/mnt/c/Users/${win_user}/AppData/Local/Programs/Microsoft VS Code/Code.exe"
+    if [[ ! -x "$vscode" ]]; then
+        echo "wslcode: VS Code not found at $vscode" >&2
+        return 1
+    fi
 
-	# Name of this WSL distribution (env var set by WSL 2)
-	local distro="${WSL_DISTRO_NAME:-$(wslvar WSL_DISTRO_NAME | tr -d '\r')}"
+    distro="${WSL_DISTRO_NAME:-$(wslvar WSL_DISTRO_NAME | tr -d '\r')}"
 
-	# Open current dir if no arguments
-	if [[ $# -eq 0 ]]; then
-		set -- .
-	fi
+    if [[ $# -eq 0 ]]; then
+        set -- .
+    fi
 
-	# Build a list of --folder-uri / --file-uri arguments
-	local args=()
-	for p in "$@"; do
-		# Resolve to absolute path and remove any trailing newline
-		local abs="$(realpath "$p")"
-		local uri="vscode-remote://wsl+${distro}${abs}"
+    args=()
+    for p in "$@"; do
+        abs="$(realpath "$p")"
+        uri="vscode-remote://wsl+${distro}${abs}"
+        if [[ -d "$abs" ]]; then
+            args+=( --folder-uri "$uri" )
+        else
+            args+=( --file-uri "$uri" )
+        fi
+    done
 
-		if [[ -d "$abs" ]]; then
-			args+=("--folder-uri" "$uri")
-		else
-			args+=("--file-uri" "$uri")
-		fi
-	done
+    # Start VS Code detached and redirect output to /dev/null
+    nohup "$vscode" "${args[@]}" >/dev/null 2>&1 &
 
-	# Launch VS Code on Windows with the remote URIs
-	"$vscode" "${args[@]}"
+    # Return control immediately
+    return 0
 }
 # -------------------------------------------------------------------------
 
