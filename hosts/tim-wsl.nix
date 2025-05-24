@@ -9,7 +9,7 @@
   imports = [
     inputs.nixos-wsl.nixosModules.default
     ../common/common.nix
-    ../common/home-manager.nix
+    (import ../common/home-manager.nix ({ inherit config pkgs inputs lib; isWsl = true; }))
   ];
 
   # Machine specific configurations
@@ -18,8 +18,4 @@
 
   wsl.enable = true;
   wsl.defaultUser = "tim";
-
-  environment.systemPackages = with pkgs; [
-    git
-  ];
 }

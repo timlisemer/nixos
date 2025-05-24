@@ -4,6 +4,7 @@
   inputs,
   home-manager,
   lib,
+  isWsl,
   ...
 }: {
   # Import the Home Manager NixOS module
@@ -21,9 +22,10 @@
     # Specify the Home Manager state version
     home.stateVersion = "25.05";
 
-    imports = [
-      ./dconf.nix
-      ./qemu.nix
+    imports =
+    (lib.optional (!isWsl) ./dconf.nix)
+    ++ [
+       ./qemu.nix 
     ];
 
     # Sops Home Configuration
