@@ -79,6 +79,7 @@
     rust-overlay,
     firefox-gnome-theme,
     blesh,
+    nixos-wsl,
     tim-nvim,
     ...
   }: {
@@ -104,6 +105,12 @@
           #nixos-cosmic.nixosModules.default
 
           vscode-server.nixosModules.default
+
+	  nixos-wsl.nixosModules.default
+          {
+            system.stateVersion = "24.05";
+            wsl.enable = true;
+          }
 
           ({
             pkgs,
