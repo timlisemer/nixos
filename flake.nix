@@ -106,12 +106,6 @@
 
           vscode-server.nixosModules.default
 
-	  nixos-wsl.nixosModules.default
-          {
-            system.stateVersion = "25.05";
-            wsl.enable = true;
-          }
-
           ({
             pkgs,
             lib,
