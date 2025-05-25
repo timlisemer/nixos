@@ -37,6 +37,8 @@
     wslu
   ];
 
+  # docker context create nixos-wsl --docker "host=tcp://localhost:2375"
+  # docker context use nixos-wsl
   virtualisation.docker = {
     enable = true;
     rootless.enable = false;
