@@ -70,28 +70,13 @@
   # services.comin = { … };
   # systemd.services.comin = { … };
 
-  # Enable common container config files
-  services.spice-vdagentd.enable = true;
-  virtualisation.spiceUSBRedirection.enable = true;
-  virtualisation.containers.enable = true;
-  virtualisation.containers.registries.search = ["docker.io"];
   virtualisation.docker = {
     enable = true;
     rootless.enable = true;
     rootless.setSocketVariable = true;
     # daemon.settings.ipv6 = true
     storageDriver = "btrfs";
-    daemon.settings = {
-      # expose for Windows; remove if you only need CLI inside WSL
-      "hosts" = [
-        "unix:///var/run/docker.sock"
-        "tcp://0.0.0.0:2375"
-      ];
-    };
   };
-
-  # Unrestrict ports below 1000
-  boot.kernel.sysctl."net.ipv4.ip_unprivileged_port_start" = 0;
 
   # Auto-updates
   system.autoUpgrade = {

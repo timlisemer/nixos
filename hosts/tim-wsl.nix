@@ -13,7 +13,10 @@
     ../packages/system-packages.nix
     ../packages/vscode.nix
     ../packages/dependencies.nix
-    (import ../common/home-manager.nix ({ inherit config pkgs inputs home-manager lib; isWsl = true; }))
+    (import ../common/home-manager.nix {
+      inherit config pkgs inputs home-manager lib;
+      isWsl = true;
+    })
   ];
 
   # Machine specific configurations
@@ -22,14 +25,29 @@
 
   wsl.enable = true;
   wsl.defaultUser = "tim";
+  wsl.docker-desktop.enable = true;
   environment.variables.WSL = "1";
 
   programs.nix-ld = {
-      enable = true;
-      package = pkgs.nix-ld-rs;
+    enable = true;
+    package = pkgs.nix-ld-rs;
   };
 
   environment.systemPackages = with pkgs; [
     wslu
   ];
+
+  virtualisation.docker = {
+    enable = true;
+    rootless.enable = false;
+    # rootless.setSocketVariable = true;
+    # daemon.settings.ipv6 = true
+    daemon.settings = {
+      # expose for Windows; remove if you only need CLI inside WSL
+      "hosts" = [
+        "unix:///var/run/docker.sock"
+        "tcp://0.0.0.0:2375"
+      ];
+    };
+  };
 }

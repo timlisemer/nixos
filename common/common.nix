@@ -76,6 +76,15 @@
   # VSCode Server
   services.vscode-server.enable = true;
 
+  # Container
+  services.spice-vdagentd.enable = true;
+  virtualisation.spiceUSBRedirection.enable = true;
+  virtualisation.containers.enable = true;
+  virtualisation.containers.registries.search = ["docker.io"];
+
+  # Unrestrict ports below 1000
+  boot.kernel.sysctl."net.ipv4.ip_unprivileged_port_start" = 0;
+
   # Fix shebangs in scripts
   services.envfs.enable = true;
 
@@ -104,7 +113,6 @@
     };
   };
 
-  # Define a user account. Don’t forget to set a password with ‘passwd’.
   users.users.tim = {
     isNormalUser = true;
     description = "Tim Lisemer";
@@ -119,10 +127,10 @@
 
   # TTY Console
   console = {
-    earlySetup = true;            # apply before the login prompt
-    font       = "ter-v32n";      # 16 × 32 Terminus, good for Hi-DPI
-    packages   = with pkgs; [ terminus_font ];  # make sure the PSF is present
-    keyMap     = "de";            
+    earlySetup = true; # apply before the login prompt
+    font = "ter-v32n"; # 16 × 32 Terminus, good for Hi-DPI
+    packages = with pkgs; [terminus_font]; # make sure the PSF is present
+    keyMap = "de";
   };
 
   # This value determines the NixOS release from which the default

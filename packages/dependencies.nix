@@ -47,7 +47,6 @@
     lld
     libllvm
     luarocks
-    npm
     lua
     meson
     linux-pam
