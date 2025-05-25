@@ -37,6 +37,7 @@
     resources
     wl-clipboard
     xorg.xeyes
+    btop
     dconf2nix
     zoxide
     distrobox

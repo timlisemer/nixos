@@ -81,6 +81,13 @@
     rootless.setSocketVariable = true;
     # daemon.settings.ipv6 = true
     storageDriver = "btrfs";
+    daemon.settings = {
+      # expose for Windows; remove if you only need CLI inside WSL
+      "hosts" = [
+        "unix:///var/run/docker.sock"
+        "tcp://0.0.0.0:2375"
+      ];
+    };
   };
 
   # Unrestrict ports below 1000
