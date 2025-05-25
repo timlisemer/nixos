@@ -2,12 +2,17 @@
   config,
   pkgs,
   inputs,
+  home-manager,
+  lib,
   ...
 }: {
   imports = [
     ../common/common.nix
     ../common/desktop-only.nix
-    ../common/home-manager.nix
+    (import ../common/home-manager.nix {
+      inherit config pkgs inputs home-manager lib;
+      isWsl = true;
+    })
     ../packages/packages.nix
     ../desktop-environments/desktop-environments.nix
     inputs.sops-nix.nixosModules.sops
