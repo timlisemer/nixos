@@ -35,7 +35,6 @@
 
   environment.systemPackages = with pkgs; [
     wslu
-    wl-clipboard-rs
   ];
 
   # docker context create nixos-wsl --docker "host=tcp://localhost:2375"

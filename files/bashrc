@@ -17,11 +17,11 @@ alias iocto='cd ~/Coding/iocto'
 
 if [ "${WSL:-0}" = "1" ]; then
 	# WSL=1, set aliases for WSL environment
-	alias rebuild='sudo cp -a /home/tim/Coding/Other/nixos/* /etc/nixos/ && sudo nixos-rebuild switch --flake /etc/nixos#tim-wsl'
+	alias rebuild='sudo cp -a /home/tim/Coding/Other/nixos/* /etc/nixos/ && sudo nixos-rebuild switch --flake /etc/nixos#tim-wsl && clear && bash'
 	alias code='wslcode'
 else
 	# WSL is unset or not 1, set aliases for non-WSL environment
-	alias rebuild='sudo cp -a /home/tim/Coding/Other/nixos/* /etc/nixos/ && sudo nixos-rebuild switch'
+	alias rebuild='sudo cp -a /home/tim/Coding/Other/nixos/* /etc/nixos/ && sudo nixos-rebuild switch && clear && bash'
 fi
 
 #######################################################
@@ -613,12 +613,71 @@ wslcode() {
 	done
 
 	# Start VS Code detached and redirect output to /dev/null
-	nohup "$vscode" "${args[@]}" >/dev/null 2>&1 &
+	(
+		nohup "$vscode" "${args[@]}" >/dev/null 2>&1 &
+		disown
+	) >/dev/null 2>&1
 
 	# Return control immediately
 	return 0
 }
 # -------------------------------------------------------------------------
+
+# --- explorer: open Windows File Explorer from inside WSL -------------------
+explorer() {
+
+	if [ "${WSL:-0}" = "0" ]; then
+		echo "This function is only available from within a WSL environment" >&2
+		return 1
+	fi
+
+	local win_explorer="/mnt/c/Windows/explorer.exe"
+	if [[ ! -x "$win_explorer" ]]; then
+		echo "explorer: Windows Explorer not found at $win_explorer" >&2
+		return 1
+	fi
+
+	local distro="${WSL_DISTRO_NAME:-$(wslvar WSL_DISTRO_NAME | tr -d '\r')}"
+
+	# If no argument is provided, use $HOME (user's home directory)
+	if [[ $# -eq 0 ]]; then
+		set -- "$HOME"
+	fi
+
+	local args=() abs win_path
+
+	for p in "$@"; do
+		abs="$(realpath "$p")"
+
+		if [[ ! -e "$abs" ]]; then
+			echo "explorer: $p – no such file or directory" >&2
+			continue
+		fi
+
+		if [[ "$abs" == /mnt/?/* ]]; then
+			local drive="${abs:5:1}"
+			win_path="${drive^^}:${abs:6}"
+			win_path="${win_path//\//\\}"
+		else
+			local sub="${abs#/}"
+			sub="${sub//\//\\}"
+			win_path="\\\\wsl.localhost\\${distro}\\${sub}"
+		fi
+
+		if [[ -f "$abs" ]]; then
+			args+=("/select,${win_path}")
+		else
+			args+=("${win_path}")
+		fi
+	done
+
+	(
+		nohup "$win_explorer" "${args[@]}" >/dev/null 2>&1 &
+		disown
+	) >/dev/null 2>&1
+	return 0
+}
+# ---------------------------------------------------------------------------
 
 #######################################################
 # Set the ultimate amazing command prompt

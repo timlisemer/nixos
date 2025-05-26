@@ -95,6 +95,7 @@
     gobject-introspection
     rustc
     cargo
+    rustfmt
     clippy
     cargo-edit
     cargo-tauri
