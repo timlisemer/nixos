@@ -12,6 +12,8 @@ alias gittree='git ls-files --cached --others --exclude-standard | tree --fromfi
 alias term='ghostty'
 alias terminal='ghostty'
 alias logout='loginctl terminate-user $USER'
+alias nixos='cd ~/Coding/Other/nixos'
+alias iocto='cd ~/Coding/iocto'
 
 if [ "${WSL:-0}" = "1" ]; then
 	# WSL=1, set aliases for WSL environment
@@ -578,37 +580,43 @@ alias gclean='git clean -fdn'
 
 # --- wslcode: open Windows-side VS Code directly in a WSL window ----------
 wslcode() {
-    local win_user distro vscode args abs uri
 
-    win_user=$(wslvar USERNAME | tr -d '\r')
-    vscode="/mnt/c/Users/${win_user}/AppData/Local/Programs/Microsoft VS Code/Code.exe"
-    if [[ ! -x "$vscode" ]]; then
-        echo "wslcode: VS Code not found at $vscode" >&2
-        return 1
-    fi
+	if [ "${WSL:-0}" = "0" ]; then
+		echo "This function is only available from within a wsl environment"
+		return 1
+	fi
 
-    distro="${WSL_DISTRO_NAME:-$(wslvar WSL_DISTRO_NAME | tr -d '\r')}"
+	local win_user distro vscode args abs uri
 
-    if [[ $# -eq 0 ]]; then
-        set -- .
-    fi
+	win_user=$(wslvar USERNAME | tr -d '\r')
+	vscode="/mnt/c/Users/${win_user}/AppData/Local/Programs/Microsoft VS Code/Code.exe"
+	if [[ ! -x "$vscode" ]]; then
+		echo "wslcode: VS Code not found at $vscode" >&2
+		return 1
+	fi
 
-    args=()
-    for p in "$@"; do
-        abs="$(realpath "$p")"
-        uri="vscode-remote://wsl+${distro}${abs}"
-        if [[ -d "$abs" ]]; then
-            args+=( --folder-uri "$uri" )
-        else
-            args+=( --file-uri "$uri" )
-        fi
-    done
+	distro="${WSL_DISTRO_NAME:-$(wslvar WSL_DISTRO_NAME | tr -d '\r')}"
 
-    # Start VS Code detached and redirect output to /dev/null
-    nohup "$vscode" "${args[@]}" >/dev/null 2>&1 &
+	if [[ $# -eq 0 ]]; then
+		set -- .
+	fi
 
-    # Return control immediately
-    return 0
+	args=()
+	for p in "$@"; do
+		abs="$(realpath "$p")"
+		uri="vscode-remote://wsl+${distro}${abs}"
+		if [[ -d "$abs" ]]; then
+			args+=(--folder-uri "$uri")
+		else
+			args+=(--file-uri "$uri")
+		fi
+	done
+
+	# Start VS Code detached and redirect output to /dev/null
+	nohup "$vscode" "${args[@]}" >/dev/null 2>&1 &
+
+	# Return control immediately
+	return 0
 }
 # -------------------------------------------------------------------------
 
@@ -625,8 +633,6 @@ eval "$(zoxide init bash)"
 [[ -f ~/.bash-preexec.sh ]] && source ~/.bash-preexec.sh
 source ~/.local/share/blesh/ble.sh
 eval "$(atuin init bash)"
-
-# . "$HOME/.cargo/env"
 
 # Terminal stuff
 

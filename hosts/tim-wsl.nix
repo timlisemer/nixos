@@ -11,7 +11,6 @@
     inputs.nixos-wsl.nixosModules.default
     ../common/common.nix
     ../packages/system-packages.nix
-    ../packages/vscode.nix
     ../packages/dependencies.nix
     (import ../common/home-manager.nix {
       inherit config pkgs inputs home-manager lib;
@@ -27,6 +26,7 @@
   wsl.defaultUser = "tim";
   wsl.docker-desktop.enable = true;
   environment.variables.WSL = "1";
+  wsl.wslConf.interop.appendWindowsPath = false;
 
   programs.nix-ld = {
     enable = true;
@@ -35,6 +35,7 @@
 
   environment.systemPackages = with pkgs; [
     wslu
+    wl-clipboard-rs
   ];
 
   # docker context create nixos-wsl --docker "host=tcp://localhost:2375"
