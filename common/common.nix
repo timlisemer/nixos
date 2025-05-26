@@ -18,9 +18,6 @@
     NIXPKGS_ALLOW_UNFREE = "1"; # duplication with nixpkgs.config.allowUnfree
     WEBKIT_DISABLE_DMABUF_RENDERER = "1"; # Tauri Apps couldn’t run on NixOS NVIDIA
     PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig";
-
-    # Ensure coreutils are in $PATH
-    # PATH = "${pkgs.lib.makeBinPath [ pkgs.coreutils ]}:$HOME/.bin";
   };
 
   # Enable experimental nix-command and flakes
@@ -84,9 +81,6 @@
 
   # Unrestrict ports below 1000
   boot.kernel.sysctl."net.ipv4.ip_unprivileged_port_start" = 0;
-
-  # Fix shebangs in scripts
-  services.envfs.enable = true;
 
   # Syncthing (disabled by default)
   services.syncthing = {
