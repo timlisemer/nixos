@@ -170,7 +170,12 @@
       ".config/nvim/init.lua".source = "${inputs.tim-nvim}/init.lua";
 
       # blesh
-      ".local/share/blesh".source = ./files/blesh;
+      ".local/share/blesh/ble.sh" = {
+        source = ../files/blesh/ble.sh;
+        executable = true;
+        force = true;
+        recursive = true;
+      };
 
       # Vscode
       ".config/Code/User/ia.txt" = {
