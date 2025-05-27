@@ -51,11 +51,17 @@
     };
 
     # Firefox Theme
-    home.file.".mozilla/firefox/default/chrome/firefox-gnome-theme".source = inputs.firefox-gnome-theme;
-    home.file.".mozilla/firefox/default/chrome/userChrome.css".text = ''
-      @import "firefox-gnome-theme/userChrome.css";
-      @import "firefox-gnome-theme/theme/colors/dark.css";
-    '';
+    home.file.".mozilla/firefox/default/chrome/firefox-gnome-theme" = {
+      source = inputs.firefox-gnome-theme;
+      force = true;
+    };
+    home.file.".mozilla/firefox/default/chrome/userChrome.css" = {
+      text = ''
+        @import "firefox-gnome-theme/userChrome.css";
+        @import "firefox-gnome-theme/theme/colors/dark.css";
+      '';
+      force = true;
+    };
 
     home.activation = {
       firefoxThemeActivation = ''
@@ -112,99 +118,161 @@
 
     # Files and folders to be symlinked into home
     home.file = {
-      ".config/ags".source = builtins.toPath ../files/ags;
-      ".config/hypr".source = builtins.toPath ../files/hypr;
-      ".config/starship.toml".source = builtins.toPath ../files/starship.toml;
-      ".config/wireplumber".source = builtins.toPath ../files/wireplumber;
-      "Pictures/Wallpapers".source = builtins.toPath ../files/Wallpapers;
-      ".bash_profile".source = builtins.toPath ../files/bash_profile;
-      ".bashrc".source = builtins.toPath ../files/bashrc;
-      ".stignore".source = builtins.toPath ../files/stignore;
-      ".vimrc".source = builtins.toPath ../files/vimrc;
+      ".config/ags" = {
+        source = builtins.toPath ../files/ags;
+        force = true;
+      };
+      ".config/hypr" = {
+        source = builtins.toPath ../files/hypr;
+        force = true;
+      };
+      ".config/starship.toml" = {
+        source = builtins.toPath ../files/starship.toml;
+        force = true;
+      };
+      ".config/wireplumber" = {
+        source = builtins.toPath ../files/wireplumber;
+        force = true;
+      };
+      "Pictures/Wallpapers" = {
+        source = builtins.toPath ../files/Wallpapers;
+        force = true;
+      };
+      ".bash_profile" = {
+        source = builtins.toPath ../files/bash_profile;
+        force = true;
+      };
+      ".bashrc" = {
+        source = builtins.toPath ../files/bashrc;
+        force = true;
+      };
+      ".stignore" = {
+        source = builtins.toPath ../files/stignore;
+        force = true;
+      };
+      ".vimrc" = {
+        source = builtins.toPath ../files/vimrc;
+        force = true;
+      };
 
       # Arduino
-      ".arduinoIDE/ia.txt" = {
-        text = ''ia! '';
-        executable = false;
+      ".arduinoIDE/arduino-cli.yaml" = {
+        source = builtins.toPath ../files/arduino/arduino-cli.yaml;
+        force = true;
       };
-      ".arduinoIDE/arduino-cli.yaml".source = builtins.toPath ../files/arduino/arduino-cli.yaml;
 
       # EasyEffects
-      ".config/easyeffects/ia.txt" = {
-        text = ''ia! '';
-        executable = false;
+      ".config/easyeffects/autoload/input/alsa_input.usb-R__DE_R__DE_NT-USB__02447C32-00.mono-fallback:.json" = {
+        source = builtins.toPath ../files/easyeffects/autoload/input;
+        force = true;
       };
-      ".config/easyeffects/autoload/ia.txt" = {
-        text = ''ia! '';
-        executable = false;
+      ".config/easyeffects/input/Discord.json" = {
+        source = builtins.toPath ../files/easyeffects/input;
+        force = true;
       };
-      ".config/easyeffects/autoload/input/ia.txt" = {
-        text = ''ia! '';
-        executable = false;
-      };
-      ".config/easyeffects/input/ia.txt" = {
-        text = ''ia! '';
-        executable = false;
-      };
-      ".config/easyeffects/autoload/input/alsa_input.usb-R__DE_R__DE_NT-USB__02447C32-00.mono-fallback:.json".source = builtins.toPath ../files/easyeffects/autoload/input;
-      ".config/easyeffects/input/Discord.json".source = builtins.toPath ../files/easyeffects/input;
 
       # OpenRGB
-      ".config/OpenRGB/ia.txt" = {
-        text = ''ia! '';
-        executable = false;
+      ".config/OpenRGB/plugins/settings" = {
+        source = ../files/OpenRGB/plugins/settings;
+        force = true;
       };
-      ".config/OpenRGB/plugins/settings".source = ../files/OpenRGB/plugins/settings;
-      ".config/OpenRGB/Off.orp".source = ../files/OpenRGB/Off.orp;
-      ".config/OpenRGB/On.orp".source = ../files/OpenRGB/On.orp;
-      ".config/OpenRGB/OpenRGB.json".source = ../files/OpenRGB/OpenRGB.json;
-      ".config/OpenRGB/sizes.ors".source = ../files/OpenRGB/sizes.ors;
+      ".config/OpenRGB/Off.orp" = {
+        source = ../files/OpenRGB/Off.orp;
+        force = true;
+      };
+      ".config/OpenRGB/On.orp" = {
+        source = ../files/OpenRGB/On.orp;
+        force = true;
+      };
+      ".config/OpenRGB/OpenRGB.json" = {
+        source = ../files/OpenRGB/OpenRGB.json;
+        force = true;
+      };
+      ".config/OpenRGB/sizes.ors" = {
+        source = ../files/OpenRGB/sizes.ors;
+        force = true;
+      };
 
       # nvim
-      ".config/nvim/ia.txt" = {
-        text = ''ia! '';
-        executable = false;
+      ".config/nvim/after" = {
+        source = "${inputs.tim-nvim}/after";
+        force = true;
       };
-      ".config/nvim/after".source = "${inputs.tim-nvim}/after";
-      ".config/nvim/lua".source = "${inputs.tim-nvim}/lua";
-      ".config/nvim/init.lua".source = "${inputs.tim-nvim}/init.lua";
+      ".config/nvim/lua" = {
+        source = "${inputs.tim-nvim}/lua";
+        force = true;
+      };
+      ".config/nvim/init.lua" = {
+        source = "${inputs.tim-nvim}/init.lua";
+        force = true;
+      };
 
       # blesh
       ".local/share/blesh-copy" = {
         source = ../files/blesh;
         executable = true;
         force = true;
-        # recursive = true;
+        # recursive = true; # Will not work with recursive
       };
 
       # Vscode
-      ".config/Code/User/ia.txt" = {
-        text = ''ia! '';
-        executable = false;
+      ".config/Code/User/settings.json" = {
+        source = builtins.toPath ../files/vscode/settings.json;
+        force = true;
       };
-      ".config/Code/User/settings.json".source = builtins.toPath ../files/vscode/settings.json;
-      ".config/Code/User/keybindings.json".source = builtins.toPath ../files/vscode/keybindings.json;
+      ".config/Code/User/keybindings.json" = {
+        source = builtins.toPath ../files/vscode/keybindings.json;
+        force = true;
+      };
 
       # Autostart
-      ".config/autostart".source = ../files/autostart;
+      ".config/autostart" = {
+        source = ../files/autostart;
+        force = true;
+      };
 
       # Mimeapps
-      ".config/mimeapps.list".source = builtins.toPath ../files/mimeapps.list;
+      ".config/mimeapps.list" = {
+        source = builtins.toPath ../files/mimeapps.list;
+        force = true;
+      };
 
       # Gnome
       ".config/gnome-initial-setup-done" = {
         text = ''yes'';
+        force = true;
         executable = false;
       };
 
       # Terminals
-      ".config/ghostty/config".source = builtins.toPath ../files/ghostty/config;
-      ".local/share/icons/hicolor/16x16/apps/com.mitchellh.ghostty.png".source = builtins.toPath ../files/icons/ghostty/com.mitchellh.ghostty_16.png;
-      ".local/share/icons/hicolor/32x32/apps/com.mitchellh.ghostty.png".source = builtins.toPath ../files/icons/ghostty/com.mitchellh.ghostty_32.png;
-      ".local/share/icons/hicolor/128x128/apps/com.mitchellh.ghostty.png".source = builtins.toPath ../files/icons/ghostty/com.mitchellh.ghostty_128.png;
-      ".local/share/icons/hicolor/256x256/apps/com.mitchellh.ghostty.png".source = builtins.toPath ../files/icons/ghostty/com.mitchellh.ghostty_256.png;
-      ".local/share/icons/hicolor/512x512/apps/com.mitchellh.ghostty.png".source = builtins.toPath ../files/icons/ghostty/com.mitchellh.ghostty_512.png;
-      ".local/share/icons/hicolor/1024x1024/apps/com.mitchellh.ghostty.png".source = builtins.toPath ../files/icons/ghostty/com.mitchellh.ghostty_1024.png;
+      ".config/ghostty/config" = {
+        source = builtins.toPath ../files/ghostty/config;
+        force = true;
+      };
+      ".local/share/icons/hicolor/16x16/apps/com.mitchellh.ghostty.png" = {
+        source = builtins.toPath ../files/icons/ghostty/com.mitchellh.ghostty_16.png;
+        force = true;
+      };
+      ".local/share/icons/hicolor/32x32/apps/com.mitchellh.ghostty.png" = {
+        source = builtins.toPath ../files/icons/ghostty/com.mitchellh.ghostty_32.png;
+        force = true;
+      };
+      ".local/share/icons/hicolor/128x128/apps/com.mitchellh.ghostty.png" = {
+        source = builtins.toPath ../files/icons/ghostty/com.mitchellh.ghostty_128.png;
+        force = true;
+      };
+      ".local/share/icons/hicolor/256x256/apps/com.mitchellh.ghostty.png" = {
+        source = builtins.toPath ../files/icons/ghostty/com.mitchellh.ghostty_256.png;
+        force = true;
+      };
+      ".local/share/icons/hicolor/512x512/apps/com.mitchellh.ghostty.png" = {
+        source = builtins.toPath ../files/icons/ghostty/com.mitchellh.ghostty_512.png;
+        force = true;
+      };
+      ".local/share/icons/hicolor/1024x1024/apps/com.mitchellh.ghostty.png" = {
+        source = builtins.toPath ../files/icons/ghostty/com.mitchellh.ghostty_1024.png;
+        force = true;
+      };
     };
 
     # Steam adwaita theme
