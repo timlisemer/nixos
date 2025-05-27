@@ -66,10 +66,6 @@
   # Enable Power Profiles
   services.power-profiles-daemon.enable = true;
 
-  # Comin (commented out)
-  # services.comin = { … };
-  # systemd.services.comin = { … };
-
   virtualisation.docker = {
     enable = true;
     rootless.enable = true;

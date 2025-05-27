@@ -66,12 +66,11 @@
     home.activation = {
       firefoxThemeActivation = ''
         # Ensure userContent.css exists and is non-empty
-
         mkdir -p $HOME/.mozilla/firefox/default/chrome/
         [[ -s "$HOME/.mozilla/firefox/default/chrome/userContent.css" ]] || echo >> "$HOME/.mozilla/firefox/default/chrome/userContent.css"
 
         # Insert @import statement at the beginning of userContent.css before any @namespace
-        sed -i '1s/^/@import "firefox-gnome-theme\/userContent.css";\n/' "$HOME/.mozilla/firefox/default/chrome/userContent.css"
+        grep -Fxq '@import "firefox-gnome-theme/userContent.css";' "$HOME/.mozilla/firefox/default/chrome/userContent.css" || sed -i '1i@import "firefox-gnome-theme/userContent.css";' "$HOME/.mozilla/firefox/default/chrome/userContent.css"
       '';
     };
 
