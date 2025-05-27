@@ -27,7 +27,6 @@
     google-chrome
     # discord
     webcord-vencord
-    whatsapp-for-linux
     spotify
 
     arduino-ide

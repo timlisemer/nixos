@@ -23,10 +23,10 @@
     home.stateVersion = "25.05";
 
     imports =
-    (lib.optional (!isWsl) ./dconf.nix)
-    ++ [
-       ./qemu.nix 
-    ];
+      (lib.optional (!isWsl) ./dconf.nix)
+      ++ [
+        ./qemu.nix
+      ];
 
     # Sops Home Configuration
     sops.defaultSopsFile = ../secrets/secrets.yaml;
@@ -171,13 +171,6 @@
 
       # blesh
       ".local/share/blesh".source = inputs.blesh;
-
-      # WhatsApp
-      ".config/whatsapp-for-linux/ia.txt" = {
-        text = ''ia! '';
-        executable = false;
-      };
-      ".config/whatsapp-for-linux/settings.conf".source = builtins.toPath ../files/whatsapp-for-linux/settings.conf;
 
       # Vscode
       ".config/Code/User/ia.txt" = {
