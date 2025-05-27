@@ -170,7 +170,7 @@
       ".config/nvim/init.lua".source = "${inputs.tim-nvim}/init.lua";
 
       # blesh
-      ".local/share/blesh".source = inputs.blesh;
+      ".local/share/blesh".source = ./files/blesh;
 
       # Vscode
       ".config/Code/User/ia.txt" = {

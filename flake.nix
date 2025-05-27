@@ -53,11 +53,6 @@
       flake = false;
     };
 
-    blesh = {
-      url = "https://github.com/akinomyoga/ble.sh/releases/download/nightly/ble-nightly.tar.xz";
-      flake = false;
-    };
-
     tim-nvim = {
       url = "github:timlisemer/nvim";
       flake = false;
@@ -78,7 +73,6 @@
     home-manager,
     rust-overlay,
     firefox-gnome-theme,
-    blesh,
     nixos-wsl,
     tim-nvim,
     ...
