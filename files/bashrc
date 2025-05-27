@@ -571,8 +571,8 @@ eval "$(starship init bash)"
 eval "$(zoxide init bash)"
 
 [[ -f ~/.bash-preexec.sh ]] && source ~/.bash-preexec.sh
+[[ ! -d ~/.local/share/blesh || -z "$(ls -A ~/.local/share/blesh 2>/dev/null)" ]] && { mkdir -p ~/.local/share/blesh && cp -a ~/.local/share/blesh-copy/* ~/.local/share/blesh; }
 chown -R $USER:users ~/.local/share/blesh
-echo "blesh ownership set to $USER:users. ls: $(ls -ld ~/.local/share/blesh)"
 source ~/.local/share/blesh/ble.sh
 eval "$(atuin init bash)"
 
