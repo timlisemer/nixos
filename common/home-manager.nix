@@ -31,7 +31,7 @@
     # Sops Home Configuration
     sops.defaultSopsFile = ../secrets/secrets.yaml;
     sops.defaultSopsFormat = "yaml";
-    sops.age.sshKeyPaths = ["/home/tim/.ssh/id_ed25519y"];
+    sops.age.sshKeyPaths = [".ssh/id_ed25519y"];
 
     # Git configuration
     programs.git = {

@@ -19,7 +19,7 @@
     Name=Windows 11
     Comment=Launch Windows 11 in QEMU
     Exec=bash -c 'VM_FILES="$HOME/.config/qemu/windows-11"; [ ! -d "$VM_FILES" ] || [ -z "$(ls -A "$VM_FILES")" ] && mkdir -p "$VM_FILES" && cd "$VM_FILES" && quickget windows 11; quickemu --vm "$VM_FILES/windows-11.conf" --display spice --viewer remote-viewer --width 800 --height 800'
-    Icon=/home/tim/.local/share/icons/windows11-48.png
+    Icon=.local/share/icons/windows11-48.png
     Terminal=false
     Type=Application
     Categories=System;Virtualization;
@@ -32,7 +32,7 @@
     Name=Windows 10
     Comment=Launch Windows 10 in QEMU
     Exec=bash -c 'VM_FILES="$HOME/.config/qemu/windows-10"; [ ! -d "$VM_FILES" ] || [ -z "$(ls -A "$VM_FILES")" ] && mkdir -p "$VM_FILES" && cd "$VM_FILES" && quickget windows 10; quickemu --vm "$VM_FILES/windows-10.conf" --display spice --viewer remote-viewer --width 800 --height 800'
-    Icon=/home/tim/.local/share/icons/windows10-48.png
+    Icon=.local/share/icons/windows10-48.png
     Terminal=false
     Type=Application
     Categories=System;Virtualization;
