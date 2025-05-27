@@ -63,20 +63,17 @@
     tim-nvim,
     ...
   }: {
-    # Function to create configuration for any host
-    mkSystem = hostFile: let
-      system = "x86_64-linux";
-    in
+    mkSystem = {
+      hostFile,
+      system,
+    }:
       nixpkgs-stable.lib.nixosSystem {
         inherit system;
         specialArgs = {inherit inputs system;};
         modules = [
           disko.nixosModules.disko
           flatpaks.nixosModules.declarative-flatpak
-          # sops-nix.nixosModules.sops
-
           vscode-server.nixosModules.default
-
           ({
             pkgs,
             lib,
@@ -85,15 +82,22 @@
           }: {
             environment.variables.NIX_PATH = lib.mkForce "nixpkgs=${inputs.nixpkgs-stable.outPath}";
           })
-
-          # Include the specific host configuration
           (import hostFile)
         ];
       };
 
-    # Configurations for tim-laptop and tim-pc
-    nixosConfigurations.tim-laptop = self.mkSystem ./hosts/tim-laptop.nix;
-    nixosConfigurations.tim-pc = self.mkSystem ./hosts/tim-pc.nix;
-    nixosConfigurations.tim-wsl = self.mkSystem ./hosts/tim-wsl.nix;
+    # Host Configurations
+    nixosConfigurations.tim-laptop = self.mkSystem {
+      hostFile = ./hosts/tim-laptop.nix;
+      system = "x86_64-linux";
+    };
+    nixosConfigurations.tim-pc = self.mkSystem {
+      hostFile = ./hosts/tim-pc.nix;
+      system = "x86_64-linux";
+    };
+    nixosConfigurations.tim-wsl = self.mkSystem {
+      hostFile = ./hosts/tim-wsl.nix;
+      system = "x86_64-linux";
+    };
   };
 }
