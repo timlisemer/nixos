@@ -207,14 +207,6 @@
         force = true;
       };
 
-      # blesh
-      ".local/share/blesh-copy" = {
-        source = ../files/blesh;
-        executable = true;
-        force = true;
-        # recursive = true; # Will not work with recursive
-      };
-
       # Vscode
       ".config/Code/User/settings.json" = {
         source = builtins.toPath ../files/vscode/settings.json;

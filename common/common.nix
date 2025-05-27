@@ -18,6 +18,7 @@
     NIXPKGS_ALLOW_UNFREE = "1"; # duplication with nixpkgs.config.allowUnfree
     WEBKIT_DISABLE_DMABUF_RENDERER = "1"; # Tauri Apps couldn’t run on NixOS NVIDIA
     PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig";
+    BLESH_PATH = "${pkgs.blesh}/share/blesh";
   };
 
   # Enable experimental nix-command and flakes
