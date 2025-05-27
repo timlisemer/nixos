@@ -401,7 +401,7 @@ with lib.hm.gvariant; {
       hotkeys-overlay-combo = "TEMPORARILY";
       leftbox-padding = -1;
       panel-anchors = ''
-        {"AUS-LBLMQS007558":"MIDDLE","LEN-URHDTW17":"MIDDLE","LEN-URHDTW1X":"MIDDLE"}
+        {"AUS-LBLMQS007558":"MIDDLE","LEN-URHDTW17":"MIDDLE","LEN-URHDTW1X":"MIDDLE","SHP-0x00000000":"MIDDLE"}
       '';
       panel-element-positions = ''
         {"0":[{"element":"leftBox","visible":true,"position":"stackedTL"},{"element":"showAppsButton","visible":false,"position":"stackedTL"},{"element":"activitiesButton","visible":true,"position":"stackedTL"},{"element":"rightBox","visible":true,"position":"stackedTL"},{"element":"centerBox","visible":true,"position":"stackedTL"},{"element":"taskbar","visible":true,"position":"centerMonitor"},{"element":"systemMenu","visible":true,"position":"stackedBR"},{"element":"dateMenu","visible":true,"position":"stackedBR"},{"element":"desktopButton","visible":true,"position":"stackedBR"}],
@@ -410,10 +410,10 @@ with lib.hm.gvariant; {
       '';
       panel-element-positions-monitors-sync = false;
       panel-lengths = ''
-        {"AUS-LBLMQS007558":100,"LEN-URHDTW17":100,"LEN-URHDTW1X":100}
+        {"AUS-LBLMQS007558":100,"LEN-URHDTW17":100,"LEN-URHDTW1X":100,"SHP-0x00000000":100}
       '';
       panel-sizes = ''
-        {"AUS-LBLMQS007558":48,"LEN-URHDTW17":40,"LEN-URHDTW1X":40}
+        {"AUS-LBLMQS007558":48,"LEN-URHDTW17":40,"LEN-URHDTW1X":40,"SHP-0x00000000":40}
       '';
       primary-monitor = "AUS-LBLMQS007558";
       status-icon-padding = -1;
