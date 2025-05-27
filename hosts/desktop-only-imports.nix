@@ -11,7 +11,7 @@
     ../common/desktop-only.nix
     (import ../common/home-manager.nix {
       inherit config pkgs inputs home-manager lib;
-      isWsl = true;
+      isWsl = false;
     })
     ../packages/packages.nix
     ../desktop-environments/desktop-environments.nix

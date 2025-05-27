@@ -23,7 +23,7 @@
     home.stateVersion = "25.05";
 
     imports =
-      (lib.optional (!isWsl) ./dconf.nix)
+      lib.optionals (!isWsl) [./dconf.nix]
       ++ [
         ./qemu.nix
       ];

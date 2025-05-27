@@ -255,112 +255,31 @@ with lib.hm.gvariant; {
       enable-sound-alerts = true;
     };
 
-    "org/gnome/shell/extensions/arcmenu" = {
-      arc-menu-icon = 71;
-      arcmenu-hotkey = ["Super_R"];
-      custom-menu-button-icon-size = mkDouble "40.0";
-      enable-menu-hotkey = false;
-      menu-background-color = "rgba(36,36,36,0.85)";
-      menu-border-color = "rgb(60,60,60)";
-      menu-button-appearance = "Icon";
-      menu-button-icon = "Menu_Icon";
-      menu-foreground-color = "rgb(223,223,223)";
-      menu-item-active-bg-color = "rgb(25,98,163)";
-      menu-item-active-fg-color = "rgb(255,255,255)";
-      menu-item-hover-bg-color = "rgb(21,83,158)";
-      menu-item-hover-fg-color = "rgb(255,255,255)";
-      menu-layout = "Eleven";
-      menu-separator-color = "rgba(255,255,255,0.1)";
-      multi-monitor = false;
-      override-menu-theme = true;
-      pinned-app-list = [];
-      pinned-apps = [
-        [
-          (mkDictionaryEntry ["name" "Firefox Web Browser"])
-          (mkDictionaryEntry ["icon" "firefox"])
-          (mkDictionaryEntry ["id" "firefox.desktop"])
-        ]
-        [
-          (mkDictionaryEntry ["name" "Spotify"])
-          (mkDictionaryEntry ["icon" "com.spotify.Client"])
-          (mkDictionaryEntry ["id" "com.spotify.Client.desktop"])
-        ]
-        [
-          (mkDictionaryEntry ["name" "Discord"])
-          (mkDictionaryEntry ["icon" "discord"])
-          (mkDictionaryEntry ["id" "com.discordapp.Discord.desktop"])
-        ]
-        [
-          (mkDictionaryEntry ["name" "Steam (Runtime)"])
-          (mkDictionaryEntry ["icon" "steam"])
-          (mkDictionaryEntry ["id" "steam.desktop"])
-        ]
-        [
-          (mkDictionaryEntry ["name" "Heroic Games Launcher"])
-          (mkDictionaryEntry ["icon" "com.heroicgameslauncher.hgl"])
-          (mkDictionaryEntry ["id" "com.heroicgameslauncher.hgl.desktop"])
-        ]
-        [
-          (mkDictionaryEntry ["name" "Bitwarden"])
-          (mkDictionaryEntry ["icon" "com.bitwarden.desktop"])
-          (mkDictionaryEntry ["id" "com.bitwarden.desktop.desktop"])
-        ]
-        [
-          (mkDictionaryEntry ["name" "Geary"])
-          (mkDictionaryEntry ["icon" "org.gnome.Geary"])
-          (mkDictionaryEntry ["id" "org.gnome.Geary.desktop"])
-        ]
-        [
-          (mkDictionaryEntry ["name" "Obsidian"])
-          (mkDictionaryEntry ["icon" "md.obsidian.Obsidian"])
-          (mkDictionaryEntry ["id" "md.obsidian.Obsidian.desktop"])
-        ]
-        [
-          (mkDictionaryEntry ["name" "Rnote"])
-          (mkDictionaryEntry ["icon" "com.github.flxzt.rnote"])
-          (mkDictionaryEntry ["id" "com.github.flxzt.rnote.desktop"])
-        ]
-        [
-          (mkDictionaryEntry ["name" "System Monitor"])
-          (mkDictionaryEntry ["icon" "org.gnome.SystemMonitor"])
-          (mkDictionaryEntry ["id" "gnome-system-monitor.desktop"])
-        ]
-        [
-          (mkDictionaryEntry ["name" "Terminal"])
-          (mkDictionaryEntry ["icon" "com.mitchellh.ghostty"])
-          (mkDictionaryEntry ["id" "com.mitchellh.ghostty.desktop"])
-        ]
-      ];
-      prefs-visible-page = 0;
-      search-entry-border-radius = mkTuple [true 25];
-      show-activities-button = false;
-    };
-
-    "blur-my-shell" = {
+    "org/gnome/shell/extensions/blur-my-shell" = {
       settings-version = 2;
     };
 
-    "blur-my-shell/coverflow-alt-tab" = {
+    "org/gnome/shell/extensions/blur-my-shell/coverflow-alt-tab" = {
       pipeline = "pipeline_default";
     };
 
-    "blur-my-shell/dash-to-dock" = {
+    "org/gnome/shell/extensions/blur-my-shell/dash-to-dock" = {
       pipeline = "pipeline_default_rounded";
     };
 
-    "blur-my-shell/lockscreen" = {
+    "org/gnome/shell/extensions/blur-my-shell/lockscreen" = {
       pipeline = "pipeline_default";
     };
 
-    "blur-my-shell/overview" = {
+    "org/gnome/shell/extensions/blur-my-shell/overview" = {
       pipeline = "pipeline_default";
     };
 
-    "blur-my-shell/panel" = {
+    "org/gnome/shell/extensions/blur-my-shell/panel" = {
       blur = false;
     };
 
-    "blur-my-shell/screenshot" = {
+    "org/gnome/shell/extensions/blur-my-shell/screenshot" = {
       pipeline = "pipeline_default";
     };
 
@@ -542,7 +461,7 @@ with lib.hm.gvariant; {
     };
 
     "org/gnome/desktop/app-folders/folders/5d3de8f3-46d0-44d0-994e-34dcba42ba17" = {
-      apps = ["org.gnome.SystemMonitor.desktop" "org.gnome.clocks.desktop" "org.gnome.Totem.desktop" "org.gnome.Music.desktop" "org.wireshark.Wireshark.desktop" "com.github.flxzt.rnote.desktop" "org.gnome.Snapshot.desktop" "simple-scan.desktop" "org.gnome.Calculator.desktop" "org.gnome.TextEditor.desktop" "org.gnome.Maps.desktop" "com.google.Chrome.desktop" "org.filezillaproject.Filezilla.desktop" "com.bitwarden.desktop.desktop" "org.gnome.Boxes.desktop" "com.github.marhkb.Pods.desktop" "org.cvfosammmm.Setzer.desktop" "org.gnome.Software.desktop" "org.torproject.torbrowser-launcher.desktop" "dev.vencord.Vesktop.desktop" "org.pulseaudio.pavucontrol.desktop" "gimp.desktop" "webcord.desktop" "com.cassidyjames.butler.desktop" "google-chrome.desktop" "org.gnome.Terminal.desktop" "org.gnome.Showtime.desktop"];
+      apps = ["org.gnome.SystemMonitor.desktop" "org.gnome.clocks.desktop" "org.gnome.Totem.desktop" "org.gnome.Music.desktop" "org.wireshark.Wireshark.desktop" "com.github.flxzt.rnote.desktop" "org.gnome.Snapshot.desktop" "simple-scan.desktop" "org.gnome.Calculator.desktop" "org.gnome.TextEditor.desktop" "org.gnome.Maps.desktop" "com.google.Chrome.desktop" "org.filezillaproject.Filezilla.desktop" "com.bitwarden.desktop.desktop" "org.gnome.Boxes.desktop" "com.github.marhkb.Pods.desktop" "org.cvfosammmm.Setzer.desktop" "org.gnome.Software.desktop" "org.torproject.torbrowser-launcher.desktop" "dev.vencord.Vesktop.desktop" "org.pulseaudio.pavucontrol.desktop" "gimp.desktop" "webcord.desktop" "com.cassidyjames.butler.desktop" "google-chrome.desktop" "org.gnome.Terminal.desktop" "org.gnome.Showtime.desktop" "org.gnome.Decibels.desktop"];
       name = "Applications";
       translate = false;
     };
@@ -602,8 +521,8 @@ with lib.hm.gvariant; {
     # org.mozilla.firefox.desktop
 
     "org/gnome/shell/extensions/app-hider" = {
-      hidden-apps = ["org.gnome.Characters.desktop" "cups.desktop" "org.gnome.font-viewer.desktop" "nvim.desktop" "org.gnome.FileRoller.desktop" "org.gnome.Logs.desktop" "xterm.desktop" "org.gnome.Console.desktop" "org.gnome.seahorse.Application.desktop" "org.gnome.Connections.desktop" "nixos-manual.desktop" "org.torproject.torbrowser-launcher.settings.desktop" "btop.desktop" "julia.desktop" "org.gnome.Console.desktop" "Steam Linux Runtime 3.0 (sniper).desktop" "Proton EasyAntiCheat Runtime.desktop" "Proton Experimental.desktop" "remote-viewer.desktop" "virt-manager.desktop" "Steam Linux Runtime 1.0 (scout).desktop" "Steam Linux Runtime 2.0 (soldier).desktop"];
-      hidden-search-apps = ["org.gnome.Characters.desktop" "cups.desktop" "org.gnome.font-viewer.desktop" "nvim.desktop" "org.gnome.FileRoller.desktop" "org.gnome.Logs.desktop" "xterm.desktop" "org.gnome.Connections.desktop" "nixos-manual.desktop" "org.torproject.torbrowser-launcher.settings.desktop" "btop.desktop" "julia.desktop" "org.gnome.Console.desktop" "org.gnome.seahorse.Application.desktop" "Steam Linux Runtime 3.0 (sniper).desktop" "Proton EasyAntiCheat Runtime.desktop" "Proton Experimental.desktop" "remote-viewer.desktop" "virt-manager.desktop" "Steam Linux Runtime 1.0 (scout).desktop" "Steam Linux Runtime 2.0 (soldier).desktop"];
+      hidden-apps = ["org.gnome.Characters.desktop" "cups.desktop" "org.gnome.font-viewer.desktop" "nvim.desktop" "org.gnome.FileRoller.desktop" "org.gnome.Logs.desktop" "xterm.desktop" "org.gnome.Console.desktop" "org.gnome.seahorse.Application.desktop" "org.gnome.Connections.desktop" "nixos-manual.desktop" "org.torproject.torbrowser-launcher.settings.desktop" "btop.desktop" "julia.desktop" "org.gnome.Console.desktop" "Steam Linux Runtime 3.0 (sniper).desktop" "Proton EasyAntiCheat Runtime.desktop" "Proton Experimental.desktop" "remote-viewer.desktop" "virt-manager.desktop" "Steam Linux Runtime 1.0 (scout).desktop" "Steam Linux Runtime 2.0 (soldier).desktop" "com.desktop.ding.desktop" "syncthing-ui.desktop"];
+      hidden-search-apps = ["org.gnome.Characters.desktop" "cups.desktop" "org.gnome.font-viewer.desktop" "nvim.desktop" "org.gnome.FileRoller.desktop" "org.gnome.Logs.desktop" "xterm.desktop" "org.gnome.Connections.desktop" "nixos-manual.desktop" "org.torproject.torbrowser-launcher.settings.desktop" "btop.desktop" "julia.desktop" "org.gnome.Console.desktop" "org.gnome.seahorse.Application.desktop" "Steam Linux Runtime 3.0 (sniper).desktop" "Proton EasyAntiCheat Runtime.desktop" "Proton Experimental.desktop" "remote-viewer.desktop" "virt-manager.desktop" "Steam Linux Runtime 1.0 (scout).desktop" "Steam Linux Runtime 2.0 (soldier).desktop" "com.desktop.ding.desktop"];
     };
   };
 }
