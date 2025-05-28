@@ -26,7 +26,7 @@
     home.stateVersion = "25.05";
 
     imports =
-      lib.optionals (!isWsl) [./dconf.nix]
+      lib.optionals isDesktop [./dconf.nix]
       ++ [
         ./qemu.nix
       ];
