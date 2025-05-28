@@ -25,7 +25,6 @@
     fzf
     gamemode
     gamescope
-    just
     unzip
     justbuild
     pulseaudio
@@ -57,7 +56,6 @@
     xorg.libxcb
     openal
     spice
-    wl-clipboard-rs
     # spice-gtk
     virt-viewer
     libvirt

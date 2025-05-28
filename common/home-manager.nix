@@ -4,7 +4,10 @@
   inputs,
   home-manager,
   lib,
+  isDesktop,
   isWsl,
+  isServer,
+  isHomeAssistant,
   ...
 }: {
   # Import the Home Manager NixOS module

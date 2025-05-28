@@ -110,6 +110,7 @@
 
   users.users.tim = {
     isNormalUser = true;
+    hashedPassword = "$6$fhbC3/uvj6gKqkYC$Kh4HKuYYbKdaag/D7yWP7VZAIdS9oGWudxiyy1HPsH0mUaTEf6X/QzNOM6Su0RhzvT4fXKNrj3gFt.iGpKGIj0"; # mkpasswd -m sha-512 <your-password>
     description = "Tim Lisemer";
     extraGroups = ["networkmanager" "wheel" "dialout" "docker"];
   };
@@ -119,6 +120,9 @@
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable entirely:
   networking.firewall.enable = false;
+
+  # Have the nixos configuration available in the system
+  environment.etc."nixos".source = ../.;
 
   # TTY Console
   console = {

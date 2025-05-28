@@ -14,7 +14,10 @@
     ../packages/dependencies.nix
     (import ../common/home-manager.nix {
       inherit config pkgs inputs home-manager lib;
+      isDesktop = false;
       isWsl = true;
+      isServer = false;
+      isHomeAssistant = false;
     })
   ];
 

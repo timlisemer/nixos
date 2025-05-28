@@ -108,7 +108,7 @@ call plug#begin('~/.vim/plugged')
 Plug 'dense-analysis/ale'
 call plug#end()
 
-" To configure the ALE plugin for a specific linter (clang) and display virtual text for errors:
-let g:syntastic_cpp_checkers = ['clang']
+" To configure the ALE plugin for a specific linter (gcc) and display virtual text for errors:
+let g:syntastic_cpp_checkers = ['gcc']
 let g:ale_virtualtext_cursor = 1
 

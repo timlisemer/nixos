@@ -61,7 +61,6 @@
     gnumake
     neovim
     gcc
-    clang
     zig
     fzf
     black
@@ -107,7 +106,6 @@
     glib
     gtk3
     harfbuzz
-    librsvg
     libsoup_3
     pango
     webkitgtk_4_1

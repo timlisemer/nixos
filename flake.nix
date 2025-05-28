@@ -99,5 +99,9 @@
       hostFile = ./hosts/tim-wsl.nix;
       system = "x86_64-linux";
     };
+    nixosConfigurations.tim-server = self.mkSystem {
+      hostFile = ./hosts/tim-server.nix;
+      system = "x86_64-linux";
+    };
   };
 }
