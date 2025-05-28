@@ -121,9 +121,6 @@
   # Or disable entirely:
   networking.firewall.enable = false;
 
-  # Have the nixos configuration available in the system
-  environment.etc."nixos".source = ../.;
-
   # TTY Console
   console = {
     earlySetup = true; # apply before the login prompt

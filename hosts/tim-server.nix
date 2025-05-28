@@ -41,7 +41,7 @@
 
   virtualisation.oci-containers.containers = {
     portainer = {
-      image = "portainer/portainer-ce:2.20.3"; # Use a specific, recent version
+      image = "portainer/portainer-ce:lts";
       autoStart = true;
       ports = ["9000:9000"]; # Expose Portainer UI on host port 9000
       volumes = [
