@@ -132,10 +132,6 @@
         source = builtins.toPath ../files/starship.toml;
         force = true;
       };
-      ".config/wireplumber" = {
-        source = builtins.toPath ../files/wireplumber;
-        force = true;
-      };
       "Pictures/Wallpapers" = {
         source = builtins.toPath ../files/Wallpapers;
         force = true;

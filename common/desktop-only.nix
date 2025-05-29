@@ -41,19 +41,6 @@
     '')
   ];
 
-  # Enable sound with PipeWire
-  services.pulseaudio.enable = false;
-  security.rtkit.enable = true;
-  services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    alsa.support32Bit = true;
-    pulse.enable = true;
-    # jack.enable = true  # If you want JACK apps
-
-    # media-session.enable = true  # default session manager
-  };
-
   # Enable touchpad support (libinput default)
   # services.xserver.libinput.enable = true;
 
@@ -77,14 +64,123 @@
   # Fix shebangs in scripts # Try to bring this back to common/common.nix however currently it breaks a lot of things for example npm
   services.envfs.enable = true;
 
-  # Auto-updates
-  system.autoUpgrade = {
+  # Enable sound with PipeWire
+  services.pulseaudio.enable = false;
+  security.rtkit.enable = true;
+  services.pipewire = {
     enable = true;
-    flake = "/etc/nixos";
-    flags = ["--update-input" "nixpkgs" "-L"]; # print build logs
-    dates = "02:00";
-    randomizedDelaySec = "45min";
-    persistent = true;
-    allowReboot = false;
+    alsa.enable = true;
+    alsa.support32Bit = true;
+    pulse.enable = true;
+    wireplumber = {
+      enable = true;
+
+      ###########################################################################
+      # 1.  Load the software-DSP policy so we can use “hide-parent = true”
+      ###########################################################################
+      extraConfig."50-enable-softwaredsp" = {
+        "wireplumber.profiles" = {
+          main = {
+            "node.software-dsp" = "required";
+          };
+        };
+      };
+
+      ###########################################################################
+      # 2.  Audio policy – single fragment, all rules in one place
+      ###########################################################################
+      extraConfig."99-my-audio" = {
+        # ----------------------------------------------------------------------
+        # 2a.  Device- and node-level rules handled by the ALSA monitor
+        # ----------------------------------------------------------------------
+        "monitor.alsa.rules" = [
+          # — A —  hide NVIDIA HDMI card completely
+          {
+            matches = [{"device.name" = "alsa_card.pci-0000_09_00.1";}];
+            actions.update-props.device.disabled = true;
+          }
+
+          # — B —  hide webcam audio device
+          {
+            matches = [
+              {
+                "device.name" = "alsa_card.usb-Startime_Communication._Ltd._KAYSUDA_CA20_.*-00";
+              }
+            ];
+            actions.update-props.device.disabled = true;
+          }
+
+          # — C —  motherboard ALC1220 → keep **only** the S/PDIF profile
+          {
+            matches = [{"device.name" = "alsa_card.pci-0000_0b_00.4";}];
+            actions.update-props = {
+              device.profile = "output:iec958-stereo";
+              device.nick = "Speakers";
+              device.description = "Speakers";
+            };
+          }
+
+          # — D —  rename Sound-Blaster Omni card
+          {
+            matches = [
+              {
+                "device.name" = "alsa_card.usb-Creative_Technology_Ltd_SB_Omni_Surround_5.1_.*";
+              }
+            ];
+            actions.update-props = {
+              device.nick = "Sound Blaster Omni";
+              device.description = "Sound Blaster Omni";
+            };
+          }
+
+          # — E —  RØDE NT-USB → keep mic, drop playback sink
+          {
+            matches = [{"node.name" = "alsa_output.usb-R__DE_R__DE_NT-USB__.*";}];
+            actions.update-props.node.disabled = true;
+          }
+          {
+            matches = [{"node.name" = "alsa_input.usb-R__DE_R__DE_NT-USB__.*";}];
+            actions.update-props = {
+              node.nick = "RØDE NT-USB Mic";
+              node.description = "RØDE NT-USB Mic";
+            };
+          }
+        ];
+
+        # ----------------------------------------------------------------------
+        # 2b.  Software-DSP rules – hide or rename individual nodes
+        # ----------------------------------------------------------------------
+        "node.software-dsp.rules" = [
+          # hide the Omni IEC958 node completely
+          {
+            matches = [
+              {
+                "node.name" = "alsa_output.usb-Creative_Technology_Ltd_SB_Omni_.*.iec958-stereo";
+              }
+            ];
+            actions.create-filter.hide-parent = true;
+          }
+
+          # cosmetic rename for the Omni analogue port
+          {
+            matches = [
+              {
+                "node.name" = "alsa_output.usb-Creative_Technology_Ltd_SB_Omni_.*.analog-stereo-output";
+              }
+            ];
+            actions.update-props = {
+              node.nick = "Headphones";
+              node.description = "Headphones";
+            };
+          }
+
+          # NEW: hide the EasyEffects virtual sink so it never shows up
+          {
+            matches = [{"node.name" = "easyeffects_sink";}];
+            actions.create-filter.hide-parent = true;
+          }
+        ];
+      };
+    };
   };
 }

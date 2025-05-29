@@ -20,7 +20,6 @@
     ../desktop-environments/desktop-environments.nix
     inputs.sops-nix.nixosModules.sops
     ../secrets/sops.nix
-    # ./wireguard.nix
   ];
 
   environment.variables.DESKTOP = "1";
