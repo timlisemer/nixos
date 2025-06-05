@@ -132,6 +132,10 @@
       "allow_other"
       "args2env"
       "config=/etc/rclone-gdrive.conf"
+      # --- network-related bits ---
+      "_netdev" # mark as “needs the network”
+      "x-systemd.requires=network-online.target"
+      "x-systemd.after=network-online.target"
     ];
   };
 
