@@ -1,10 +1,9 @@
-{disks ? ["/dev/nvme0n1" "/dev/nvme1n1"], ...}: let
+{disks, ...}: let
   rawdisk1 = builtins.elemAt disks 0;
   rawdisk2 =
     if (builtins.length disks) > 1
     then builtins.elemAt disks 1
     else null;
-  is_raid0 = rawdisk2 != null;
 in {
   disko.devices = {
     disk = {
@@ -32,7 +31,7 @@ in {
               content = {
                 type = "btrfs";
                 extraArgs =
-                  if is_raid0
+                  if rawdisk2 != null
                   then ["-f" "-d" "raid0" "-m" "raid0" rawdisk2]
                   else ["-f"]; # RAID0 if 2 disks, otherwise single disk
                 subvolumes = {

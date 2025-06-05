@@ -135,5 +135,5 @@
   # this value at the release version of the first install of this system.
   # Before changing it read the docs (e.g. man configuration.nix or
   # https://nixos.org/nixos/options.html).
-  system.stateVersion = "24.05"; # Did you read the comment?
+  system.stateVersion = "25.05"; # Did you read the comment?
 }

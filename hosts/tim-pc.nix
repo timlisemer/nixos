@@ -1,11 +1,12 @@
 {
+  disks,
   config,
   pkgs,
   ...
 }: {
   # Import the common configuration shared across all machines
   imports = [
-    (import ../install.nix {disks = ["/dev/nvme0n1" "/dev/nvme1n1"];})
+    (import ../common/disko.nix {inherit disks;})
     ./desktop-only-imports.nix
     ./tim-pc-hardware-configuration.nix
     ../common/nvidia.nix

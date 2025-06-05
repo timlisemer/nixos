@@ -526,7 +526,7 @@ nixos_generate_iso_image() {
 	mkdir -p "$DESTDIR"
 
 	if nix run github:nix-community/nixos-generators -- \
-		-f iso \
+		--format install-iso \
 		--flake /etc/nixos#"${HOST}" \
 		-o "$TMPDIR"; then
 

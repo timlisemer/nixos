@@ -66,10 +66,11 @@
     mkSystem = {
       hostFile,
       system,
+      disks,
     }:
       nixpkgs-stable.lib.nixosSystem {
         inherit system;
-        specialArgs = {inherit inputs system;};
+        specialArgs = {inherit disks inputs system self;};
         modules = [
           disko.nixosModules.disko
           flatpaks.nixosModules.declarative-flatpak
@@ -90,10 +91,12 @@
     nixosConfigurations.tim-laptop = self.mkSystem {
       hostFile = ./hosts/tim-laptop.nix;
       system = "x86_64-linux";
+      disks = ["/dev/nvme0n1"];
     };
     nixosConfigurations.tim-pc = self.mkSystem {
       hostFile = ./hosts/tim-pc.nix;
       system = "x86_64-linux";
+      disks = ["/dev/nvme0n1" "/dev/nvme1n1"];
     };
     nixosConfigurations.tim-wsl = self.mkSystem {
       hostFile = ./hosts/tim-wsl.nix;
@@ -102,6 +105,25 @@
     nixosConfigurations.tim-server = self.mkSystem {
       hostFile = ./hosts/tim-server.nix;
       system = "x86_64-linux";
+      disks = ["/dev/sda"];
     };
+
+    nixosConfigurations.installer = let
+      system = "x86_64-linux";
+      pkgs = import nixpkgs-stable {inherit system;};
+    in
+      nixpkgs-stable.lib.nixosSystem {
+        inherit system;
+        modules = [
+          disko.nixosModules.disko
+          vscode-server.nixosModules.default
+          (import ./common/installer.nix {
+            inherit pkgs self;
+            disks = ["/dev/sda"];
+            host = "tim-server";
+          })
+        ];
+        specialArgs = {inherit self inputs;};
+      };
   };
 }

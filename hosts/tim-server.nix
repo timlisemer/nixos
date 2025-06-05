@@ -4,11 +4,12 @@
   inputs,
   home-manager,
   lib,
+  disks,
   ...
 }: {
   # Import the common configuration shared across all machines
   imports = [
-    inputs.nixos-wsl.nixosModules.default
+    (import ../common/disko.nix {inherit disks;})
     ../common/common.nix
     ../packages/system-packages.nix
     ../packages/dependencies.nix
@@ -20,6 +21,12 @@
       isHomeAssistant = false;
     })
   ];
+
+  # Bootloader
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
+  boot.loader.systemd-boot.configurationLimit = 5;
+  #boot.loader.timeout = 1;
 
   # Machine specific configurations
 
