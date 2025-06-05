@@ -598,6 +598,38 @@ explorer() {
 }
 # ---------------------------------------------------------------------------
 
+# --- ssh: custom SSH command to map hostnames to IP addresses -------------
+ssh() {
+	# capture the first argument (the “host” the user typed)
+	local target="$1"
+	# shift so that "${@}" will contain everything except the first argument
+	shift
+
+	case "$target" in
+	tim-server | server)
+		# maps to tim@142.132.234.128
+		command ssh tim@142.132.234.128 "$@"
+		;;
+	tim-pc | pc)
+		# maps to tim@10.0.0.3
+		command ssh tim@10.0.0.3 "$@"
+		;;
+	tim-laptop | laptop)
+		# maps to tim@10.0.0.25
+		command ssh tim@10.0.0.25 "$@"
+		;;
+	homeassistant)
+		# maps to tim@10.0.02
+		command ssh tim@10.0.02 "$@"
+		;;
+	*)
+		# no special mapping: just invoke the real ssh with all original args
+		command ssh "$target" "$@"
+		;;
+	esac
+}
+# ---------------------------------------------------------------------------
+
 #######################################################
 # Set the ultimate amazing command prompt
 #######################################################

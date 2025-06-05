@@ -115,6 +115,26 @@
     extraGroups = ["networkmanager" "wheel" "dialout" "docker"];
   };
 
+  # Google Drive Rclone Mount
+  environment.etc."rclone-gdrive.conf".text = ''
+    [gdrive]
+    type = drive
+    client_id = /run/secrets/google_oauth_client_id
+    scope = drive
+    service_account_file = /run/secrets/google-sa
+  '';
+  fileSystems."/mnt/gdrive" = {
+    device = "gdrive:";
+    fsType = "rclone";
+    options = [
+      "nodev"
+      "nofail"
+      "allow_other"
+      "args2env"
+      "config=/etc/rclone-gdrive.conf"
+    ];
+  };
+
   # Open ports in the firewall
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];

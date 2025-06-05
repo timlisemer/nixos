@@ -35,6 +35,7 @@
     vdpauinfo
     resources
     wl-clipboard
+    rclone
     xorg.xeyes
     btop
     dconf2nix

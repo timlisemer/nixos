@@ -30,7 +30,7 @@ in {
   environment.systemPackages = [
     (pkgs.writeShellScriptBin "install-${host}" ''
       set -eux
-      nix --extra-experimental-features 'nix-command flakes' run github:nix-community/disko -- --mode zap_create_mount ${self}/disko.nix --arg disks '${builtins.toJSON (
+      nix --extra-experimental-features 'nix-command flakes' run github:nix-community/disko -- --mode zap_create_mount ${self}/common/disko.nix --arg disks '${builtins.toJSON (
         if builtins.isList disks
         then disks
         else throw "disks must be a list of strings"
