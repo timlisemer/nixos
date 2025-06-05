@@ -16,7 +16,7 @@
     sopsFile = ./secrets.yaml;
     key = "google_drive_sa_json";
     # format = "binary"; # keep exact bytes, no extra newline
-    path = "/run/secrets/google-sa.json";
+    path = "/run/secrets/google-sa";
     restartUnits = ["rclone-gdrive.mount"]; # auto-reload after key rotation
   };
 }
