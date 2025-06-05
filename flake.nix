@@ -108,7 +108,7 @@
       disks = ["/dev/sda"];
     };
 
-    nixosConfigurations.installer = let
+    nixosConfigurations.tim-server-installer = let
       system = "x86_64-linux";
       pkgs = import nixpkgs-stable {inherit system;};
     in
@@ -121,6 +121,24 @@
             inherit pkgs self;
             disks = ["/dev/sda"];
             host = "tim-server";
+          })
+        ];
+        specialArgs = {inherit self inputs;};
+      };
+
+    nixosConfigurations.tim-pc-installer = let
+      system = "x86_64-linux";
+      pkgs = import nixpkgs-stable {inherit system;};
+    in
+      nixpkgs-stable.lib.nixosSystem {
+        inherit system;
+        modules = [
+          disko.nixosModules.disko
+          vscode-server.nixosModules.default
+          (import ./common/installer.nix {
+            inherit pkgs self;
+            disks = ["/dev/nvme0n1" "/dev/nvme1n1"];
+            host = "tim-pc";
           })
         ];
         specialArgs = {inherit self inputs;};

@@ -2,13 +2,14 @@
 {
   config,
   pkgs,
+  lib,
   ...
 }: {
   # Bootloader
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.systemd-boot.configurationLimit = 5;
-  boot.loader.timeout = 1;
+  boot.loader.timeout = lib.mkForce 1;
 
   # Enable networking
   networking.networkmanager.enable = true;
