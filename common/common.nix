@@ -136,6 +136,37 @@
       "_netdev" # mark as “needs the network”
       "x-systemd.requires=network-online.target"
       "x-systemd.after=network-online.target"
+      # --- magic for GNOME/Files ---
+      "comment=x-gvfs-show" # tell GVFS to list it :contentReference[oaicite:1]{index=1}
+      "x-gvfs-name=Google\\040Drive" # pretty label (space = \040) :contentReference[oaicite:2]{index=2}
+    ];
+  };
+  # Cloudflare R2 Rclone Mount
+  environment.etc."rclone-cloudflare.conf".text = ''
+    [cloudflare]
+    type = s3
+    provider = Cloudflare
+    access_key_id = /run/secrets/cloudflare_access_key_id
+    secret_access_key = /run/cloudflare_secret_access_key
+    region = auto
+    endpoint = /run/cloudflare_endpoint
+  '';
+  fileSystems."/mnt/cloudflare" = {
+    device = "cloudflare:";
+    fsType = "rclone";
+    options = [
+      "nodev"
+      "nofail"
+      "allow_other"
+      "args2env"
+      "config=/etc/rclone-cloudflare.conf"
+      # --- network-related bits ---
+      "_netdev" # mark as “needs the network”
+      "x-systemd.requires=network-online.target"
+      "x-systemd.after=network-online.target"
+      # --- magic for GNOME/Files ---
+      "comment=x-gvfs-show" # tell GVFS to list it :contentReference[oaicite:1]{index=1}
+      "x-gvfs-name=Cloudflare R2\\040R2" # pretty label (space = \040) :contentReference[oaicite:2]{index=2}
     ];
   };
 

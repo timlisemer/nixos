@@ -12,6 +12,9 @@
   # sops.age.generateKey = true;
   sops.secrets.github_token = {};
   sops.secrets.google_oauth_client_id = {};
+  sops.secrets.cloudflare_access_key_id = {};
+  sops.secrets.cloudflare_secret_access_key = {};
+  sops.secrets.cloudflare_endpoint = {};
   sops.secrets.google-sa = {
     sopsFile = ./secrets.yaml;
     key = "google_drive_sa_json";
