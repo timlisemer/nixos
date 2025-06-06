@@ -79,6 +79,7 @@
   virtualisation.spiceUSBRedirection.enable = true;
   virtualisation.containers.enable = true;
   virtualisation.containers.registries.search = ["docker.io"];
+  virtualisation.oci-containers.backend = "docker";
 
   # Unrestrict ports below 1000
   boot.kernel.sysctl."net.ipv4.ip_unprivileged_port_start" = 0;
