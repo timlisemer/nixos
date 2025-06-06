@@ -15,11 +15,11 @@
   sops.secrets.cloudflare_access_key_id = {};
   sops.secrets.cloudflare_secret_access_key = {};
   sops.secrets.cloudflare_endpoint = {};
+  sops.secrets.cloudflare_rclone = {};
   sops.secrets.google-sa = {
     sopsFile = ./secrets.yaml;
     key = "google_drive_sa_json";
-    # format = "binary"; # keep exact bytes, no extra newline
     path = "/run/secrets/google-sa";
-    restartUnits = ["rclone-gdrive.mount"]; # auto-reload after key rotation
+    # restartUnits = ["rclone-gdrive.mount"]; # auto-reload after key rotation
   };
 }
