@@ -2,6 +2,7 @@ format = """
 [](#3B4252)\
 $python\
 $username\
+$hostname\
 [](bg:#434C5E fg:#3B4252)\
 $directory\
 [](fg:#434C5E bg:#4C566A)\
@@ -24,6 +25,7 @@ $docker_context\
 $time\
 [ ](fg:#33658A)\
 """
+
 command_timeout = 5000
 # Disable the blank line at the start of the prompt
 # add_newline = false
@@ -34,6 +36,12 @@ show_always = true
 style_user = "bg:#3B4252"
 style_root = "bg:#3B4252"
 format = '[$user ]($style)'
+
+# Show hostname only when connected via SSH, styled identically to username
+[hostname]
+ssh_only = true
+style = "bg:#3B4252"
+format = '[ @ $hostname ]($style)'
 
 [directory]
 style = "bg:#434C5E"
@@ -124,6 +132,6 @@ format = '[ $symbol ($version) ]($style)'
 
 [time]
 disabled = false
-time_format = "%R" # Hour:Minute Format
+time_format = "%R"           # Hour:Minute Format
 style = "bg:#33658A"
 format = '[ $time ]($style)'

@@ -179,6 +179,7 @@
     docker-compose
     nerd-fonts.jetbrains-mono
     switcheroo-control
+    ssh-to-age
   ];
 
   # Open ports in the firewall

@@ -66,7 +66,7 @@
     mkSystem = {
       hostFile,
       system,
-      disks,
+      disks ? null,
     }:
       nixpkgs-stable.lib.nixosSystem {
         inherit system;
@@ -98,50 +98,40 @@
       system = "x86_64-linux";
       disks = ["/dev/nvme0n1" "/dev/nvme1n1"];
     };
-    nixosConfigurations.tim-wsl = self.mkSystem {
-      hostFile = ./hosts/tim-wsl.nix;
-      system = "x86_64-linux";
-    };
     nixosConfigurations.tim-server = self.mkSystem {
       hostFile = ./hosts/tim-server.nix;
       system = "x86_64-linux";
       disks = ["/dev/sda"];
     };
+    nixosConfigurations.tim-wsl = self.mkSystem {
+      hostFile = ./hosts/tim-wsl.nix;
+      system = "x86_64-linux";
+    };
 
-    nixosConfigurations.tim-server-installer = let
+    # Single installer that carries install scripts for every host
+    nixosConfigurations.installer = let
       system = "x86_64-linux";
       pkgs = import nixpkgs-stable {inherit system;};
-    in
-      nixpkgs-stable.lib.nixosSystem {
-        inherit system;
-        modules = [
-          disko.nixosModules.disko
-          vscode-server.nixosModules.default
-          (import ./common/installer.nix {
-            inherit pkgs self;
-            disks = ["/dev/sda"];
-            host = "tim-server";
-          })
-        ];
-        specialArgs = {inherit self inputs;};
+      hosts = ["tim-laptop" "tim-pc" "tim-server"];
+      hostDisks = {
+        "tim-laptop" = ["/dev/nvme0n1"];
+        "tim-pc" = ["/dev/nvme0n1" "/dev/nvme1n1"];
+        "tim-server" = ["/dev/sda"];
       };
-
-    nixosConfigurations.tim-pc-installer = let
-      system = "x86_64-linux";
-      pkgs = import nixpkgs-stable {inherit system;};
     in
       nixpkgs-stable.lib.nixosSystem {
         inherit system;
+        specialArgs = {
+          inherit self inputs hosts hostDisks;
+          home-manager = inputs.home-manager;
+        };
         modules = [
           disko.nixosModules.disko
           vscode-server.nixosModules.default
           (import ./common/installer.nix {
-            inherit pkgs self;
-            disks = ["/dev/nvme0n1" "/dev/nvme1n1"];
-            host = "tim-pc";
+            inherit pkgs self hosts hostDisks;
           })
         ];
-        specialArgs = {inherit self inputs;};
       };
   };
 }
