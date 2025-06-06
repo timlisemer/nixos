@@ -10,7 +10,11 @@
   isHomeAssistant,
   isInstaller,
   ...
-}: {
+}: let
+  myAuthorizedKeys = pkgs.writeText "authorized_keys" ''
+    ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEae4h0Uk6x/lrmw0PZv/7GfWyLuEAVoc70AC4ykyFtX TimLisemer
+  '';
+in {
   # Import the Home Manager NixOS module
   imports = [
     inputs.home-manager.nixosModules.home-manager
@@ -23,6 +27,10 @@
 
   # Home Manager configuration for the user 'tim'
   home-manager.users.tim = {
+    pkgs,
+    lib,
+    ...
+  }: {
     # Specify the Home Manager state version
     home.stateVersion = "25.05";
 
@@ -75,6 +83,14 @@
 
         # Insert @import statement at the beginning of userContent.css before any @namespace
         grep -Fxq '@import "firefox-gnome-theme/userContent.css";' "$HOME/.mozilla/firefox/default/chrome/userContent.css" || sed -i '1i@import "firefox-gnome-theme/userContent.css";' "$HOME/.mozilla/firefox/default/chrome/userContent.css"
+      '';
+
+      installAuthorizedKeys = lib.hm.dag.entryAfter ["writeBoundary"] ''
+        # Make sure ~/.ssh exists with safe perms
+        install -m 700 -d "$HOME/.ssh"
+
+        # Overwrite any previous copy or symlink
+        install -m 600 -T ${myAuthorizedKeys} "$HOME/.ssh/authorized_keys"
       '';
     };
 
@@ -167,12 +183,6 @@
       };
       ".config/easyeffects/input/Discord.json" = {
         source = builtins.toPath ../files/easyeffects/input;
-        force = true;
-      };
-
-      # SSH Authorized Keys
-      ".ssh/authorized_keys" = {
-        text = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEae4h0Uk6x/lrmw0PZv/7GfWyLuEAVoc70AC4ykyFtX TimLisemer";
         force = true;
       };
 
