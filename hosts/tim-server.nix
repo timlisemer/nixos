@@ -19,6 +19,7 @@
       isWsl = false;
       isServer = true;
       isHomeAssistant = false;
+      isInstaller = false;
     })
   ];
 
@@ -37,14 +38,7 @@
   environment.systemPackages = with pkgs; [
   ];
 
-  # docker context create nixos-wsl --docker "host=tcp://localhost:2375"
-  # docker context use nixos-wsl
-  virtualisation.docker = {
-    enable = true;
-    rootless.enable = true;
-    rootless.setSocketVariable = true;
-    # daemon.settings.ipv6 = true
-  };
+  virtualisation.docker.storageDriver = "btrfs";
 
   virtualisation.oci-containers.containers = {
     portainer = {
