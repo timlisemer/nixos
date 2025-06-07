@@ -140,10 +140,10 @@ nixos_install() {
 # main dispatcher  ------------------------------------------------------------
 ###############################################################################
 declare -A DEFAULT_DISKS=(
-    [tim - server]="/dev/sda"
-    [tim - pc]="/dev/nvme0n1 /dev/nvme1n1"
-    [tim - laptop]="/dev/nvme0n1 /dev/nvme1n1"
-    [tim - homeassistant]="/dev/nvme0n1"
+    ["tim-server"]="/dev/sda"
+    ["tim-pc"]="/dev/nvme0n1 /dev/nvme1n1"
+    ["tim-laptop"]="/dev/nvme0n1 /dev/nvme1n1"
+    ["tim-homeassistant"]="/dev/nvme0n1"
     [qemu]="/dev/vda"
 )
 
