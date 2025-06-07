@@ -177,7 +177,10 @@ main() {
         exit 1
     fi
 
-    nix-shell -p ssh-to-age
+    nix-shell -p ssh-to-age --run true || {
+        echo "Error: ssh-to-age not found. Please install it first." >&2
+        exit 1
+    }
 
     local HOST=${1-}
     shift || true # may shift zero args
