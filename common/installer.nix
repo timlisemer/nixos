@@ -1,10 +1,6 @@
 {
   pkgs,
   self,
-  inputs,
-  home-manager,
-  lib,
-  config,
   hosts, # list of host names to provide installers for
   hostDisks, # attr-set: host → list of disk paths
   ...
@@ -130,14 +126,6 @@
 in {
   imports = [
     ./common.nix
-    (import ../common/home-manager.nix {
-      inherit config pkgs inputs home-manager lib;
-      isDesktop = false;
-      isWsl = false;
-      isServer = false;
-      isHomeAssistant = false;
-      isInstaller = true;
-    })
   ];
 
   # make the closure available on the ISO

@@ -9,7 +9,7 @@
 }: {
   # Import the common configuration shared across all machines
   imports = [
-    # ./qemu-hardware-configuration.nix
+    ./tim-server-hardware-configuration.nix
     (import ../common/disko.nix {inherit disks;})
     ../common/common.nix
     ../packages/system-packages.nix
@@ -20,7 +20,6 @@
       isWsl = false;
       isServer = true;
       isHomeAssistant = false;
-      isInstaller = false;
     })
   ];
 

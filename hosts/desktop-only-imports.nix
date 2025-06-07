@@ -15,7 +15,6 @@
       isWsl = false;
       isServer = false;
       isHomeAssistant = false;
-      isInstaller = false;
     })
     ../packages/packages.nix
     ../desktop-environments/desktop-environments.nix

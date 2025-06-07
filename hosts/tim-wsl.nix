@@ -18,7 +18,6 @@
       isWsl = true;
       isServer = false;
       isHomeAssistant = false;
-      isInstaller = false;
     })
   ];
 

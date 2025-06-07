@@ -8,7 +8,6 @@
   isWsl,
   isServer,
   isHomeAssistant,
-  isInstaller,
   ...
 }: let
   myAuthorizedKeys = pkgs.writeText "authorized_keys" ''
