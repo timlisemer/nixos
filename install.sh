@@ -125,7 +125,7 @@ nixos_install() {
     fi
 
     echo "→ Running nixos-install for host '$HOST'"
-    sudo nixos-install --flake "/mnt/etc/nixos/flake.nix#$HOST"
+    sudo nixos-install -L --flake "/mnt/etc/nixos/flake.nix#$HOST"
 
     echo "✔ Installation complete. Rebooting in 10 s …"
     for i in {10..1}; do
