@@ -103,7 +103,7 @@ nixos_install() {
 
     # Build disko-style array: [ "/dev/xxx" "/dev/yyy" ]
     local DISK_NIX="[ $(printf '"%s" ' "${DISKS[@]}")]"
-    DISK_NIX="${DISK_NIX% } ]" # trim trailing space, close bracket
+    DISK_NIX="${DISK_NIX% }" # trim trailing space, close bracket
 
     echo "→ Generating hardware-configuration.nix"
     sudo nixos-generate-config --no-filesystems --show-hardware-config \
