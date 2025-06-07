@@ -170,6 +170,15 @@ EOF
 }
 
 main() {
+
+    # Make sure we have root privileges
+    if [[ "$(id -u)" -ne 0 ]]; then
+        echo "Error: this script must be run as root." >&2
+        exit 1
+    fi
+
+    nix-shell -p ssh-to-age
+
     local HOST=${1-}
     shift || true # may shift zero args
 
