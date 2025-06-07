@@ -144,7 +144,7 @@ declare -A DEFAULT_DISKS=(
     ["tim-pc"]="/dev/nvme0n1 /dev/nvme1n1"
     ["tim-laptop"]="/dev/nvme0n1 /dev/nvme1n1"
     ["tim-homeassistant"]="/dev/nvme0n1"
-    [qemu]="/dev/vda"
+    ["qemu"]="/dev/vda"
 )
 
 print_help() {
@@ -183,7 +183,8 @@ main() {
         exit 1
     fi
 
-    local HOST=${1-}
+    local RAW_HOST=${1-}
+    local HOST=${RAW_HOST//\"/}
     shift || true # may shift zero args
 
     if [[ -z "$HOST" ]]; then
