@@ -112,6 +112,9 @@
     nixosConfigurations.installer = let
       system = "x86_64-linux";
       pkgs = import nixpkgs-stable {inherit system;};
+      lib = nixpkgs-stable.lib;
+      inputs = self.inputs;
+      config = self.nixosConfigurations;
       hosts = ["tim-laptop" "tim-pc" "tim-server"];
       hostDisks = {
         "tim-laptop" = ["/dev/nvme0n1"];
@@ -129,7 +132,7 @@
           disko.nixosModules.disko
           vscode-server.nixosModules.default
           (import ./common/installer.nix {
-            inherit pkgs self hosts hostDisks;
+            inherit pkgs self inputs home-manager lib config hosts hostDisks;
           })
         ];
       };

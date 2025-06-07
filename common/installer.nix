@@ -1,6 +1,10 @@
 {
   pkgs,
   self,
+  inputs,
+  home-manager,
+  lib,
+  config,
   hosts, # list of host names to provide installers for
   hostDisks, # attr-set: host → list of disk paths
   ...
@@ -10,19 +14,24 @@
   # ────────────────────────────────────────────────────────────────────────────
   installKeysScript = pkgs.writeShellScriptBin "install_keys_from_file" ''
     #! /usr/bin/env bash
-    # Copy an id_ed25519 (+ age key) into the freshly mounted NixOS target
+    # Copy an id_ed25519 (+ AGE key) into the freshly mounted NixOS target
     set -euo pipefail
 
     # ─── 1  argument / file checks ───────────────────────────────────────────
     if [[ $# -ne 1 ]]; then
-      echo "Usage: $0 /path/to/id_ed25519" >&2; exit 1
+      echo "Usage: $0 /path/to/id_ed25519" >&2
+      exit 1
     fi
 
     INPUT_KEY=$1
     if [[ "$(basename "$INPUT_KEY")" != id_ed25519 ]]; then
-      echo "Error: file must be named exactly 'id_ed25519'." >&2; exit 1
+      echo "Error: file must be named exactly 'id_ed25519'." >&2
+      exit 1
     fi
-    [[ -f $INPUT_KEY ]] || { echo "Error: '$INPUT_KEY' not found." >&2; exit 1; }
+    [[ -f $INPUT_KEY ]] || {
+      echo "Error: '$INPUT_KEY' not found." >&2
+      exit 1
+    }
 
     # ─── 2  destination paths (always below /mnt) ────────────────────────────
     ROOT=/mnt
@@ -44,16 +53,18 @@
     install -m600 "$INPUT_KEY" "$DEST_PRIV"
 
     # ─── 4  ensure public key exists ─────────────────────────────────────────
-    if [[ -f ${INPUT_KEY}.pub ]]; then
-      install -m644 "${INPUT_KEY}.pub" "$DEST_PUB"
+    if [[ -f "$INPUT_KEY.pub" ]]; then
+      install -m644 "$INPUT_KEY.pub" "$DEST_PUB"
     else
       ssh-keygen -y -f "$INPUT_KEY" > "$DEST_PUB"
       chmod 644 "$DEST_PUB"
     fi
 
     # ─── 5  AGE secret for SOPS ──────────────────────────────────────────────
-    command -v ssh-to-age >/dev/null \
-      || { echo "Error: ssh-to-age not in PATH." >&2; exit 1; }
+    command -v ssh-to-age >/dev/null || {
+      echo "Error: ssh-to-age not in PATH." >&2
+      exit 1
+    }
 
     ssh-to-age -private-key -i "$INPUT_KEY" > "$DEST_AGE_SSH"
     chmod 600 "$DEST_AGE_SSH"
@@ -135,12 +146,4 @@ in {
   # ship both the per-host installer *and* the key-install helper
   environment.systemPackages =
     [installKeysScript] ++ builtins.map mkScript hosts;
-
-  # helper run-time deps for install_keys_from_file
-  environment.systemPackages =
-    environment.systemPackages
-    ++ [
-      pkgs.openssh # ssh-keygen
-      pkgs.rage.packages.${pkgs.system}.ssh-to-age
-    ];
 }
