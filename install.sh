@@ -103,7 +103,7 @@ nixos_install() {
 
     # Build disko-style array: [ "/dev/xxx" "/dev/yyy" ]
     local DISK_NIX="[ $(printf '"%s" ' "${DISKS[@]}")]"
-    DISK_NIX="${DISK_NIX% }" # trim trailing space, close bracket
+    DISK_NIX="${DISK_NIX% }" # trim trailing space, close bracket` | `    # Build disko-style array: [ "/dev/xxx" "/dev/yyy" ]`<br>`    local _disko_items`<br>`    _disko_items=$(printf '"%s" ' "${DISKS[@]}")`<br>`    local DISK_NIX="[ ${_disko_items% } ]"` | Guarantees a properly closed bracket and no trailing space, regardless of how many disks are supplied. |
 
     echo "→ Generating hardware-configuration.nix"
     sudo nixos-generate-config --no-filesystems --show-hardware-config \
