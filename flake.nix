@@ -103,6 +103,11 @@
       system = "x86_64-linux";
       disks = ["/dev/sda"];
     };
+    nixosConfigurations.qemu = self.mkSystem {
+      hostFile = ./hosts/qemu.nix;
+      system = "x86_64-linux";
+      disks = ["/dev/vda"];
+    };
     nixosConfigurations.tim-wsl = self.mkSystem {
       hostFile = ./hosts/tim-wsl.nix;
       system = "x86_64-linux";
@@ -115,11 +120,12 @@
       lib = nixpkgs-stable.lib;
       inputs = self.inputs;
       config = self.nixosConfigurations;
-      hosts = ["tim-laptop" "tim-pc" "tim-server"];
+      hosts = ["tim-laptop" "tim-pc" "tim-server" "qemu"];
       hostDisks = {
         "tim-laptop" = ["/dev/nvme0n1"];
         "tim-pc" = ["/dev/nvme0n1" "/dev/nvme1n1"];
         "tim-server" = ["/dev/sda"];
+        "qemu" = ["/dev/vda"];
       };
     in
       nixpkgs-stable.lib.nixosSystem {

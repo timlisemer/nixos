@@ -9,7 +9,7 @@
 }: {
   # Import the common configuration shared across all machines
   imports = [
-    # ./qemu-hardware-configuration.nix
+    ./qemu-hardware-configuration.nix
     (import ../common/disko.nix {inherit disks;})
     ../common/common.nix
     ../packages/system-packages.nix
