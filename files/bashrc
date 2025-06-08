@@ -602,12 +602,13 @@ explorer() {
 # Copy SSH + SOPS keys to a remote host and fix ownership/permissions.
 # Usage:  transfer_keys <hostname>
 transfer_keys() {
-	# Fail fast on errors and unset vars
 	set -euo pipefail
+
+	trap 'ret=$?; echo "transfer_keys failed at line $LINENO with exit code $ret" >&2; if [ -t 1 ]; then read -n 1 -s -r -p "Press any key to continue..."; fi; exit $ret' ERR
 
 	# --- Argument check --------------------------------------------------------
 	if [[ $# -lt 1 || -z $1 ]]; then
-		echo "Usage: transfer_keys <hostname>"
+		echo "Usage: transfer_keys <hostname>" >&2
 		return 1
 	fi
 	local HOSTNAME=$1
@@ -624,7 +625,7 @@ transfer_keys() {
 
 	# --- Preconditions ---------------------------------------------------------
 	if [[ ! -f $AGE_KEYS_FILE ]]; then
-		echo "Error: $AGE_KEYS_FILE does not exist."
+		echo "Error: $AGE_KEYS_FILE does not exist." >&2
 		return 1
 	fi
 
@@ -637,7 +638,6 @@ transfer_keys() {
 	rsync -av --exclude 'authorized_keys' "$SOURCE_DIR" "tim@${HOSTNAME}":"$DEST_DIR"
 
 	echo "Transferring $KEY_FILE to $HOSTNAME:$DEST_KEY_PATH"
-	# Transfer to a temporary path, then use sudo to move to the final destination
 	local TEMP_KEY_PATH="/tmp/$(basename "$SOURCE_KEY_PATH")"
 	scp "$SOURCE_KEY_PATH" "tim@${HOSTNAME}":"$TEMP_KEY_PATH"
 	ssh -t "tim@${HOSTNAME}" "sudo mv '$TEMP_KEY_PATH' '$DEST_KEY_PATH'"
@@ -647,35 +647,32 @@ transfer_keys() {
 
 	# --- Fix ownership & permissions ------------------------------------------
 	echo "Setting permissions and ownership on $HOSTNAME"
-	# Connect as 'tim' and execute the command block with sudo
-	ssh -t "tim@${HOSTNAME}" "sudo bash -s" <<'REMOTE_CMDS'
-    # Ensure .ssh directory is owned by tim
-    chown tim /home/tim/.ssh
+	local TMP_SCRIPT=$(mktemp /tmp/transfer_keys_remote.XXXXXX.sh)
+	cat >"$TMP_SCRIPT" <<'EOS'
+chown tim /home/tim/.ssh
+find /home/tim/.ssh -mindepth 1 ! -name authorized_keys -exec chown tim {} +
+if [ -f /home/tim/.ssh/authorized_keys ]; then
+    chown tim /home/tim/.ssh/authorized_keys
+    chmod 600 /home/tim/.ssh/authorized_keys
+fi
+chown -R tim /home/tim/.gnupg
+chown -R tim /home/tim/.config/sops
+chmod 700 /home/tim/.ssh
+find /home/tim/.ssh -type f ! -name authorized_keys -exec chmod 600 {} \;
+find /home/tim/.ssh -type d -exec chmod 700 {} \;
+chmod 600 /etc/ssh/nixos_personal_sops_key
+chmod 700 /home/tim/.config/sops/age
+chmod 600 /home/tim/.config/sops/age/keys.txt
+chmod +x /home/tim/.ssh/transfer_keys.sh || true
+EOS
 
-    # Everything inside .ssh except authorized_keys
-    find /home/tim/.ssh -mindepth 1 ! -name authorized_keys -exec chown tim {} +
-
-    # If authorized_keys exists, make sure it’s owned and 600
-    if [ -f /home/tim/.ssh/authorized_keys ]; then
-        chown tim /home/tim/.ssh/authorized_keys
-        chmod 600 /home/tim/.ssh/authorized_keys
-    fi
-
-    chown -R tim /home/tim/.gnupg
-    chown -R tim /home/tim/.config/sops
-
-    chmod 700 /home/tim/.ssh
-    # Files/dirs except authorized_keys
-    find /home/tim/.ssh -type f ! -name authorized_keys -exec chmod 600 {} \;
-    find /home/tim/.ssh -type d -exec chmod 700 {} \;
-
-    chmod 600 /etc/ssh/nixos_personal_sops_key
-    chmod 700 /home/tim/.config/sops/age
-    chmod 600 /home/tim/.config/sops/age/keys.txt
-    chmod +x /home/tim/.ssh/transfer_keys.sh || true
-REMOTE_CMDS
+	scp "$TMP_SCRIPT" "tim@${HOSTNAME}:/tmp/transfer_keys_remote.sh"
+	ssh -t "tim@${HOSTNAME}" "sudo bash /tmp/transfer_keys_remote.sh && rm /tmp/transfer_keys_remote.sh"
+	rm -f "$TMP_SCRIPT"
 
 	echo "Transfer and setup completed."
+	trap - ERR
+	return 0
 }
 # ---------------------------------------------------------------------------
 
