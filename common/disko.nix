@@ -70,6 +70,10 @@ in {
                       mountpoint = "/mnt/docker-data";
                       mountOptions = ["compress=zstd" "noatime"];
                     };
+                    "@/mnt/vm-data" = {
+                      mountpoint = "/mnt/vm-data";
+                      mountOptions = ["compress=zstd" "noatime"];
+                    };
                     "@/home" = {
                       mountpoint = "/home";
                       mountOptions = ["compress=zstd" "noatime"];
