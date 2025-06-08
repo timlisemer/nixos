@@ -120,8 +120,9 @@
       ];
 
       environment = {
-        PUID = "1000";
-        PGID = "1000";
+        PUID = "99";
+        PGID = "100";
+        UMASK = "022";
         HOME = "/var/syncthing";
         STGUIADDRESS = "0.0.0.0:8384";
         STHOMEDIR = "/var/syncthing/config";
@@ -149,6 +150,10 @@
         "/var/run/docker.sock:/var/run/docker.sock:rw"
       ];
 
+      environmentFiles = [
+        "/run/secrets/traefikENV"
+      ];
+
       environment = {
         # Keys with dots must be quoted to be valid Nix attribute names
         "traefik.http.routers.api.rule" = "Host(`traefik.local.yakweide.de`)";
@@ -165,10 +170,8 @@
       image = "portainer/agent:latest";
       autoStart = true;
 
-      extraOptions = [
-        "--network=bridge" # exactly as in your docker run
-        "--restart=always"
-      ];
+      autoRemoveOnStop = false; # prevent implicit --rm
+      extraOptions = ["--network=docker-network"];
 
       ports = ["9001:9001"];
 

@@ -13,6 +13,7 @@
   sops.secrets.github_token = {};
   sops.secrets.google_oauth_client_id = {};
   sops.secrets.vaultwardenEnv = {};
+  sops.secrets.traefikENV = {};
   sops.secrets.yakweideENV = {};
   sops.secrets.cloudflare_rclone = {};
   sops.secrets.google-sa = {
