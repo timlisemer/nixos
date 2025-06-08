@@ -213,10 +213,6 @@
       autoRemoveOnStop = false; # prevent implicit --rm
       extraOptions = ["--network=docker-network"];
 
-      ports = [
-        "2283:2283"
-      ];
-
       volumes = [
         "/mnt/docker-data/volumes/immich/model-cache:/cache:rw"
       ];
