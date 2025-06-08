@@ -176,7 +176,7 @@
       ports = ["9001:9001"];
 
       volumes = [
-        "/mnt/docker-data/volumes:/var/lib/docker/volumes:rw"
+        "/mnt/docker-data/volumes/portainer:/var/lib/docker/volumes:rw"
         "/var/run/docker.sock:/var/run/docker.sock:rw"
       ];
       # No environment values needed for the agent
