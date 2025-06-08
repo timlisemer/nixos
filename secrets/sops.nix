@@ -15,6 +15,7 @@
   sops.secrets.vaultwardenEnv = {};
   sops.secrets.traefikENV = {};
   sops.secrets.yakweideENV = {};
+  sops.secrets.immichENV = {};
   sops.secrets.cloudflare_rclone = {};
   sops.secrets.google-sa = {
     sopsFile = ./secrets.yaml;
