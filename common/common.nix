@@ -4,6 +4,12 @@
   inputs,
   ...
 }: {
+  # imports
+  imports = [
+    inputs.sops-nix.nixosModules.sops
+    ../secrets/sops.nix
+  ];
+
   # Environment Variables
   environment.variables = {
     RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
