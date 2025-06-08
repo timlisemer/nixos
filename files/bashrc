@@ -14,7 +14,7 @@ alias terminal='ghostty'
 alias logout='loginctl terminate-user $USER'
 alias nixos='cd ~/Coding/Other/nixos'
 alias iocto='cd ~/Coding/iocto'
-alias install_tim_server='nix run nixpkgs#nixos-anywhere -- --flake ./etc/nixos#tim-server root@142.132.234.128'
+alias install_tim_server='nix run nixpkgs#nixos-anywhere -- --flake /etc/nixos#tim-server root@142.132.234.128'
 
 if [ "${WSL:-0}" = "1" ]; then
 	# WSL=1, set aliases for WSL environment
