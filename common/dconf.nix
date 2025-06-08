@@ -433,6 +433,7 @@ with lib.hm.gvariant; {
     };
 
     "org/gtk/settings/file-chooser" = {
+      show-volumes = false;
       date-format = "regular";
       location-mode = "path-bar";
       show-hidden = false;
