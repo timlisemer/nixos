@@ -203,6 +203,7 @@
       ];
 
       environment = {
+        "DB_HOSTNAME" = "immich_postgres";
       };
     };
 
