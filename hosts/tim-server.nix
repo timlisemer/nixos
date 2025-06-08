@@ -52,10 +52,9 @@
       image = "ghcr.io/yakweide/yakweide-discord-bot:latest";
       autoStart = true;
 
-      extraOptions = [
-        "--network=docker-network"
-        "--restart=always"
-      ];
+      autoRemove = false; # drop the implicit   --rm
+      restartPolicy = "always"; # module adds         --restart=always
+      extraOptions = ["--network=docker-network"]; # keep anything else
 
       environmentFiles = [
         "/run/secrets/yakweideENV"
@@ -69,10 +68,9 @@
       image = "vaultwarden/server:latest";
       autoStart = true;
 
-      extraOptions = [
-        "--network=docker-network"
-        "--restart=always"
-      ];
+      autoRemove = false; # drop the implicit   --rm
+      restartPolicy = "always"; # module adds         --restart=always
+      extraOptions = ["--network=docker-network"]; # keep anything else
 
       ports = [
         "4743:4743" # hostPort:containerPort
@@ -105,10 +103,9 @@
       image = "syncthing/syncthing:latest";
       autoStart = true;
 
-      extraOptions = [
-        "--network=docker-network"
-        "--restart=always"
-      ];
+      autoRemove = false; # drop the implicit   --rm
+      restartPolicy = "always"; # module adds         --restart=always
+      extraOptions = ["--network=docker-network"]; # keep anything else
 
       # TCP and UDP ports – duplicates from the original command removed
       ports = [
@@ -141,10 +138,9 @@
       image = "traefik:latest";
       autoStart = true;
 
-      extraOptions = [
-        "--network=docker-network"
-        "--restart=always"
-      ];
+      autoRemove = false; # drop the implicit   --rm
+      restartPolicy = "always"; # module adds         --restart=always
+      extraOptions = ["--network=docker-network"]; # keep anything else
 
       ports = [
         "443:443"
