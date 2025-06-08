@@ -52,7 +52,7 @@
       image = "ghcr.io/yakweide/yakweide-discord-bot:latest";
       autoStart = true;
 
-      autoRemove = false; # drop the implicit   --rm
+      autoRemoveOnStop = false; # drop the implicit   --rm
       restartPolicy = "always"; # module adds         --restart=always
       extraOptions = ["--network=docker-network"]; # keep anything else
 
@@ -68,7 +68,7 @@
       image = "vaultwarden/server:latest";
       autoStart = true;
 
-      autoRemove = false; # drop the implicit   --rm
+      autoRemoveOnStop = false; # drop the implicit   --rm
       restartPolicy = "always"; # module adds         --restart=always
       extraOptions = ["--network=docker-network"]; # keep anything else
 
@@ -103,7 +103,7 @@
       image = "syncthing/syncthing:latest";
       autoStart = true;
 
-      autoRemove = false; # drop the implicit   --rm
+      autoRemoveOnStop = false; # drop the implicit   --rm
       restartPolicy = "always"; # module adds         --restart=always
       extraOptions = ["--network=docker-network"]; # keep anything else
 
@@ -138,7 +138,7 @@
       image = "traefik:latest";
       autoStart = true;
 
-      autoRemove = false; # drop the implicit   --rm
+      autoRemoveOnStop = false; # drop the implicit   --rm
       restartPolicy = "always"; # module adds         --restart=always
       extraOptions = ["--network=docker-network"]; # keep anything else
 
