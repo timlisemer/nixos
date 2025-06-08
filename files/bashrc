@@ -616,6 +616,7 @@ transfer_keys() {
 	local SOURCE_DIR="$HOME/.ssh/"
 	local DEST_DIR="/home/tim/.ssh/"
 	local KEY_FILE="id_ed25519"
+	local SOURCE_KEY_PATH="${SOURCE_DIR}${KEY_FILE}"
 	local DEST_KEY_PATH="/etc/ssh/nixos_personal_sops_key"
 	local AGE_KEYS_FILE="$HOME/.ssh/age_keys.txt"
 	local DEST_AGE_KEYS_DIR="/home/tim/.config/sops/age/"
@@ -629,21 +630,25 @@ transfer_keys() {
 
 	# --- Remote setup ----------------------------------------------------------
 	echo "Creating directory $DEST_AGE_KEYS_DIR on $HOSTNAME"
-	ssh -t root@"$HOSTNAME" "mkdir -p '$DEST_AGE_KEYS_DIR'"
+	ssh -t "tim@${HOSTNAME}" "mkdir -p '$DEST_AGE_KEYS_DIR'"
 
 	# --- File transfers --------------------------------------------------------
 	echo "Transferring all files from $SOURCE_DIR to $HOSTNAME:$DEST_DIR (excluding authorized_keys)"
-	rsync -av --exclude 'authorized_keys' "$SOURCE_DIR" root@"$HOSTNAME":"$DEST_DIR"
+	rsync -av --exclude 'authorized_keys' "$SOURCE_DIR" "tim@${HOSTNAME}":"$DEST_DIR"
 
 	echo "Transferring $KEY_FILE to $HOSTNAME:$DEST_KEY_PATH"
-	scp "${SOURCE_DIR}${KEY_FILE}" root@"$HOSTNAME":"$DEST_KEY_PATH"
+	# Transfer to a temporary path, then use sudo to move to the final destination
+	local TEMP_KEY_PATH="/tmp/$(basename "$SOURCE_KEY_PATH")"
+	scp "$SOURCE_KEY_PATH" "tim@${HOSTNAME}":"$TEMP_KEY_PATH"
+	ssh -t "tim@${HOSTNAME}" "sudo mv '$TEMP_KEY_PATH' '$DEST_KEY_PATH'"
 
 	echo "Transferring $AGE_KEYS_FILE to $HOSTNAME:$DEST_AGE_KEYS_PATH"
-	scp "$AGE_KEYS_FILE" root@"$HOSTNAME":"$DEST_AGE_KEYS_PATH"
+	scp "$AGE_KEYS_FILE" "tim@${HOSTNAME}":"$DEST_AGE_KEYS_PATH"
 
 	# --- Fix ownership & permissions ------------------------------------------
 	echo "Setting permissions and ownership on $HOSTNAME"
-	ssh -t root@"$HOSTNAME" <<'REMOTE_CMDS'
+	# Connect as 'tim' and execute the command block with sudo
+	ssh -t "tim@${HOSTNAME}" "sudo bash -s" <<'REMOTE_CMDS'
     # Ensure .ssh directory is owned by tim
     chown tim /home/tim/.ssh
 
@@ -717,8 +722,7 @@ eval "$(starship init bash)"
 eval "$(zoxide init bash)"
 
 [[ -f ~/.bash-preexec.sh ]] && source ~/.bash-preexec.sh
-[[ ! -d ~/.local/share/blesh || -z "$(ls -A ~/.local/share/blesh 2>/dev/null)" ]] && { mkdir -p ~/.local/share/blesh && cp -a $(BLESH_PATH)/* ~/.local/share/blesh; }
-chown -R $USER:users ~/.local/share/blesh
+[[ ! -d ~/.local/share/blesh || -z "$(ls -A ~/.local/share/blesh 2>/dev/null)" ]] && { mkdir -p ~/.local/share/blesh && sudo cp -a $BLESH_PATH/* ~/.local/share/blesh; }
 source ~/.local/share/blesh/ble.sh
 eval "$(atuin init bash)"
 

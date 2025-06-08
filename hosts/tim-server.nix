@@ -1,4 +1,5 @@
 {
+  modulesPath,
   config,
   pkgs,
   inputs,
@@ -9,7 +10,8 @@
 }: {
   # Import the common configuration shared across all machines
   imports = [
-    ./tim-server-hardware-configuration.nix
+    (modulesPath + "/installer/scan/not-detected.nix")
+    (modulesPath + "/profiles/qemu-guest.nix")
     (import ../common/disko.nix {inherit disks;})
     ../common/common.nix
     ../packages/system-packages.nix
@@ -24,10 +26,12 @@
   ];
 
   # Bootloader
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
-  boot.loader.systemd-boot.configurationLimit = 5;
   boot.loader.timeout = lib.mkForce 1;
+  boot.loader.grub = lib.mkForce {
+    enable = true;
+    efiSupport = true;
+    efiInstallAsRemovable = true;
+  };
 
   # Machine specific configurations
 

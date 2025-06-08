@@ -99,14 +99,10 @@
       disks = ["/dev/nvme0n1" "/dev/nvme1n1"];
     };
     nixosConfigurations.tim-server = self.mkSystem {
+      # nix run nixpkgs#nixos-anywhere -- --flake ./#tim-server root@142.132.234.128
       hostFile = ./hosts/tim-server.nix;
       system = "x86_64-linux";
       disks = ["/dev/sda"];
-    };
-    nixosConfigurations.qemu = self.mkSystem {
-      hostFile = ./hosts/qemu.nix;
-      system = "x86_64-linux";
-      disks = ["/dev/vda"];
     };
     nixosConfigurations.tim-wsl = self.mkSystem {
       hostFile = ./hosts/tim-wsl.nix;
@@ -117,12 +113,11 @@
     nixosConfigurations.installer = let
       system = "x86_64-linux";
       pkgs = import nixpkgs-stable {inherit system;};
-      hosts = ["tim-laptop" "tim-pc" "tim-server" "qemu"];
+      hosts = ["tim-laptop" "tim-pc" "tim-server"];
       hostDisks = {
         "tim-laptop" = ["/dev/nvme0n1"];
         "tim-pc" = ["/dev/nvme0n1" "/dev/nvme1n1"];
         "tim-server" = ["/dev/sda"];
-        "qemu" = ["/dev/vda"];
       };
     in
       nixpkgs-stable.lib.nixosSystem {

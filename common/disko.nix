@@ -24,6 +24,12 @@ in {
           content = {
             type = "gpt";
             partitions = {
+              boot = {
+                name = "bios_grub";
+                size = "1M";
+                type = "EF02";
+              };
+
               ESP = {
                 label = "EFI";
                 name = "ESP";
@@ -52,6 +58,10 @@ in {
                   subvolumes = {
                     "@" = {
                       mountpoint = "/";
+                      mountOptions = ["compress=zstd" "noatime"];
+                    };
+                    "@/mnt/docker-data" = {
+                      mountpoint = "/mnt/docker-data";
                       mountOptions = ["compress=zstd" "noatime"];
                     };
                     "@/home" = {
