@@ -188,6 +188,24 @@
     ssh-to-age
   ];
 
+  systemd.services."docker-network-docker-network" = {
+    description = "Ensure the custom Docker bridge ‘docker-network’ exists";
+    after = ["docker.service"];
+    wants = ["docker.service"];
+    wantedBy = ["multi-user.target"];
+
+    serviceConfig = {
+      Type = "oneshot";
+    };
+
+    script = ''
+      # create the bridge if it isn't there yet
+      ${pkgs.docker}/bin/docker network inspect docker-network \
+        >/dev/null 2>&1 || \
+      ${pkgs.docker}/bin/docker network create docker-network
+    '';
+  };
+
   # Open ports in the firewall
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
