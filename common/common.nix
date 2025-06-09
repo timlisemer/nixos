@@ -3,7 +3,11 @@
   pkgs,
   inputs,
   ...
-}: {
+}: let
+  myAuthorizedKeys = pkgs.writeText "authorized_keys" ''
+    ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEae4h0Uk6x/lrmw0PZv/7GfWyLuEAVoc70AC4ykyFtX TimLisemer
+  '';
+in {
   # imports
   imports = [
     inputs.sops-nix.nixosModules.sops
@@ -203,6 +207,68 @@
       ${pkgs.docker}/bin/docker network inspect docker-network \
         >/dev/null 2>&1 || \
       ${pkgs.docker}/bin/docker network create docker-network
+    '';
+  };
+
+  ##########################################################################
+  ## Firefox GNOME theme – run once at boot, fix every user’s profile    ##
+  ##########################################################################
+  systemd.services."firefox-theme-activation" = {
+    description = "Ensure Firefox GNOME theme userContent.css is imported for all users";
+    after = ["local-fs.target"];
+    wantedBy = ["multi-user.target"];
+
+    serviceConfig = {Type = "oneshot";};
+
+    script = ''
+      # Iterate over every “real” user account
+      getent passwd | awk -F: '$3 >= 1000 && $7 !~ /(false|nologin)/ {print $1}' |
+      while read -r user; do
+        home="$(getent passwd "$user" | cut -d: -f6)"
+        profileDir="$home/.mozilla/firefox/default/chrome"
+
+        mkdir -p "$profileDir"
+        [ -s "$profileDir/userContent.css" ] || : > "$profileDir/userContent.css"
+
+        if ! grep -Fxq '@import "firefox-gnome-theme/userContent.css";' \
+                      "$profileDir/userContent.css"
+        then
+          sed -i '1i@import "firefox-gnome-theme/userContent.css";' \
+              "$profileDir/userContent.css"
+        fi
+
+        chown -R "$user":"$(id -gn "$user")" "$home/.mozilla"
+      done
+    '';
+  };
+
+  ##########################################################################
+  ## authorized_keys – install the same key file for every real user      ##
+  ##########################################################################
+  systemd.services."install-authorized-keys" = {
+    description = "Install authorized_keys for all users";
+    after = ["local-fs.target" "sshd.service"]; # run before SSH logins
+    wantedBy = ["multi-user.target"];
+
+    serviceConfig = {Type = "oneshot";};
+
+    script = ''
+      keySrc="${myAuthorizedKeys}"
+
+      if [ ! -r "$keySrc" ]; then
+        echo "install-authorized-keys: $keySrc not found or unreadable" >&2
+        exit 1
+      fi
+
+      getent passwd | awk -F: '$3 >= 1000 && $7 !~ /(false|nologin)/ {print $1}' |
+      while read -r user; do
+        home="$(getent passwd "$user" | cut -d: -f6)"
+        sshDir="$home/.ssh"
+
+        install -m 700 -d "$sshDir"
+        install -m 600 -T "$keySrc" "$sshDir/authorized_keys"
+        chown -R "$user":"$(id -gn "$user")" "$sshDir"
+      done
     '';
   };
 
