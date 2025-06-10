@@ -42,6 +42,8 @@
     nixpkgs-fmt
     xorg.libxcb
     openal
+    rpiboot
+    screen
     spice
     # spice-gtk
     virt-viewer

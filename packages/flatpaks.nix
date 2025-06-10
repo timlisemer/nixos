@@ -25,5 +25,6 @@
     "flathub:app/org.pulseaudio.pavucontrol//stable"
     "flathub:app/org.torproject.torbrowser-launcher//stable"
     # "flathub:app/org.mozilla.firefox//stable"
+    "flathub:app/org.raspberrypi.rpi-imager//stable"
   ];
 }

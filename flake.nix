@@ -108,6 +108,12 @@
       hostFile = ./hosts/tim-wsl.nix;
       system = "x86_64-linux";
     };
+    nixosConfigurations.homeassistant = self.mkSystem {
+      hostFile = ./hosts/homeassistant.nix;
+      # Runs on a Raspberry Pi Compute Module 5 Arm64
+      system = "aarch64-linux";
+      disks = ["/dev/nvme0n1"];
+    };
 
     # Single installer that carries install scripts for every host
     nixosConfigurations.installer = let
@@ -127,6 +133,33 @@
           home-manager = inputs.home-manager;
         };
         modules = [
+          disko.nixosModules.disko
+          vscode-server.nixosModules.default
+          (import ./common/installer.nix {
+            inherit pkgs self hosts hostDisks;
+          })
+        ];
+      };
+
+    nixosConfigurations.installer-arm = let
+      system = "aarch64-linux";
+      pkgs = import nixpkgs-stable {inherit system;};
+      hosts = ["homeassistant"];
+      hostDisks = {
+        "homeassistant" = ["/dev/nvme0n1"];
+      };
+    in
+      nixpkgs-stable.lib.nixosSystem {
+        inherit system;
+        specialArgs = {
+          inherit self inputs hosts hostDisks;
+          home-manager = inputs.home-manager;
+        };
+        modules = [
+          ({pkgs, ...}: {
+            nixpkgs.buildPlatform.system = "x86_64-linux";
+            nixpkgs.hostPlatform.system = "aarch64-linux";
+          })
           disko.nixosModules.disko
           vscode-server.nixosModules.default
           (import ./common/installer.nix {

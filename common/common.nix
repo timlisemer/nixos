@@ -65,6 +65,9 @@ in {
     options = "--delete-older-than 7d";
   };
 
+  # Load the kernel module for Silicon Labs USB-to-UART bridges. For the homeassistant yellow
+  boot.kernelModules = ["cp210x"];
+
   # Enable CUPS to print documents.
   services.printing.enable = true;
 

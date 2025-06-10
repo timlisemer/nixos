@@ -1,8 +1,19 @@
 {
   config,
   pkgs,
+  system,
+  inputs,
   ...
-}: {
+}: let
+  unstable = import inputs.nixpkgs-unstable {
+    config = {allowUnfree = true;};
+    inherit system;
+  };
+  pkgs = import inputs.nixpkgs-stable {
+    config = {allowUnfree = true;};
+    inherit system;
+  };
+in {
   environment.systemPackages = with pkgs; [
     steam
     wireshark
@@ -10,7 +21,6 @@
     ghostty
     geary
     intune-portal
-    minecraft
     prismlauncher
     easyeffects
     rnote
@@ -19,7 +29,7 @@
     timeshift
     gnome-boxes
     loupe
-    rpi-imager
+    # rpi-imager # broken
     mediawriter
     postman
     vlc
