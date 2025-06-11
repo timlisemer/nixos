@@ -11,9 +11,6 @@
   boot.loader.systemd-boot.configurationLimit = 5;
   boot.loader.timeout = lib.mkForce 1;
 
-  # Enable networking
-  networking.networkmanager.enable = true;
-
   # Enable the X11 windowing system
   services.xserver.enable = true;
 

@@ -112,7 +112,7 @@
       hostFile = ./hosts/homeassistant.nix;
       # Runs on a Raspberry Pi Compute Module 5 Arm64
       system = "aarch64-linux";
-      disks = ["/dev/nvme0n1"];
+      disks = ["/dev/mmcblk0"];
     };
 
     # Single installer that carries install scripts for every host
@@ -146,7 +146,7 @@
       pkgs = import nixpkgs-stable {inherit system;};
       hosts = ["homeassistant"];
       hostDisks = {
-        "homeassistant" = ["/dev/nvme0n1"];
+        "homeassistant" = ["/dev/mmcblk0"];
       };
     in
       nixpkgs-stable.lib.nixosSystem {
