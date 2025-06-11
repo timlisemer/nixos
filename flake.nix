@@ -4,11 +4,7 @@
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable"; # Unstable channel
     nixos-wsl.url = "github:nix-community/NixOS-WSL"; # NixOS WSL
     nixpkgs-oldvscode.url = "github:NixOS/nixpkgs/333d19c8b58402b94834ec7e0b58d83c0a0ba658"; # vscode 1.98.2
-
-    flatpaks = {
-      url = "github:GermanBread/declarative-flatpak/stable-v3";
-      inputs.nixpkgs.follows = "nixpkgs-stable";
-    };
+    flatpaks.url = "github:GermanBread/declarative-flatpak/stable-v3";
 
     alejandra = {
       # Nix formatter -> https://drakerossman.com/blog/overview-of-nix-formatters-ecosystem
@@ -73,7 +69,7 @@
         specialArgs = {inherit disks inputs system self;};
         modules = [
           disko.nixosModules.disko
-          flatpaks.nixosModules.declarative-flatpak
+          flatpaks.nixosModule
           vscode-server.nixosModules.default
           ({
             pkgs,
