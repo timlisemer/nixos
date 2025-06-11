@@ -10,6 +10,7 @@
 }: {
   # Import the common configuration shared across all machines
   imports = [
+    ../common/after_installer.nix
     (modulesPath + "/installer/scan/not-detected.nix")
     (modulesPath + "/profiles/qemu-guest.nix")
     (import ../common/disko.nix {inherit disks;})

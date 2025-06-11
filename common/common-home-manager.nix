@@ -63,21 +63,11 @@ in {
     };
   };
 
-  programs.atuin = {
-    enable = true;
-    # https://github.com/nix-community/home-manager/issues/5734
-  };
-
   services.gpg-agent = {
     enable = true;
     defaultCacheTtl = 1800;
     enableSshSupport = true;
   };
-
-  home.packages = with pkgs; [
-    atuin
-    sops
-  ];
 
   home.file = {
     ".config/ags" = {

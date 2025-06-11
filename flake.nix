@@ -119,6 +119,7 @@
     nixosConfigurations.installer = let
       system = "x86_64-linux";
       pkgs = import nixpkgs-stable {inherit system;};
+      home-manager = inputs.home-manager;
       hosts = ["tim-laptop" "tim-pc" "tim-server"];
       hostDisks = {
         "tim-laptop" = ["/dev/nvme0n1"];
@@ -129,14 +130,13 @@
       nixpkgs-stable.lib.nixosSystem {
         inherit system;
         specialArgs = {
-          inherit self inputs hosts hostDisks;
-          home-manager = inputs.home-manager;
+          inherit self inputs hosts hostDisks home-manager;
         };
         modules = [
           disko.nixosModules.disko
           vscode-server.nixosModules.default
           (import ./common/installer.nix {
-            inherit pkgs self hosts hostDisks;
+            inherit pkgs self hosts hostDisks home-manager;
           })
         ];
       };
@@ -144,6 +144,7 @@
     nixosConfigurations.installer-arm = let
       system = "aarch64-linux";
       pkgs = import nixpkgs-stable {inherit system;};
+      home-manager = inputs.home-manager;
       hosts = ["homeassistant"];
       hostDisks = {
         "homeassistant" = ["/dev/mmcblk0"];
@@ -152,8 +153,7 @@
       nixpkgs-stable.lib.nixosSystem {
         inherit system;
         specialArgs = {
-          inherit self inputs hosts hostDisks;
-          home-manager = inputs.home-manager;
+          inherit self inputs hosts hostDisks home-manager;
         };
         modules = [
           ({pkgs, ...}: {
@@ -163,7 +163,7 @@
           disko.nixosModules.disko
           vscode-server.nixosModules.default
           (import ./common/installer.nix {
-            inherit pkgs self hosts hostDisks;
+            inherit pkgs self hosts hostDisks home-manager;
           })
         ];
       };

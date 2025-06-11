@@ -3,8 +3,15 @@
   self,
   hosts, # list of host names to provide installers for
   hostDisks, # attr-set: host → list of disk paths
+  home-manager,
   ...
 }: let
+  imports = [
+    (./common_with_installer.nix {inherit home-manager;})
+  ];
+
+  networkmanager.enable = true; # required for disko
+
   # ────────────────────────────────────────────────────────────────────────────
   # 1.  stand-alone script that replaces the original bash function
   # ────────────────────────────────────────────────────────────────────────────
