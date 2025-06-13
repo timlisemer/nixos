@@ -25,6 +25,13 @@
     i2c = {
       enable = true;
     };
+    bluetooth.settings = {
+      General = {
+        # The string that remote devices will see
+        Name = "Tim-PC";
+        DisablePlugins = "hostname";
+      };
+    };
   };
 
   # Portainer Container

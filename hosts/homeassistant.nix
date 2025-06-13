@@ -25,6 +25,19 @@
     })
   ];
 
+  hardware = {
+    i2c = {
+      enable = true;
+    };
+    bluetooth.settings = {
+      General = {
+        # The string that remote devices will see
+        Name = "Tim-HomeAssistant";
+        DisablePlugins = "hostname";
+      };
+    };
+  };
+
   # May break stuff on arch64, but is needed for some packages
   nixpkgs.config.allowUnsupportedSystem = true;
 
@@ -40,7 +53,9 @@
 
   # Machine specific configurations
 
-  networking.hostName = "tim-server";
+  networking.hostName = "tim-homeassistant";
+  networking.useDHCP = false; # Use static IP configuration
+  
 
   environment.variables.SERVER = "1";
 
