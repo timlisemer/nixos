@@ -13,7 +13,6 @@
 in {
   # Import the Home Manager NixOS module
   imports = [
-    inputs.home-manager.nixosModules.home-manager
   ];
 
   # NixOS system-wide home-manager configuration
@@ -45,22 +44,8 @@ in {
 
     # Files and folders to be symlinked into home
     home.file = {
-      ".config/starship.toml" = {
-        source = builtins.toPath ../files/starship.toml;
-        force = true;
-      };
       "Pictures/Wallpapers" = {
         source = builtins.toPath ../files/Wallpapers;
-        force = true;
-      };
-    };
-  };
-
-  home-manager.users.root = {
-    # Files and folders to be symlinked into home
-    home.file = {
-      ".config/starship.toml" = {
-        source = builtins.toPath ../files/starship-root.toml;
         force = true;
       };
     };

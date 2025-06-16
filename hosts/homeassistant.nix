@@ -25,6 +25,9 @@
     })
   ];
 
+  # Fix shebangs in scripts # Try to bring this back to common/common.nix however currently it breaks a lot of things for example npm
+  services.envfs.enable = true;
+
   hardware = {
     i2c = {
       enable = true;
@@ -55,7 +58,6 @@
 
   networking.hostName = "tim-homeassistant";
   networking.useDHCP = false; # Use static IP configuration
-  
 
   environment.variables.SERVER = "1";
 

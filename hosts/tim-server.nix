@@ -26,6 +26,9 @@
     })
   ];
 
+  # Fix shebangs in scripts # Try to bring this back to common/common.nix however currently it breaks a lot of things for example npm
+  services.envfs.enable = true;
+
   # Bootloader
   boot.loader.timeout = lib.mkForce 1;
   boot.loader.grub = lib.mkForce {

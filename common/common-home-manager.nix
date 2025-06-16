@@ -11,9 +11,6 @@
   ...
 }: let
 in {
-  # Specify the Home Manager state version
-  home.stateVersion = "25.05";
-
   # Sops Home Configuration
   sops.defaultSopsFile = ../secrets/secrets.yaml;
   sops.defaultSopsFormat = "yaml";
@@ -76,14 +73,6 @@ in {
     };
     ".config/hypr" = {
       source = builtins.toPath ../files/hypr;
-      force = true;
-    };
-    ".bash_profile" = {
-      source = builtins.toPath ../files/bash_profile;
-      force = true;
-    };
-    ".bashrc" = {
-      source = builtins.toPath ../files/bashrc;
       force = true;
     };
     ".stignore" = {

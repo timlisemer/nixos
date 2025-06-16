@@ -66,7 +66,7 @@
     }:
       nixpkgs-stable.lib.nixosSystem {
         inherit system;
-        specialArgs = {inherit disks inputs system self;};
+        specialArgs = {inherit disks inputs system home-manager self;};
         modules = [
           disko.nixosModules.disko
           flatpaks.nixosModule
