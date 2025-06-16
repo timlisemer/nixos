@@ -16,6 +16,7 @@ alias nixos='cd ~/Coding/Other/nixos'
 alias iocto='cd ~/Coding/iocto'
 alias install_tim_server='nix run nixpkgs#nixos-anywhere -- --flake /etc/nixos#tim-server root@142.132.234.128'
 alias nix_clean='sudo nix-collect-garbage -d && sudo nix-store --gc && sudo nix-store --optimize && sudo nix-store --verify --check-contents'
+alias git_amend='git add . && git commit --amend --no-edit && git push --force-with-lease'
 
 if [ "${WSL:-0}" = "1" ]; then
 	# WSL=1, set aliases for WSL environment
@@ -611,15 +612,16 @@ transfer_keys() {
 		return 1
 	fi
 	local HOSTNAME=$1
+	local USER=$(printenv USER)
 
 	# --- Paths -----------------------------------------------------------------
 	local SOURCE_DIR="$HOME/.ssh/"
-	local DEST_DIR="/home/tim/.ssh/"
+	local DEST_DIR="/home/${USER}/.ssh/"
 	local KEY_FILE="id_ed25519"
 	local SOURCE_KEY_PATH="${SOURCE_DIR}${KEY_FILE}"
 	local DEST_KEY_PATH="/etc/ssh/nixos_personal_sops_key"
 	local AGE_KEYS_FILE="$HOME/.ssh/age_keys.txt"
-	local DEST_AGE_KEYS_DIR="/home/tim/.config/sops/age/"
+	local DEST_AGE_KEYS_DIR="/home/${USER}/.config/sops/age/"
 	local DEST_AGE_KEYS_PATH="${DEST_AGE_KEYS_DIR}keys.txt"
 
 	# --- Preconditions ---------------------------------------------------------
@@ -630,43 +632,43 @@ transfer_keys() {
 
 	# --- Remote setup ----------------------------------------------------------
 	echo "Creating directory $DEST_AGE_KEYS_DIR on $HOSTNAME"
-	ssh -t "tim@${HOSTNAME}" "mkdir -p '$DEST_AGE_KEYS_DIR'"
+	ssh -t "${USER}@${HOSTNAME}" "mkdir -p '$DEST_AGE_KEYS_DIR'"
 
 	# --- File transfers --------------------------------------------------------
 	echo "Transferring all files from $SOURCE_DIR to $HOSTNAME:$DEST_DIR (excluding authorized_keys)"
-	rsync -av --exclude 'authorized_keys' "$SOURCE_DIR" "tim@${HOSTNAME}":"$DEST_DIR"
+	rsync -av --exclude 'authorized_keys' "$SOURCE_DIR" "${USER}@${HOSTNAME}":"$DEST_DIR"
 
 	echo "Transferring $KEY_FILE to $HOSTNAME:$DEST_KEY_PATH"
 	local TEMP_KEY_PATH="/tmp/$(basename "$SOURCE_KEY_PATH")"
-	scp "$SOURCE_KEY_PATH" "tim@${HOSTNAME}":"$TEMP_KEY_PATH"
-	ssh -t "tim@${HOSTNAME}" "sudo mv '$TEMP_KEY_PATH' '$DEST_KEY_PATH'"
+	scp "$SOURCE_KEY_PATH" "${USER}@${HOSTNAME}":"$TEMP_KEY_PATH"
+	ssh -t "${USER}@${HOSTNAME}" "sudo mv '$TEMP_KEY_PATH' '$DEST_KEY_PATH'"
 
 	echo "Transferring $AGE_KEYS_FILE to $HOSTNAME:$DEST_AGE_KEYS_PATH"
-	scp "$AGE_KEYS_FILE" "tim@${HOSTNAME}":"$DEST_AGE_KEYS_PATH"
+	scp "$AGE_KEYS_FILE" "${USER}@${HOSTNAME}":"$DEST_AGE_KEYS_PATH"
 
 	# --- Fix ownership & permissions ------------------------------------------
 	echo "Setting permissions and ownership on $HOSTNAME"
 	local TMP_SCRIPT=$(mktemp /tmp/transfer_keys_remote.XXXXXX.sh)
-	cat >"$TMP_SCRIPT" <<'EOS'
-chown tim /home/tim/.ssh
-find /home/tim/.ssh -mindepth 1 ! -name authorized_keys -exec chown tim {} +
-if [ -f /home/tim/.ssh/authorized_keys ]; then
-    chown tim /home/tim/.ssh/authorized_keys
-    chmod 600 /home/tim/.ssh/authorized_keys
+	cat >"$TMP_SCRIPT" <<EOS
+chown ${USER}:users  /home/${USER}/.ssh
+find /home/${USER}/.ssh -mindepth 1 ! -name authorized_keys -exec chown ${USER}:users  {} +
+if [ -f /home/${USER}/.ssh/authorized_keys ]; then
+    chown ${USER}:users  /home/${USER}/.ssh/authorized_keys
+    chmod 600 /home/${USER}/.ssh/authorized_keys
 fi
-chown -R tim /home/tim/.gnupg
-chown -R tim /home/tim/.config/sops
-chmod 700 /home/tim/.ssh
-find /home/tim/.ssh -type f ! -name authorized_keys -exec chmod 600 {} \;
-find /home/tim/.ssh -type d -exec chmod 700 {} \;
+chown -R ${USER}:users /home/${USER}/.gnupg
+chown -R ${USER}:users /home/${USER}/.config/sops
+chmod 700 /home/${USER}/.ssh
+find /home/${USER}/.ssh -type f ! -name authorized_keys -exec chmod 600 {} \;
+find /home/${USER}/.ssh -type d -exec chmod 700 {} \;
 chmod 600 /etc/ssh/nixos_personal_sops_key
-chmod 700 /home/tim/.config/sops/age
-chmod 600 /home/tim/.config/sops/age/keys.txt
-chmod +x /home/tim/.ssh/transfer_keys.sh || true
+chmod 700 /home/${USER}/.config/sops/age
+chmod 600 /home/${USER}/.config/sops/age/keys.txt
+chmod +x /home/${USER}/.ssh/transfer_keys.sh || true
 EOS
 
-	scp "$TMP_SCRIPT" "tim@${HOSTNAME}:/tmp/transfer_keys_remote.sh"
-	ssh -t "tim@${HOSTNAME}" "sudo bash /tmp/transfer_keys_remote.sh && rm /tmp/transfer_keys_remote.sh"
+	scp "$TMP_SCRIPT" "${USER}@${HOSTNAME}:/tmp/transfer_keys_remote.sh"
+	ssh -t "${USER}@${HOSTNAME}" "sudo bash /tmp/transfer_keys_remote.sh && rm /tmp/transfer_keys_remote.sh"
 	rm -f "$TMP_SCRIPT"
 
 	echo "Transfer and setup completed."
@@ -704,6 +706,95 @@ ssh() {
 		command ssh "$target" "$@"
 		;;
 	esac
+}
+# ---------------------------------------------------------------------------
+
+# --- install_keys: generate and install local SSH and SOPS keys ------
+# Checks for required key files, generates them from the primary SSH key
+# if missing, and sets the correct ownership and permissions.
+# Usage:  install_keys
+install_keys() {
+	set -euo pipefail
+
+	# --- Trap for error handling ---------------------------------------------
+	trap 'ret=$?; echo "install_keys failed at line $LINENO with exit code $ret" >&2; if [ -t 1 ]; then read -n 1 -s -r -p "Press any key to continue..."; fi; exit $ret' ERR
+
+	# --- Paths and User Info ---------------------------------------------------
+	local USER=$(printenv USER)
+	local HOME="/home/${USER}" # Use explicit home path for clarity in sudo contexts
+	local PRIMARY_KEY_PATH="${HOME}/.ssh/id_ed25519"
+	local SOPS_KEY_PATH="/etc/ssh/nixos_personal_sops_key"
+	local AGE_KEYS_DIR="${HOME}/.config/sops/age/"
+	local AGE_KEYS_PATH="${AGE_KEYS_DIR}keys.txt"
+
+	# --- Preconditions ---------------------------------------------------------
+	echo "Checking for primary SSH key..."
+	if [[ ! -f "$PRIMARY_KEY_PATH" ]]; then
+		echo "Error: Primary key $PRIMARY_KEY_PATH does not exist." >&2
+		echo "Please generate an ed25519 SSH key before running this script." >&2
+		return 1
+	fi
+	echo "Primary SSH key found."
+
+	# --- Check for existing files and set generation flag --------------------
+	local MISSING_FILES=false
+	if [[ ! -f "$SOPS_KEY_PATH" || ! -f "$AGE_KEYS_PATH" ]]; then
+		MISSING_FILES=true
+	fi
+
+	if [[ "$MISSING_FILES" = false ]]; then
+		echo "All keys and configuration files are already in place. Nothing to do."
+		trap - ERR
+		return 0
+	fi
+
+	# --- Key Generation --------------------------------------------------------
+	echo "One or more key files are missing. Starting generation process..."
+
+	# Generate SOPS key if missing
+	if [[ ! -f "$SOPS_KEY_PATH" ]]; then
+		echo "... $SOPS_KEY_PATH is missing, generating..."
+		echo "This requires sudo privileges."
+		sudo cp "$PRIMARY_KEY_PATH" "$SOPS_KEY_PATH"
+		echo "Successfully created $SOPS_KEY_PATH."
+	else
+		echo "... $SOPS_KEY_PATH already exists."
+	fi
+
+	# Generate age key file if missing
+	if [[ ! -f "$AGE_KEYS_PATH" ]]; then
+		echo "... $AGE_KEYS_PATH is missing, generating..."
+		if ! command -v ssh-to-age &>/dev/null; then
+			echo "Error: ssh-to-age command not found. Please install it to proceed." >&2
+			return 1
+		fi
+		mkdir -p "$AGE_KEYS_DIR"
+		# Generate the age public key from the corresponding public SSH key
+		ssh-to-age <"${PRIMARY_KEY_PATH}.pub" >"$AGE_KEYS_PATH"
+		echo "Successfully created $AGE_KEYS_PATH."
+	else
+		echo "... $AGE_KEYS_PATH already exists."
+	fi
+
+	# --- Fix ownership & permissions ------------------------------------------
+	echo "Setting permissions and ownership for local keys..."
+	# Use sudo for the system-wide key
+	sudo chown root:root "$SOPS_KEY_PATH"
+	sudo chmod 600 "$SOPS_KEY_PATH"
+
+	# Set permissions for user-specific keys and directories
+	chown -R "${USER}:users" "${HOME}/.config/sops"
+	chmod 700 "$AGE_KEYS_DIR"
+	chmod 600 "$AGE_KEYS_PATH"
+
+	# Ensure .ssh directory permissions are correct as a baseline
+	chmod 700 "${HOME}/.ssh"
+	chmod 600 "${HOME}/.ssh/id_ed25519"
+	chmod 644 "${HOME}/.ssh/id_ed25519.pub"
+
+	echo "Key installation and setup completed."
+	trap - ERR
+	return 0
 }
 # ---------------------------------------------------------------------------
 

@@ -195,6 +195,9 @@ in {
     ssh-to-age
     atuin
     sops
+    gnugrep
+    gawk
+    gnused
   ];
 
   systemd.services."docker-network-docker-network" = {
