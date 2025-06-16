@@ -23,5 +23,9 @@
     ../secrets/sops.nix
   ];
 
+  environment.systemPackages = with pkgs; [
+    hyprpicker
+  ];
+
   environment.variables.DESKTOP = "1";
 }
