@@ -209,12 +209,14 @@ in {
   ##########################################################################
   ## authorized_keys – install the same key file for every real user      ##
   ##########################################################################
-  systemd.services."install-authorized-keys" = {
+  systemd.services.install-authorized-keys = {
     description = "Install authorized_keys for all users";
-    after = ["local-fs.target" "sshd.service"]; # run before SSH logins
+    after = ["local-fs.target" "sshd.service"];
     wantedBy = ["multi-user.target"];
+    serviceConfig.Type = "oneshot";
 
-    serviceConfig = {Type = "oneshot";};
+    # Everything the script invokes goes here
+    path = with pkgs; [gawk glibc coreutils];
 
     script = ''
       keySrc="${myAuthorizedKeys}"
@@ -228,7 +230,6 @@ in {
       while read -r user; do
         home="$(getent passwd "$user" | cut -d: -f6)"
         sshDir="$home/.ssh"
-
         install -m 700 -d "$sshDir"
         install -m 600 -T "$keySrc" "$sshDir/authorized_keys"
         chown -R "$user":"$(id -gn "$user")" "$sshDir"

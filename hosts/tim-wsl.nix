@@ -10,6 +10,7 @@
   imports = [
     inputs.nixos-wsl.nixosModules.default
     ../common/common.nix
+    ../common/after_installer.nix
     ../packages/system-packages.nix
     ../packages/dependencies.nix
     (import ../common/home-manager.nix {
