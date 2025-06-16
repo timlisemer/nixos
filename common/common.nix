@@ -17,9 +17,7 @@ in {
   # Environment Variables
   environment.variables = {
     RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
-    NVD_BACKEND = "direct";
     MOZ_DISABLE_RDD_SANDBOX = "1";
-    LIBVA_DRIVER_NAME = "nvidia";
     MUTTER_DEBUG_KMS_THREAD_TYPE = "user";
     NODE_OPTIONS = "--max-old-space-size=4096";
     SGX_ENCLAVE_SIZE = "4G";

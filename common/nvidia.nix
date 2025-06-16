@@ -12,6 +12,11 @@
   # Load nvidia driver for Xorg and Wayland
   services.xserver.videoDrivers = ["nvidia"];
 
+  environment.variables = {
+    NVD_BACKEND = "direct";
+    LIBVA_DRIVER_NAME = "nvidia";
+  };
+
   hardware.nvidia = {
     # Modesetting is required.
     modesetting.enable = true;
