@@ -6,12 +6,6 @@
   home-manager,
   ...
 }: let
-  imports = [
-    (./common_with_installer.nix {inherit home-manager;})
-  ];
-
-  networkmanager.enable = true; # required for disko
-
   # ────────────────────────────────────────────────────────────────────────────
   # 1.  stand-alone script that replaces the original bash function
   # ────────────────────────────────────────────────────────────────────────────
@@ -133,10 +127,13 @@
 in {
   imports = [
     ./common.nix
+    (./common_with_installer.nix {inherit home-manager;})
   ];
 
   # make the closure available on the ISO
   environment.etc."install-closure".source = "${closureInfo}/store-paths";
+
+  networkmanager.enable = true;
 
   # ship both the per-host installer *and* the key-install helper
   environment.systemPackages =
