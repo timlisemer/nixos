@@ -21,11 +21,11 @@
   hardware.gpgSmartcards.enable = true;
   services.pcscd.enable = true;
   services.udev.packages = [pkgs.yubikey-manager];
-  environment.etc."chromium/native-messaging-hosts/eu.webeid.json".source = "${pkgs.web-eid-app}/share/web-eid/eu.webeid.json";
-  environment.etc."opt/chrome/native-messaging-hosts/eu.webeid.json".source = "${pkgs.web-eid-app}/share/web-eid/eu.webeid.json";
+  environment.etc."chromium/native-messaging-hosts/eu.webeid.json".source = lib.mkForce "${pkgs.web-eid-app}/share/web-eid/eu.webeid.json";
+  environment.etc."opt/chrome/native-messaging-hosts/eu.webeid.json".source = lib.mkForce "${pkgs.web-eid-app}/share/web-eid/eu.webeid.json";
   # Tell p11-kit to load/proxy opensc-pkcs11.so, providing all slots
   # (PIN1 for auth/decrypt, PIN2 for signing).
-  environment.etc."pkcs11/modules/opensc-pkcs11".text = ''
+  environment.etc."pkcs11/modules/opensc-pkcs11".text = lib.mkForce ''
     module: ${pkgs.opensc}/lib/opensc-pkcs11.so
   '';
   environment.systemPackages = with pkgs; [

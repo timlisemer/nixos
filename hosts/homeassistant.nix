@@ -57,7 +57,6 @@
   # Machine specific configurations
 
   networking.hostName = "tim-homeassistant";
-  networking.useDHCP = false; # Use static IP configuration
 
   environment.variables.SERVER = "1";
 

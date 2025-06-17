@@ -1,6 +1,7 @@
 {
   pkgs,
   self,
+  lib,
   hosts, # list of host names to provide installers for
   hostDisks, # attr-set: host → list of disk paths
   home-manager,
@@ -136,7 +137,7 @@ in {
   ];
 
   # make the closure available on the ISO
-  environment.etc."install-closure".source = "${closureInfo}/store-paths";
+  environment.etc."install-closure".source = lib.mkForce "${closureInfo}/store-paths";
 
   networking.networkmanager.enable = true;
 

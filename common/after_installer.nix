@@ -2,6 +2,7 @@
   config,
   pkgs,
   inputs,
+  lib,
   ...
 }: let
 in {
@@ -17,29 +18,64 @@ in {
   # Or disable entirely:
   networking = {
     firewall.enable = false;
-    wireless.userControlled.enable = true;
-    wireless.enable = true;
-    wireless.secretsFile = config.sops.secrets."wifiENV".path;
-    wireless.networks = {
-      # SSID
-      BND_Observations_VAN_3 = {
-        pskRaw = "ext:home_psk";
-        priority = 10;
+    networkmanager.enable = true;
+  };
+
+  networking.networkmanager.ensureProfiles.environmentFiles = [
+    "/run/secrets/wifiENV"
+  ];
+
+  networking.networkmanager.ensureProfiles.profiles = {
+    "BND_Observations_Van_3" = {
+      connection = {
+        id = "BND_Observations_Van_3";
+        type = "wifi";
+        autoconnect = true;
       };
-      Noel = {
-        pskRaw = "ext:home2_psk";
-        priority = 10;
+
+      wifi = {
+        ssid = "BND_Observations_Van_3";
+        mode = "infrastructure";
+      };
+
+      wifi-security = {
+        key-mgmt = "wpa-psk";
+        psk = "$HOME_WIFI_PSK"; # substituted from env file
+      };
+
+      ipv4 = {method = "auto";};
+      ipv6 = {
+        addr-gen-mode = "default";
+        method = "auto";
       };
     };
-    networkmanager = {
-      enable = true;
-      # Tell it to ignore every Wi-Fi interface so it touches only Ethernet
-      unmanaged = ["type:wifi"]; # or "interface-name:name" for a single card
+    "Noel" = {
+      connection = {
+        id = "Noel";
+        type = "wifi";
+        autoconnect = true;
+      };
+
+      wifi = {
+        ssid = "Noel";
+        mode = "infrastructure";
+      };
+
+      wifi-security = {
+        key-mgmt = "wpa-psk";
+        psk = "$HOME2_WIFI_PSK"; # substituted from env file
+      };
+
+      ipv4 = {method = "auto";};
+      ipv6 = {
+        addr-gen-mode = "default";
+        method = "auto";
+      };
     };
   };
 
   # Google Drive Rclone Mount
-  environment.etc."rclone-gdrive.conf".text = ''
+  environment.etc."rclone-gdrive.conf".text = lib.mkForce ''
     [gdrive]
     type = drive
     client_id = /run/secrets/google_oauth_client_id
