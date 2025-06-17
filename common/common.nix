@@ -157,6 +157,7 @@ in {
     gnugrep
     gawk
     gnused
+    getent
   ];
 
   systemd.services."docker-network-docker-network" = {
@@ -219,7 +220,7 @@ in {
     serviceConfig.Type = "oneshot";
 
     # Everything the script invokes goes here
-    path = with pkgs; [gawk glibc coreutils];
+    path = with pkgs; [gawk glibc coreutils getent];
 
     script = ''
       keySrc="${myAuthorizedKeys}"
