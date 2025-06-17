@@ -102,6 +102,20 @@
       #! /usr/bin/env bash
       set -eux
 
+      if [[ $EUID -ne 0 ]]; then
+        echo "This script must be run as root." >&2
+        exit 1
+      fi
+
+      echo
+      read -rp "Path to your id_ed25519 key: " KEY_PATH
+      if ! install_keys_from_file "$KEY_PATH"; then
+        echo "Key installation failed - aborting." >&2
+        rm -rf /mnt/etc/nixos
+        umount -R /mnt || true
+        exit 1
+      fi
+
       # wipe + partition + mount
       nix --extra-experimental-features 'nix-command flakes' run \
         github:nix-community/disko -- --mode zap_create_mount \
@@ -109,16 +123,8 @@
 
       # copy flake to target
       mkdir -p /mnt/etc/nixos
-      cp -a ${self}/* /mnt/etc/nixos/
-
-      echo
-      read -rp "Path to your id_ed25519 key: " KEY_PATH
-      if ! install_keys_from_file "$KEY_PATH"; then
-        echo "Key installation failed – aborting." >&2
-        rm -rf /mnt/etc/nixos
-        umount -R /mnt || true
-        exit 1
-      fi
+      git clone https://github.com/TimLisemer/NixOs.git /mnt/etc/nixos/
+      rm -f /mnt/etc/nixos/flake.lock
 
       # install the system
       nixos-install --flake "/mnt/etc/nixos#${host}"
