@@ -239,6 +239,7 @@ with lib.hm.gvariant; {
     "org/gnome/settings-daemon/plugins/power" = {
       power-button-action = "interactive";
       sleep-inactive-ac-timeout = 7200;
+      sleep-inactive-ac-type = "nothing";
     };
 
     "org/gnome/shell/app-switcher" = {
