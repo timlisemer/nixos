@@ -542,6 +542,23 @@ nixos_generate_iso_image() {
 }
 # -------------------------------------------------------------------------
 
+alias drives_print='print_drives'
+print_drives() {
+	echo "--- Block Devices (NVMe, HDD, SSD, USB, SD Cards) ---"
+	lsblk -o NAME,SIZE,TYPE,MODEL,TRAN,VENDOR | grep -v "TYPE"
+	echo ""
+	echo "--- QEMU/KVM Virtual Disks ---"
+	ls -l /dev/disk/by-id/virtio-* 2>/dev/null || echo "No QEMU/KVM disks found."
+	echo ""
+	echo "--- rclone Mounts (FUSE) ---"
+	df -hT | grep 'fuse.rclone' || echo "No rclone mounts found."
+	echo ""
+	echo "--- Network Drives (NFS, CIFS) ---"
+	df -hT | grep -E 'nfs|cifs' || echo "No NFS or CIFS network drives found."
+	echo ""
+	echo "--------------------------------------------------------"
+}
+
 # --- explorer: open Windows File Explorer from inside WSL -------------------
 explorer() {
 
