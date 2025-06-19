@@ -84,98 +84,105 @@
       };
 
     # Host Configurations
-    nixosConfigurations.tim-laptop = self.mkSystem {
-      hostFile = ./hosts/tim-laptop.nix;
-      system = "x86_64-linux";
-      disks = ["/dev/nvme0n1"];
-    };
-    nixosConfigurations.tim-pc = self.mkSystem {
-      hostFile = ./hosts/tim-pc.nix;
-      system = "x86_64-linux";
-      disks = ["/dev/nvme0n1" "/dev/nvme1n1"];
-    };
-    nixosConfigurations.tim-server = self.mkSystem {
-      # nix run nixpkgs#nixos-anywhere -- --flake ./#tim-server root@142.132.234.128
-      hostFile = ./hosts/tim-server.nix;
-      system = "x86_64-linux";
-      disks = ["/dev/sda"];
-    };
-    nixosConfigurations.tim-wsl = self.mkSystem {
-      hostFile = ./hosts/tim-wsl.nix;
-      system = "x86_64-linux";
-    };
-    nixosConfigurations.homeassistant = self.mkSystem {
-      hostFile = ./hosts/homeassistant.nix;
-      # Runs on a Raspberry Pi Compute Module 5 Arm64
-      system = "aarch64-linux";
-      disks = ["/dev/mmcblk0"];
-    };
-
-    # Single installer that carries install scripts for every host
-    nixosConfigurations.installer = let
-      system = "x86_64-linux";
-      pkgs = import nixpkgs-stable {inherit system;};
-      home-manager = inputs.home-manager;
-      hosts = ["tim-laptop" "tim-pc" "tim-server"];
-      hostDisks = {
-        "tim-laptop" = ["/dev/nvme0n1"];
-        "tim-pc" = ["/dev/nvme0n1" "/dev/nvme1n1"];
-        "tim-server" = ["/dev/sda"];
+    nixosConfigurations = {
+      tim-laptop = self.mkSystem {
+        hostFile = ./hosts/tim-laptop.nix;
+        system = "x86_64-linux";
+        disks = ["/dev/nvme0n1"];
       };
-    in
-      nixpkgs-stable.lib.nixosSystem {
-        inherit system;
-        specialArgs = {
-          inherit self inputs hosts hostDisks home-manager;
-        };
-        modules = [
-          disko.nixosModules.disko
-          vscode-server.nixosModules.default
-          ({
-            pkgs,
-            lib,
-            inputs,
-            ...
-          }: {
-            imports = [
-              (import ./common/installer.nix {
-                inherit pkgs self lib hosts hostDisks home-manager;
-              })
-            ];
-          })
-        ];
+      tim-pc = self.mkSystem {
+        hostFile = ./hosts/tim-pc.nix;
+        system = "x86_64-linux";
+        disks = ["/dev/nvme0n1" "/dev/nvme1n1"];
+      };
+      tim-server = self.mkSystem {
+        # nix run nixpkgs#nixos-anywhere -- --flake ./#tim-server root@142.132.234.128
+        hostFile = ./hosts/tim-server.nix;
+        system = "x86_64-linux";
+        disks = ["/dev/sda"];
+      };
+      tim-wsl = self.mkSystem {
+        hostFile = ./hosts/tim-wsl.nix;
+        system = "x86_64-linux";
+      };
+      homeassistant = self.mkSystem {
+        hostFile = ./hosts/homeassistant.nix;
+        # Runs on a Raspberry Pi Compute Module 5 Arm64
+        system = "aarch64-linux";
+      };
+      rpi = self.mkSystem {
+        hostFile = ./hosts/rpi.nix;
+        # Runs on a Raspberry Pi Compute Module 5 Arm64
+        system = "aarch64-linux";
+        disks = ["/dev/nvme0n1"];
       };
 
-    nixosConfigurations.installer-arm = let
-      system = "aarch64-linux";
-      pkgs = import nixpkgs-stable {inherit system;};
-      home-manager = inputs.home-manager;
-      hosts = ["homeassistant"];
-      hostDisks = {
-        "homeassistant" = ["/dev/mmcblk0"];
-      };
-    in
-      nixpkgs-stable.lib.nixosSystem {
-        inherit system;
-        specialArgs = {
-          inherit self inputs hosts hostDisks home-manager;
+      # Single installer that carries install scripts for every host
+      installer = let
+        system = "x86_64-linux";
+        pkgs = import nixpkgs-stable {inherit system;};
+        home-manager = inputs.home-manager;
+        hosts = ["tim-laptop" "tim-pc" "tim-server"];
+        hostDisks = {
+          "tim-laptop" = ["/dev/nvme0n1"];
+          "tim-pc" = ["/dev/nvme0n1" "/dev/nvme1n1"];
+          "tim-server" = ["/dev/sda"];
         };
-        modules = [
-          disko.nixosModules.disko
-          vscode-server.nixosModules.default
-          ({
-            pkgs,
-            lib,
-            inputs,
-            ...
-          }: {
-            imports = [
-              (import ./common/installer.nix {
-                inherit pkgs self lib hosts hostDisks home-manager;
-              })
-            ];
-          })
-        ];
-      };
+      in
+        nixpkgs-stable.lib.nixosSystem {
+          inherit system;
+          specialArgs = {
+            inherit self inputs hosts hostDisks home-manager;
+          };
+          modules = [
+            disko.nixosModules.disko
+            vscode-server.nixosModules.default
+            ({
+              pkgs,
+              lib,
+              inputs,
+              ...
+            }: {
+              imports = [
+                (import ./common/installer.nix {
+                  inherit pkgs self lib hosts hostDisks home-manager;
+                })
+              ];
+            })
+          ];
+        };
+
+      installer-arm = let
+        system = "aarch64-linux";
+        pkgs = import nixpkgs-stable {inherit system;};
+        home-manager = inputs.home-manager;
+        hosts = ["homeassistant"];
+        hostDisks = {
+          "homeassistant" = ["/dev/mmcblk0"];
+        };
+      in
+        nixpkgs-stable.lib.nixosSystem {
+          inherit system;
+          specialArgs = {
+            inherit self inputs hosts hostDisks home-manager;
+          };
+          modules = [
+            disko.nixosModules.disko
+            vscode-server.nixosModules.default
+            ({
+              pkgs,
+              lib,
+              inputs,
+              ...
+            }: {
+              imports = [
+                (import ./common/installer.nix {
+                  inherit pkgs self lib hosts hostDisks home-manager;
+                })
+              ];
+            })
+          ];
+        };
+    };
   };
 }

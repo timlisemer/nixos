@@ -5,14 +5,12 @@
   inputs,
   home-manager,
   lib,
-  disks,
   ...
 }: {
   # Import the common configuration shared across all machines
   imports = [
     ../common/after_installer.nix
-    # ./homeassistant-hardware-configuration.nix
-    (import ../common/disko.nix {inherit disks;})
+    ./rpi-hardware-configuration.nix
     ../common/common.nix
     ../packages/system-packages.nix
     ../packages/dependencies.nix
@@ -21,7 +19,7 @@
       isDesktop = false;
       isWsl = false;
       isServer = false;
-      isHomeAssistant = true;
+      isHomeAssistant = false;
     })
   ];
 
@@ -35,7 +33,7 @@
     bluetooth.settings = {
       General = {
         # The string that remote devices will see
-        Name = "Tim-HomeAssistant";
+        Name = "Tim-Raspberry-Pi";
         DisablePlugins = "hostname";
       };
     };
@@ -47,18 +45,19 @@
   boot.kernelPackages = pkgs.linuxPackages_rpi4;
 
   # Bootloader
+  boot.loader.efi.canTouchEfiVariables = true;
+  boot.loader.systemd-boot.configurationLimit = 5;
   boot.loader.timeout = lib.mkForce 1;
-  boot.loader.grub = lib.mkForce {
+  boot.loader.grub = lib.mkDefault {
     enable = true;
     efiSupport = true;
-    efiInstallAsRemovable = true;
+    efiInstallAsRemovable = false;
+    devices = ["/dev/mmcblk0"]; # MicroSD card
   };
 
   # Machine specific configurations
 
-  networking.hostName = "tim-homeassistant";
-
-  environment.variables.SERVER = "1";
+  networking.hostName = "tim-raspberry-pi";
 
   environment.systemPackages = with pkgs; [
   ];
