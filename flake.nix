@@ -131,8 +131,17 @@
         modules = [
           disko.nixosModules.disko
           vscode-server.nixosModules.default
-          (import ./common/installer.nix {
-            inherit pkgs self hosts hostDisks home-manager;
+          ({
+            pkgs,
+            lib,
+            inputs,
+            ...
+          }: {
+            imports = [
+              (import ./common/installer.nix {
+                inherit pkgs self lib hosts hostDisks home-manager;
+              })
+            ];
           })
         ];
       };
@@ -152,14 +161,19 @@
           inherit self inputs hosts hostDisks home-manager;
         };
         modules = [
-          ({pkgs, ...}: {
-            nixpkgs.buildPlatform.system = "x86_64-linux";
-            nixpkgs.hostPlatform.system = "aarch64-linux";
-          })
           disko.nixosModules.disko
           vscode-server.nixosModules.default
-          (import ./common/installer.nix {
-            inherit pkgs self hosts hostDisks home-manager;
+          ({
+            pkgs,
+            lib,
+            inputs,
+            ...
+          }: {
+            imports = [
+              (import ./common/installer.nix {
+                inherit pkgs self lib hosts hostDisks home-manager;
+              })
+            ];
           })
         ];
       };

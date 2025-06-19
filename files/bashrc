@@ -543,6 +543,39 @@ nixos_generate_iso_image() {
 }
 # -------------------------------------------------------------------------
 
+# --- nixos_generate_img_image: generate an SD image for NixOS ----------
+alias nixos_generate_img_image='nixos_generate_img_image'
+alias img_image_create='nixos_generate_img_image'
+alias create_img_image='nixos_generate_img_image'
+nixos_generate_img_image() {
+	local HOST="$1"
+	if [ -z "$HOST" ]; then
+		echo "Usage: nixos_generate_img_image <host>"
+		return 1
+	fi
+
+	local OUT="nixos_img_image_${HOST}_$(date +%Y%m%d_%H%M%S)"
+	local TMPDIR="/tmp/$OUT"
+	local DESTDIR=~/Coding/Other/nixos-images/
+
+	mkdir -p "$DESTDIR"
+
+	if nix run --impure github:nix-community/nixos-generators -- \
+		--format sd-aarch64 \
+		--flake /etc/nixos#"${HOST}" \
+		-o "$TMPDIR"; then
+
+		cp "$TMPDIR"/sd-aarch64/*.img "$DESTDIR/$OUT.img"
+		echo "IMG image successfully stored at: $DESTDIR"
+		find "$DESTDIR" -name "*${OUT}*" -type f -print
+	else
+		echo "Failed to generate IMG image for host: $HOST"
+		return 1
+	fi
+}
+# -----------------------------------------------------------------------
+
+# --- print_drives: print all block devices, rclone mounts, and network drives ---
 alias drives_print='print_drives'
 print_drives() {
 	echo "--- Block Devices (NVMe, HDD, SSD, USB, SD Cards) ---"
@@ -559,6 +592,7 @@ print_drives() {
 	echo ""
 	echo "--------------------------------------------------------"
 }
+# -----------------------------------------------------------------------
 
 # --- explorer: open Windows File Explorer from inside WSL -------------------
 explorer() {
