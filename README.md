@@ -15,7 +15,7 @@ Boot your system using a NixOS live CD or USB.
 If the minimal NixOS environment does not have `git` installed by default, install it with the following command:
 
 ```bash
-nix-env -iA nixos.git
+nix-shell -p git
 ```
 
 #### 2.1 Optionally Enable SSH Access Within the Live Environment:
