@@ -15,6 +15,8 @@
     dejavu_fonts
     dracut
     elfutils
+    ethtool
+    wol
     fastfetch
     fd
     ffmpeg

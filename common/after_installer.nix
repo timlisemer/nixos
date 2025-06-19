@@ -8,6 +8,18 @@
 in {
   # imports
   imports = [
+    # Inline module that turns on Wake-on-LAN for every interface
+    ({lib, ...}: {
+      options.networking.interfaces = lib.mkOption {
+        type = lib.types.attrsOf (lib.types.submoduleWith {
+          modules = [
+            ({name, ...}: {
+              config.wakeOnLan.enable = lib.mkDefault true;
+            })
+          ];
+        });
+      };
+    })
     inputs.sops-nix.nixosModules.sops
     ../secrets/sops.nix
   ];
@@ -19,57 +31,57 @@ in {
   networking = {
     firewall.enable = false;
     networkmanager.enable = true;
-  };
 
-  networking.networkmanager.ensureProfiles.environmentFiles = [
-    "/run/secrets/wifiENV"
-  ];
+    networkmanager.ensureProfiles.environmentFiles = [
+      "/run/secrets/wifiENV"
+    ];
 
-  networking.networkmanager.ensureProfiles.profiles = {
-    "BND_Observations_Van_3" = {
-      connection = {
-        id = "BND_Observations_Van_3";
-        type = "wifi";
-        autoconnect = true;
+    networkmanager.ensureProfiles.profiles = {
+      "BND_Observations_Van_3" = {
+        connection = {
+          id = "BND_Observations_Van_3";
+          type = "wifi";
+          autoconnect = true;
+        };
+
+        wifi = {
+          ssid = "BND_Observations_Van_3";
+          mode = "infrastructure";
+        };
+
+        wifi-security = {
+          key-mgmt = "wpa-psk";
+          psk = "$HOME_WIFI_PSK"; # substituted from env file
+        };
+
+        ipv4 = {method = "auto";};
+        ipv6 = {
+          addr-gen-mode = "default";
+          method = "auto";
+        };
       };
+      "Noel" = {
+        connection = {
+          id = "Noel";
+          type = "wifi";
+          autoconnect = true;
+        };
 
-      wifi = {
-        ssid = "BND_Observations_Van_3";
-        mode = "infrastructure";
-      };
+        wifi = {
+          ssid = "Noel";
+          mode = "infrastructure";
+        };
 
-      wifi-security = {
-        key-mgmt = "wpa-psk";
-        psk = "$HOME_WIFI_PSK"; # substituted from env file
-      };
+        wifi-security = {
+          key-mgmt = "wpa-psk";
+          psk = "$HOME2_WIFI_PSK"; # substituted from env file
+        };
 
-      ipv4 = {method = "auto";};
-      ipv6 = {
-        addr-gen-mode = "default";
-        method = "auto";
-      };
-    };
-    "Noel" = {
-      connection = {
-        id = "Noel";
-        type = "wifi";
-        autoconnect = true;
-      };
-
-      wifi = {
-        ssid = "Noel";
-        mode = "infrastructure";
-      };
-
-      wifi-security = {
-        key-mgmt = "wpa-psk";
-        psk = "$HOME2_WIFI_PSK"; # substituted from env file
-      };
-
-      ipv4 = {method = "auto";};
-      ipv6 = {
-        addr-gen-mode = "default";
-        method = "auto";
+        ipv4 = {method = "auto";};
+        ipv6 = {
+          addr-gen-mode = "default";
+          method = "auto";
+        };
       };
     };
   };
@@ -97,6 +109,7 @@ in {
       "x-systemd.after=network-online.target"
     ];
   };
+
   # Cloudflare R2 Rclone Mount
   fileSystems."/mnt/cloudflare" = {
     device = "cloudflare:nixos";
