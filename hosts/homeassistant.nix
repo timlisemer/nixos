@@ -11,7 +11,7 @@
   # Import the common configuration shared across all machines
   imports = [
     ../common/after_installer.nix
-    (modulesPath + "/installer/scan/not-detected.nix")
+    ./homeassistant-hardware-configuration.nix
     (import ../common/disko.nix {inherit disks;})
     ../common/common.nix
     ../packages/system-packages.nix
