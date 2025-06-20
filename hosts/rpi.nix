@@ -4,11 +4,12 @@
   pkgs,
   inputs,
   home-manager,
+  nixos-raspberrypi,
   lib,
   ...
 }: {
   # Import the common configuration shared across all machines
-  imports = [
+  imports = with nixos-raspberrypi.nixosModules; [
     ../common/after_installer.nix
     ./rpi-hardware-configuration.nix
     ../common/common.nix
@@ -21,6 +22,22 @@
       isServer = false;
       isHomeAssistant = false;
     })
+
+    # Required: Add necessary overlays with kernel, firmware, vendor packages
+    nixos-raspberrypi.lib.inject-overlays
+
+    # Binary cache with prebuilt packages for the currently locked `nixpkgs`,
+    # see `devshells/nix-build-to-cachix.nix` for a list
+    trusted-nix-caches
+
+    # Optional: All RPi and RPi-optimised packages to be available in `pkgs.rpi`
+    nixpkgs-rpi
+
+    # Optonal: add overlays with optimised packages into the global scope
+    # provides: ffmpeg_{4,6,7}, kodi, libcamera, vlc, etc.
+    # This overlay may cause lots of rebuilds (however many
+    #  packages should be available from the binary cache)
+    nixos-raspberrypi.lib.inject-overlays-global
   ];
 
   # Fix shebangs in scripts # Try to bring this back to common/common.nix however currently it breaks a lot of things for example npm
@@ -33,7 +50,7 @@
     bluetooth.settings = {
       General = {
         # The string that remote devices will see
-        Name = "Tim-Raspberry-Pi";
+        Name = "tim-raspberry-pi";
         DisablePlugins = "hostname";
       };
     };
@@ -52,7 +69,7 @@
     enable = true;
     efiSupport = true;
     efiInstallAsRemovable = false;
-    devices = ["/dev/mmcblk0"]; # MicroSD card
+    devices = ["/dev/nvme0n1"]; #  Nvme Slot
   };
 
   nixpkgs.overlays = [

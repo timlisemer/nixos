@@ -5,6 +5,7 @@
     nixos-wsl.url = "github:nix-community/NixOS-WSL"; # NixOS WSL
     nixpkgs-oldvscode.url = "github:NixOS/nixpkgs/333d19c8b58402b94834ec7e0b58d83c0a0ba658"; # vscode 1.98.2
     flatpaks.url = "github:GermanBread/declarative-flatpak/stable-v3";
+    nixos-raspberrypi.url = "github:nvmd/nixos-raspberrypi/main";
 
     alejandra = {
       # Nix formatter -> https://drakerossman.com/blog/overview-of-nix-formatters-ecosystem
@@ -56,6 +57,7 @@
     home-manager,
     firefox-gnome-theme,
     nixos-wsl,
+    nixos-raspberrypi,
     tim-nvim,
     ...
   }: {
@@ -66,7 +68,7 @@
     }:
       nixpkgs-stable.lib.nixosSystem {
         inherit system;
-        specialArgs = {inherit disks inputs system home-manager self;};
+        specialArgs = {inherit disks inputs system home-manager self nixos-raspberrypi;};
         modules = [
           disko.nixosModules.disko
           flatpaks.nixosModule
@@ -109,12 +111,12 @@
         hostFile = ./hosts/homeassistant.nix;
         # Runs on a Raspberry Pi Compute Module 5 Arm64
         system = "aarch64-linux";
+        disks = ["/dev/nvme0n1"];
       };
       rpi = self.mkSystem {
         hostFile = ./hosts/rpi.nix;
         # Runs on a Raspberry Pi Compute Module 5 Arm64
         system = "aarch64-linux";
-        disks = ["/dev/nvme0n1"];
       };
 
       # Single installer that carries install scripts for every host
@@ -158,7 +160,7 @@
         home-manager = inputs.home-manager;
         hosts = ["homeassistant"];
         hostDisks = {
-          "homeassistant" = ["/dev/mmcblk0"];
+          "homeassistant" = ["/dev/nvme0n1"];
         };
       in
         nixpkgs-stable.lib.nixosSystem {
