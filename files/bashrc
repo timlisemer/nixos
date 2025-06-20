@@ -565,7 +565,7 @@ nixos_generate_img_image() {
 		--flake /etc/nixos#"${HOST}" \
 		-o "$TMPDIR"; then
 
-		cp "$TMPDIR"/sd-aarch64/*.img "$DESTDIR/$OUT.img"
+		zstd --decompress "$TMPDIR"/sd-image/*.zst -o "$DESTDIR/$OUT.img"
 		echo "IMG image successfully stored at: $DESTDIR"
 		find "$DESTDIR" -name "*${OUT}*" -type f -print
 	else
@@ -750,8 +750,12 @@ ssh() {
 		command ssh tim@10.0.0.25 "$@"
 		;;
 	homeassistant)
-		# maps to tim@10.0.02
-		command ssh tim@10.0.02 "$@"
+		# maps to tim@10.0.0.2
+		command ssh tim@10.0.0.2 "$@"
+		;;
+	rpi4)
+		# maps to tim@10.0.0.87
+		command ssh tim@10.0.0.87 "$@"
 		;;
 	*)
 		# no special mapping: just invoke the real ssh with all original args
@@ -811,7 +815,8 @@ transfer() {
 	tim-server | server) remote="tim@142.132.234.128" ;;
 	tim-pc | pc) remote="tim@10.0.0.3" ;;
 	tim-laptop | laptop) remote="tim@10.0.0.25" ;;
-	homeassistant) remote="tim@10.0.02" ;;
+	homeassistant) remote="tim@10.0.0.2" ;;
+	rpi4) remote="tim@10.0.0.87" ;;
 	*) remote="$target" ;; # already user@host or raw host
 	esac
 

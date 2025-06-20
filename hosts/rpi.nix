@@ -55,6 +55,39 @@
     devices = ["/dev/mmcblk0"]; # MicroSD card
   };
 
+  nixpkgs.overlays = [
+    (final: super: {
+      makeModulesClosure = x:
+        super.makeModulesClosure (x // {allowMissing = true;});
+    })
+    (self: super: let
+      stub = super.runCommandNoCC "empty" {} "mkdir -p $out";
+
+      stripZfs = pkgsSet:
+        pkgsSet
+        // builtins.listToAttrs
+        (map (n: {
+            name = n;
+            value = stub;
+          })
+          (builtins.filter (n: lib.hasPrefix "zfs" n)
+            (builtins.attrNames pkgsSet)));
+    in {
+      intel-media-driver = stub;
+      zfs =
+        super.zfs
+        // {
+          package = stub;
+          userspace = stub;
+          kernel = stub;
+        };
+      zfs-kernel = stub;
+      linuxPackages_rpi4 = stripZfs super.linuxPackages_rpi4;
+    })
+  ];
+
+  hardware.graphics.extraPackages = lib.mkForce [pkgs.mesa];
+
   # Machine specific configurations
 
   networking.hostName = "tim-raspberry-pi";

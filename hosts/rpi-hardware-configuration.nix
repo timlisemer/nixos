@@ -13,7 +13,7 @@
   ];
 
   boot.initrd.availableKernelModules = ["xhci_pci"];
-  boot.initrd.kernelModules = [];
+  boot.initrd.kernelModules = ["vc4" "simplefb" "sun4i-drm" "snd-bcm2835"];
   boot.kernelModules = [];
   boot.extraModulePackages = [];
 
