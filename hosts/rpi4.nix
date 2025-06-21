@@ -50,7 +50,7 @@
     bluetooth.settings = {
       General = {
         # The string that remote devices will see
-        Name = "tim-raspberry-pi";
+        Name = "tim-pi4";
         DisablePlugins = "hostname";
       };
     };
@@ -69,7 +69,7 @@
     enable = true;
     efiSupport = true;
     efiInstallAsRemovable = false;
-    devices = ["/dev/nvme0n1"]; #  Nvme Slot
+    device = "/dev/mmcblk0"; # microsd card slot
   };
 
   nixpkgs.overlays = [
@@ -107,7 +107,7 @@
 
   # Machine specific configurations
 
-  networking.hostName = "tim-raspberry-pi";
+  networking.hostName = "tim-pi4";
 
   environment.systemPackages = with pkgs; [
   ];

@@ -50,7 +50,7 @@
     bluetooth.settings = {
       General = {
         # The string that remote devices will see
-        Name = "Tim-Homeassistant";
+        Name = "homeassistant-yellow";
         DisablePlugins = "hostname";
       };
     };
@@ -107,5 +107,5 @@
 
   # Machine specific configurations
 
-  networking.hostName = "tim-homeassistant";
+  networking.hostName = "homeassistant-yellow";
 }

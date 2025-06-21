@@ -44,6 +44,16 @@
     };
   };
 
+  # Optional: Binary cache for the flake
+  nixConfig = {
+    extra-substituters = [
+      "https://nixos-raspberrypi.cachix.org"
+    ];
+    extra-trusted-public-keys = [
+      "nixos-raspberrypi.cachix.org-1:4iMO9LXa8BqhU+Rpg6LQKiGa2lsNh/j2oiYLNOQ5sPI="
+    ];
+  };
+
   outputs = inputs @ {
     self,
     nixpkgs-stable,
@@ -107,15 +117,18 @@
         hostFile = ./hosts/tim-wsl.nix;
         system = "x86_64-linux";
       };
-      homeassistant = self.mkSystem {
-        hostFile = ./hosts/homeassistant.nix;
+      homeassistant-yellow = self.mkSystem {
+        hostFile = ./hosts/homeassistant-yellow.nix;
         # Runs on a Raspberry Pi Compute Module 5 Arm64
         system = "aarch64-linux";
         disks = ["/dev/nvme0n1"];
       };
-      rpi = self.mkSystem {
-        hostFile = ./hosts/rpi.nix;
-        # Runs on a Raspberry Pi Compute Module 5 Arm64
+      tim-pi4 = self.mkSystem {
+        hostFile = ./hosts/rpi4.nix;
+        system = "aarch64-linux";
+      };
+      tim-pi5 = self.mkSystem {
+        hostFile = ./hosts/rpi5.nix;
         system = "aarch64-linux";
       };
 
@@ -158,9 +171,9 @@
         system = "aarch64-linux";
         pkgs = import nixpkgs-stable {inherit system;};
         home-manager = inputs.home-manager;
-        hosts = ["homeassistant"];
+        hosts = ["homeassistant-yellow"];
         hostDisks = {
-          "homeassistant" = ["/dev/nvme0n1"];
+          "homeassistant-yellow" = ["/dev/nvme0n1"];
         };
       in
         nixpkgs-stable.lib.nixosSystem {
@@ -177,11 +190,29 @@
               inputs,
               ...
             }: {
-              imports = [
+              imports = with nixos-raspberrypi.nixosModules; [
+                # Required: Add necessary overlays with kernel, firmware, vendor packages
+                nixos-raspberrypi.lib.inject-overlays
+
+                # Binary cache with prebuilt packages for the currently locked `nixpkgs`,
+                # see `devshells/nix-build-to-cachix.nix` for a list
+                trusted-nix-caches
+
+                # Optional: All RPi and RPi-optimised packages to be available in `pkgs.rpi`
+                nixpkgs-rpi
+
+                # Optonal: add overlays with optimised packages into the global scope
+                # provides: ffmpeg_{4,6,7}, kodi, libcamera, vlc, etc.
+                # This overlay may cause lots of rebuilds (however many
+                #  packages should be available from the binary cache)
+                nixos-raspberrypi.lib.inject-overlays-global
+
                 (import ./common/installer.nix {
                   inherit pkgs self lib hosts hostDisks home-manager;
                 })
               ];
+
+              boot.kernelPackages = pkgs.linuxPackages_rpi5;
             })
           ];
         };
