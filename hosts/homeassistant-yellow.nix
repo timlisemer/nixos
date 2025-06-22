@@ -1,4 +1,5 @@
 {
+  disks,
   modulesPath,
   config,
   pkgs,
@@ -10,6 +11,7 @@
 }: {
   # Import the common configuration shared across all machines
   imports = with nixos-raspberrypi.nixosModules; [
+    (import ../common/disko.nix {inherit disks;})
     ../common/after_installer.nix
     ./rpi-hardware-configuration.nix
     ../common/common.nix
@@ -62,15 +64,10 @@
   boot.kernelPackages = pkgs.linuxPackages_rpi5;
 
   # Bootloader
+  boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.systemd-boot.configurationLimit = 5;
   boot.loader.timeout = lib.mkForce 1;
-  boot.loader.grub = lib.mkDefault {
-    enable = true;
-    efiSupport = true;
-    efiInstallAsRemovable = false;
-    devices = ["/dev/nvme0n1"]; #  Nvme Slot
-  };
 
   nixpkgs.overlays = [
     (final: super: {
