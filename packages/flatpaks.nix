@@ -26,5 +26,6 @@
     "flathub:app/org.torproject.torbrowser-launcher//stable"
     # "flathub:app/org.mozilla.firefox//stable"
     "flathub:app/org.raspberrypi.rpi-imager//stable"
+    "flathub:app/com.github.Matoking.protontricks//stable"
   ];
 }
