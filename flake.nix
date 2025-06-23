@@ -117,12 +117,6 @@
         hostFile = ./hosts/tim-wsl.nix;
         system = "x86_64-linux";
       };
-      homeassistant-yellow = self.mkSystem {
-        hostFile = ./hosts/homeassistant-yellow.nix;
-        # Runs on a Raspberry Pi Compute Module 5 Arm64
-        system = "aarch64-linux";
-        disks = ["/dev/nvme0n1"];
-      };
       tim-pi4 = self.mkSystem {
         hostFile = ./hosts/rpi4.nix;
         system = "aarch64-linux";
@@ -130,6 +124,20 @@
       tim-pi5 = self.mkSystem {
         hostFile = ./hosts/rpi5.nix;
         system = "aarch64-linux";
+      };
+      homeassistant-yellow = nixos-raspberrypi.lib.nixosSystem {
+        system = "aarch64-linux";
+        modules = [
+          disko.nixosModules.disko
+          vscode-server.nixosModules.default
+          ./hosts/homeassistant-yellow.nix
+        ];
+
+        # extra values you want reachable INSIDE the host module
+        specialArgs = {
+          disks = ["/dev/nvme0n1"]; # <= your disk list
+          inherit inputs home-manager self nixos-raspberrypi;
+        };
       };
 
       # Single installer that carries install scripts for every host

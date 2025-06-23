@@ -16,16 +16,19 @@ in {
   ];
 
   nix.settings = {
-    accept-flake-config = true;
-
+    # do **not** use mkForce – let other modules add their entries
     substituters = [
-      "https://cache.nixos.org"
-      "https://nixos-raspberrypi.cachix.org"
+      "file:///nix/store?trusted=1" # keep local store
+      "https://cache.nixos.org?priority=40"
+      "https://nixos-raspberrypi.cachix.org?priority=30"
     ];
+
     trusted-public-keys = [
       "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
       "nixos-raspberrypi.cachix.org-1:4iMO9LXa8BqhU+Rpg6LQKiGa2lsNh/j2oiYLNOQ5sPI="
     ];
+
+    trusted-users = ["root" "@wheel"];
   };
 
   # Environment Variables
@@ -148,7 +151,6 @@ in {
     description = "Tim Lisemer";
     extraGroups = ["networkmanager" "wheel" "dialout" "docker"];
   };
-  nix.settings.trusted-users = ["tim"];
 
   environment.systemPackages = with pkgs; [
     git
