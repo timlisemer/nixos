@@ -26,6 +26,14 @@
     })
   ];
 
+  # Allows missing modules, needed to build the system with the nixos-raspberrypi flake
+  nixpkgs.overlays = [
+    (final: super: {
+      makeModulesClosure = x:
+        super.makeModulesClosure (x // {allowMissing = true;});
+    })
+  ];
+
   # Fix shebangs in scripts # Try to bring this back to common/common.nix however currently it breaks a lot of things for example npm
   services.envfs.enable = true;
 

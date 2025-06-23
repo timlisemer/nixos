@@ -12,8 +12,8 @@
     (modulesPath + "/installer/scan/not-detected.nix")
   ];
 
-  boot.initrd.availableKernelModules = ["xhci_pci"];
-  boot.initrd.kernelModules = ["vc4" "simplefb" "sun4i-drm" "snd-bcm2835"];
+  boot.initrd.availableKernelModules = [];
+  boot.initrd.kernelModules = [];
   boot.kernelModules = [];
   boot.extraModulePackages = [];
 

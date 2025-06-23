@@ -184,10 +184,10 @@
           "homeassistant-yellow" = ["/dev/nvme0n1"];
         };
       in
-        nixpkgs-stable.lib.nixosSystem {
+        nixos-raspberrypi.lib.nixosSystem {
           inherit system;
           specialArgs = {
-            inherit self inputs hosts hostDisks home-manager;
+            inherit self inputs hosts hostDisks home-manager nixos-raspberrypi;
           };
           modules = [
             disko.nixosModules.disko
@@ -201,6 +201,14 @@
               imports = [
                 (import ./common/installer.nix {
                   inherit pkgs self lib hosts hostDisks home-manager;
+                })
+              ];
+              boot.kernelPackages = pkgs.rpi.linuxPackages_rpi5;
+              # Allows missing modules, needed to build the system with the nixos-raspberrypi flake
+              nixpkgs.overlays = [
+                (final: super: {
+                  makeModulesClosure = x:
+                    super.makeModulesClosure (x // {allowMissing = true;});
                 })
               ];
             })
