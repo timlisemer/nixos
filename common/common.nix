@@ -15,6 +15,8 @@ in {
     home-manager.nixosModules.home-manager
   ];
 
+  nixpkgs.overlays = [(import ../overlays/gemini-cli.nix)];
+
   nix.settings = {
     # do **not** use mkForce – let other modules add their entries
     substituters = [
@@ -44,6 +46,7 @@ in {
     WEBKIT_DISABLE_DMABUF_RENDERER = "1"; # Tauri Apps couldn’t run on NixOS NVIDIA
     PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig";
     BLESH_PATH = "${pkgs.blesh}/share/blesh";
+    # environment.variables.GEMINI_API_KEY = "YOUR_API_KEY"; # OPTIONAL - For Gemini CLI
   };
 
   # Enable experimental nix-command and flakes
@@ -174,6 +177,8 @@ in {
     gawk
     gnused
     getent
+    nodejs
+    gemini-cli
   ];
 
   systemd.services."docker-network-docker-network" = {

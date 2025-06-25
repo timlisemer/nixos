@@ -98,7 +98,6 @@
     clippy
     cargo-edit
     cargo-tauri
-    nodejs
     at-spi2-atk
     atkmm
     cairo

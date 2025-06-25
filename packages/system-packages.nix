@@ -27,6 +27,8 @@
     justbuild
     pulseaudio
     sockdump
+    nix-prefetch
+    nix-prefetch-git
     qemu
     ripgrep
     trash-cli
