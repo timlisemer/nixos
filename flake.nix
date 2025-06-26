@@ -121,10 +121,6 @@
         hostFile = ./hosts/rpi4.nix;
         system = "aarch64-linux";
       };
-      tim-pi5 = self.mkSystem {
-        hostFile = ./hosts/rpi5.nix;
-        system = "aarch64-linux";
-      };
       homeassistant-yellow = nixos-raspberrypi.lib.nixosSystem {
         system = "aarch64-linux";
         modules = [
