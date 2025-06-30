@@ -24,7 +24,7 @@
 
   # Machine specific configurations
 
-  # networking.hostName = "tim-wsl"; # Dont know if this is needed or not
+  networking.hostName = "tim-wsl"; # Needed so that nixos-rebuild works
 
   wsl.enable = true;
   wsl.defaultUser = "tim";
