@@ -46,9 +46,7 @@
 
   # Optional: Binary cache for the flake
   nixConfig = {
-    extra-substituters = [
-      "https://nixos-raspberrypi.cachix.org"
-    ];
+    extra-substituters = ["https://nixos-raspberrypi.cachix.org"];
     extra-trusted-public-keys = [
       "nixos-raspberrypi.cachix.org-1:4iMO9LXa8BqhU+Rpg6LQKiGa2lsNh/j2oiYLNOQ5sPI="
     ];
@@ -70,77 +68,122 @@
     nixos-raspberrypi,
     tim-nvim,
     ...
-  }: {
+  }: let
+    # ────────────────────────────────────────────────────────────────
+    # Set IP Addresses for each host here
+    # ────────────────────────────────────────────────────────────────
+    hostIps = {
+      tim-laptop = "10.0.0.25";
+      tim-pc = "10.0.0.3";
+      tim-server = "142.132.234.128";
+      tim-pi4 = "10.0.0.76";
+      homeassistant-yellow = "10.0.0.2";
+    };
+  in {
     mkSystem = {
       hostFile,
       system,
       disks ? null,
+      hostName,
     }:
       nixpkgs-stable.lib.nixosSystem {
         inherit system;
-        specialArgs = {inherit disks inputs system home-manager self nixos-raspberrypi;};
+        specialArgs = {
+          inherit
+            disks
+            inputs
+            system
+            home-manager
+            self
+            nixos-raspberrypi
+            ;
+
+          # This node’s own IP
+          ip = hostIps.${hostName};
+        };
+
         modules = [
           disko.nixosModules.disko
           flatpaks.nixosModule
           vscode-server.nixosModules.default
-          ({
-            pkgs,
-            lib,
-            inputs,
-            ...
-          }: {
-            environment.variables.NIX_PATH = lib.mkForce "nixpkgs=${inputs.nixpkgs-stable.outPath}";
+
+          # Make the mapping (+ /etc/hosts entries) available everywhere
+          ({lib, ...}: {
+            networking.hostName = hostName;
+
+            networking.extraHosts =
+              lib.concatStringsSep "\n"
+              (lib.mapAttrsToList (name: ip: "${ip} ${name}") hostIps);
           })
+
           (import hostFile)
         ];
       };
 
+    # ────────────────────────────────────────────────────────────────
     # Host Configurations
+    # ────────────────────────────────────────────────────────────────
     nixosConfigurations = {
       tim-laptop = self.mkSystem {
         hostFile = ./hosts/tim-laptop.nix;
         system = "x86_64-linux";
         disks = ["/dev/nvme0n1"];
+        hostName = "tim-laptop";
       };
+
       tim-pc = self.mkSystem {
         hostFile = ./hosts/tim-pc.nix;
         system = "x86_64-linux";
         disks = ["/dev/nvme0n1" "/dev/nvme1n1"];
+        hostName = "tim-pc";
       };
+
       tim-server = self.mkSystem {
         # nix run nixpkgs#nixos-anywhere -- --flake ./#tim-server root@142.132.234.128
         hostFile = ./hosts/tim-server.nix;
         system = "x86_64-linux";
         disks = ["/dev/sda"];
+        hostName = "tim-server";
       };
+
       tim-wsl = self.mkSystem {
         hostFile = ./hosts/tim-wsl.nix;
         system = "x86_64-linux";
+        hostName = "tim-wsl";
       };
+
       tim-pi4 = self.mkSystem {
         hostFile = ./hosts/rpi4.nix;
         system = "aarch64-linux";
+        hostName = "tim-pi4";
       };
+
       homeassistant-yellow = nixos-raspberrypi.lib.nixosSystem {
         system = "aarch64-linux";
         modules = [
           disko.nixosModules.disko
           vscode-server.nixosModules.default
           ./hosts/homeassistant-yellow.nix
+
+          # Make the mapping (+ /etc/hosts entries) available everywhere
+          ({lib, ...}: {
+            networking.hostName = "homeassistant-yellow";
+
+            networking.extraHosts =
+              lib.concatStringsSep "\n"
+              (lib.mapAttrsToList (name: ip: "${ip} ${name}") hostIps);
+          })
         ];
 
-        # extra values you want reachable INSIDE the host module
         specialArgs = {
-          disks = ["/dev/nvme0n1"]; # <= your disk list
+          disks = ["/dev/nvme0n1"];
           inherit inputs home-manager self nixos-raspberrypi;
         };
       };
 
-      # Single installer that carries install scripts for every host
       installer = let
         system = "x86_64-linux";
         pkgs = import nixpkgs-stable {inherit system;};
-        home-manager = inputs.home-manager;
         hosts = ["tim-laptop" "tim-pc" "tim-server"];
         hostDisks = {
           "tim-laptop" = ["/dev/nvme0n1"];
@@ -174,7 +217,6 @@
       installer-arm = let
         system = "aarch64-linux";
         pkgs = import nixpkgs-stable {inherit system;};
-        home-manager = inputs.home-manager;
         hosts = ["homeassistant-yellow"];
         hostDisks = {
           "homeassistant-yellow" = ["/dev/nvme0n1"];
@@ -183,7 +225,14 @@
         nixos-raspberrypi.lib.nixosSystem {
           inherit system;
           specialArgs = {
-            inherit self inputs hosts hostDisks home-manager nixos-raspberrypi;
+            inherit
+              self
+              inputs
+              hosts
+              hostDisks
+              home-manager
+              nixos-raspberrypi
+              ;
           };
           modules = [
             disko.nixosModules.disko
@@ -200,6 +249,7 @@
                 })
               ];
               boot.kernelPackages = pkgs.rpi.linuxPackages_rpi5;
+
               # Allows missing modules, needed to build the system with the nixos-raspberrypi flake
               nixpkgs.overlays = [
                 (final: super: {

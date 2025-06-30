@@ -14,8 +14,6 @@
 
   # Machine specific configurations
 
-  networking.hostName = "tim-pc";
-
   boot = {
     kernelParams = ["acpi_enforce_resources=lax"];
     kernelModules = ["i2c-dev" "i2c-piix4"];

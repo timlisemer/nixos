@@ -107,8 +107,6 @@
 
   # Machine specific configurations
 
-  networking.hostName = "tim-pi5";
-
   environment.systemPackages = with pkgs; [
   ];
 

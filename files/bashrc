@@ -21,7 +21,7 @@ alias wake_tim-pc='wol 40:B0:76:DC:79:AA'
 
 if [ "${WSL:-0}" = "1" ]; then
 	# WSL=1, set aliases for WSL environment
-	# alias rebuild='sudo cp -a ~/Coding/Other/nixos/* /etc/nixos/ && clear && sudo nixos-rebuild switch --flake /etc/nixos#tim-wsl && bash'
+	alias rebuild='sudo cp -a ~/Coding/Other/nixos/* /etc/nixos/ && clear && sudo nixos-rebuild switch --flake /etc/nixos#tim-wsl && bash'
 	alias code='wslcode'
 else
 	# WSL is unset or not 1, set aliases for non-WSL environment

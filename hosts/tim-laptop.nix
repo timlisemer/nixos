@@ -25,6 +25,4 @@
   };
 
   # Machine specific configurations
-
-  networking.hostName = "tim-laptop";
 }

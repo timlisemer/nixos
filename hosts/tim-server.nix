@@ -39,8 +39,6 @@
 
   # Machine specific configurations
 
-  networking.hostName = "tim-server";
-
   environment.variables.SERVER = "1";
 
   environment.systemPackages = with pkgs; [

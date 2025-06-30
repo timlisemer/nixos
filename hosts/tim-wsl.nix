@@ -23,14 +23,15 @@
   ];
 
   # Machine specific configurations
-
-  networking.hostName = "tim-wsl"; # Needed so that nixos-rebuild works
-
   wsl.enable = true;
   wsl.defaultUser = "tim";
   wsl.docker-desktop.enable = true;
   environment.variables.WSL = "1";
-  wsl.wslConf.interop.appendWindowsPath = false;
+  wsl.wslConf.network.generateHosts = false;
+  wsl.wslConf.interop = {
+    enabled = true;
+    appendWindowsPath = true;   # keeps the Windows PATH additions
+  };
 
   programs.nix-ld = {
     enable = true;

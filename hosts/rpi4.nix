@@ -89,9 +89,6 @@
   hardware.graphics.extraPackages = lib.mkForce [pkgs.mesa];
 
   # Machine specific configurations
-
-  networking.hostName = "tim-raspberry-pi";
-
   environment.systemPackages = with pkgs; [
   ];
 }
