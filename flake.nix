@@ -79,12 +79,30 @@
       tim-pi4 = "10.0.0.76";
       homeassistant-yellow = "10.0.0.2";
     };
+
+    # ────────────────────────────────────────────────────────────────
+    # Set User Information here
+    # ────────────────────────────────────────────────────────────────
+    users = {
+      tim = {
+        fullName = "Tim Lisemer";
+        gitUsername = "timlisemer";
+        gitEmail = "timlisemer@gmail.com";
+        hashedPassword = "$6$K1WwF1Hn0r3j$6Pr1jZDl9yGsbM10Anwq7ieF6N61n3vg5EvAM9lGTRsaaqQwDmgeJ7NDNbgmZGCjqy7s1tt1XPB9I6G6SxSSi/"; # sha-512 crypt
+        authorizedKeys = [
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEae4h0Uk6x/lrmw0PZv/7GfWyLuEAVoc70AC4ykyFtX TimLisemer"
+          # add more keys freely …
+        ];
+      };
+      # add more people here …
+    };
   in {
     mkSystem = {
       hostFile,
       system,
       disks ? null,
       hostName,
+      users,
     }:
       nixpkgs-stable.lib.nixosSystem {
         inherit system;
@@ -96,6 +114,7 @@
             home-manager
             self
             nixos-raspberrypi
+            users
             ;
 
           # This node’s own IP
@@ -129,6 +148,7 @@
         system = "x86_64-linux";
         disks = ["/dev/nvme0n1"];
         hostName = "tim-laptop";
+        inherit users;
       };
 
       tim-pc = self.mkSystem {
@@ -136,6 +156,7 @@
         system = "x86_64-linux";
         disks = ["/dev/nvme0n1" "/dev/nvme1n1"];
         hostName = "tim-pc";
+        inherit users;
       };
 
       tim-server = self.mkSystem {
@@ -144,18 +165,21 @@
         system = "x86_64-linux";
         disks = ["/dev/sda"];
         hostName = "tim-server";
+        inherit users;
       };
 
       tim-wsl = self.mkSystem {
         hostFile = ./hosts/tim-wsl.nix;
         system = "x86_64-linux";
         hostName = "tim-wsl";
+        inherit users;
       };
 
       tim-pi4 = self.mkSystem {
         hostFile = ./hosts/rpi4.nix;
         system = "aarch64-linux";
         hostName = "tim-pi4";
+        inherit users;
       };
 
       homeassistant-yellow = nixos-raspberrypi.lib.nixosSystem {
@@ -177,7 +201,7 @@
 
         specialArgs = {
           disks = ["/dev/nvme0n1"];
-          inherit inputs home-manager self nixos-raspberrypi;
+          inherit inputs home-manager self nixos-raspberrypi users;
         };
       };
 
@@ -194,7 +218,7 @@
         nixpkgs-stable.lib.nixosSystem {
           inherit system;
           specialArgs = {
-            inherit self inputs hosts hostDisks home-manager;
+            inherit self inputs hosts hostDisks home-manager users;
           };
           modules = [
             disko.nixosModules.disko
@@ -232,6 +256,7 @@
               hostDisks
               home-manager
               nixos-raspberrypi
+              users
               ;
           };
           modules = [

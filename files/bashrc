@@ -1,6 +1,4 @@
 #!/bin/bash
-iatest=$(expr index "$-" i)
-
 #######################################################
 # Custom Edits
 #######################################################
@@ -21,7 +19,7 @@ alias wake_tim-pc='wol 40:B0:76:DC:79:AA'
 
 if [ "${WSL:-0}" = "1" ]; then
 	# WSL=1, set aliases for WSL environment
-	alias rebuild='sudo cp -a ~/Coding/Other/nixos/* /etc/nixos/ && clear && sudo nixos-rebuild switch --flake /etc/nixos#tim-wsl && bash'
+	alias rebuild='sudo cp -a ~/Coding/Other/nixos/* /etc/nixos/ && clear && sudo nixos-rebuild switch --flake /etc/nixos#$(cat /etc/hostname) && bash'
 	alias code='wslcode'
 else
 	# WSL is unset or not 1, set aliases for non-WSL environment
@@ -85,17 +83,6 @@ alias nano='edit'
 alias snano='sedit'
 alias vim='nvim'
 
-# Replace batcat with cat on Fedora as batcat is not available as a RPM in any form
-if command -v lsb_release >/dev/null; then
-	DISTRIBUTION=$(lsb_release -si)
-
-	if [ "$DISTRIBUTION" = "Fedora" ] || [ "$DISTRIBUTION" = "Arch" ]; then
-		alias cat='bat'
-	else
-		alias cat='batcat'
-	fi
-fi
-
 # To have colors for ls and all grep commands such as grep, egrep and zgrep
 export CLICOLOR=1
 export LS_COLORS='no=00:fi=00:di=00;34:ln=01;36:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arj=01;31:*.taz=01;31:*.lzh=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.gz=01;31:*.bz2=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.jpg=01;35:*.jpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.avi=01;35:*.fli=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.ogg=01;35:*.mp3=01;35:*.wav=01;35:*.xml=00;31:'
@@ -111,21 +98,6 @@ export LESS_TERMCAP_se=$'\E[0m'
 export LESS_TERMCAP_so=$'\E[01;44;33m'
 export LESS_TERMCAP_ue=$'\E[0m'
 export LESS_TERMCAP_us=$'\E[01;32m'
-
-#######################################################
-# MACHINE SPECIFIC ALIAS'S
-#######################################################
-
-# Alias's for SSH
-# alias SERVERNAME='ssh YOURWEBSITE.com -l USERNAME -p PORTNUMBERHERE'
-
-# Alias's to change the directory
-alias web='cd /var/www/html'
-
-# Alias's to mount ISO files
-# mount -o loop /home/NAMEOFISO.iso /home/ISOMOUNTDIR/
-# umount /home/NAMEOFISO.iso
-# (Both commands done as root only.)
 
 #######################################################
 # GENERAL ALIAS'S
@@ -146,8 +118,6 @@ alias ping='ping -c 10'
 alias less='less -R'
 alias cls='clear'
 alias apt-get='sudo apt-get'
-alias multitail='multitail --no-repeat -c'
-alias freshclam='sudo freshclam'
 alias vi='nvim'
 alias svi='sudo vi'
 alias vis='nvim "+set si"'
@@ -199,18 +169,6 @@ alias untar='tar -xvf'
 alias unbz2='tar -xvjf'
 alias ungz='tar -xvzf'
 
-# Show all logs in /var/log
-alias logs="sudo find /var/log -type f -exec file {} \; | grep 'text' | cut -d' ' -f1 | sed -e's/:$//g' | grep -v '[0-9]$' | xargs tail -f"
-
-# SHA1
-alias sha1='openssl sha1'
-
-alias clickpaste='sleep 3; xdotool type "$(xclip -o -selection clipboard)"'
-
-# KITTY - alias to be able to use kitty features when connecting to remote servers(e.g use tmux on remote server)
-
-alias kssh="kitty +kitten ssh"
-
 #######################################################
 # SPECIAL FUNCTIONS
 #######################################################
@@ -250,64 +208,6 @@ ftext() {
 	grep -iIHrn --color=always "$1" . | less -r
 }
 
-# Copy file with a progress bar
-cpp() {
-	set -e
-	strace -q -ewrite cp -- "${1}" "${2}" 2>&1 |
-		awk '{
-	count += $NF
-	if (count % 10 == 0) {
-		percent = count / total_size * 100
-		printf "%3d%% [", percent
-		for (i=0;i<=percent;i++)
-			printf "="
-			printf ">"
-			for (i=percent;i<100;i++)
-				printf " "
-				printf "]\r"
-			}
-		}
-	END { print "" }' total_size="$(stat -c '%s' "${1}")" count=0
-}
-
-# Copy and go to the directory
-cpg() {
-	if [ -d "$2" ]; then
-		cp "$1" "$2" && cd "$2"
-	else
-		cp "$1" "$2"
-	fi
-}
-
-# Move and go to the directory
-mvg() {
-	if [ -d "$2" ]; then
-		mv "$1" "$2" && cd "$2"
-	else
-		mv "$1" "$2"
-	fi
-}
-
-# Create and go to the directory
-mkdirg() {
-	mkdir -p "$1"
-	cd "$1"
-}
-
-# Goes up a specified number of directories  (i.e. up 4)
-up() {
-	local d=""
-	limit=$1
-	for ((i = 1; i <= limit; i++)); do
-		d=$d/..
-	done
-	d=$(echo $d | sed 's/^\///')
-	if [ -z "$d" ]; then
-		d=..
-	fi
-	cd $d
-}
-
 # Automatically do an ls after each cd, z, or zoxide
 cd() {
 	if [ -n "$1" ]; then
@@ -322,129 +222,7 @@ pwdtail() {
 	pwd | awk -F/ '{nlast = NF -1;print $nlast"/"$NF}'
 }
 
-# Show the current distribution
-distribution() {
-	local dtype="unknown" # Default to unknown
-
-	# Use /etc/os-release for modern distro identification
-	if [ -r /etc/os-release ]; then
-		source /etc/os-release
-		case $ID in
-		fedora | rhel | centos)
-			dtype="redhat"
-			;;
-		sles | opensuse*)
-			dtype="suse"
-			;;
-		ubuntu | debian)
-			dtype="debian"
-			;;
-		gentoo)
-			dtype="gentoo"
-			;;
-		arch)
-			dtype="arch"
-			;;
-		slackware)
-			dtype="slackware"
-			;;
-		*)
-			# If ID is not recognized, keep dtype as unknown
-			;;
-		esac
-	fi
-
-	echo $dtype
-}
-
-# Show the current version of the operating system
-ver() {
-	local dtype
-	dtype=$(distribution)
-
-	case $dtype in
-	"redhat")
-		if [ -s /etc/redhat-release ]; then
-			cat /etc/redhat-release
-		else
-			cat /etc/issue
-		fi
-		uname -a
-		;;
-	"suse")
-		cat /etc/SuSE-release
-		;;
-	"debian")
-		lsb_release -a
-		;;
-	"gentoo")
-		cat /etc/gentoo-release
-		;;
-	"arch")
-		cat /etc/os-release
-		;;
-	"slackware")
-		cat /etc/slackware-version
-		;;
-	*)
-		if [ -s /etc/issue ]; then
-			cat /etc/issue
-		else
-			echo "Error: Unknown distribution"
-			exit 1
-		fi
-		;;
-	esac
-}
-
-# Automatically install the needed support files for this .bashrc file
-install_bashrc_support() {
-	local dtype
-	dtype=$(distribution)
-
-	case $dtype in
-	"redhat")
-		sudo yum install multitail tree zoxide trash-cli fzf bash-completion fastfetch
-		;;
-	"suse")
-		sudo zypper install multitail tree zoxide trash-cli fzf bash-completion fastfetch
-		;;
-	"debian")
-		sudo apt-get install multitail tree zoxide trash-cli fzf bash-completion
-		# Fetch the latest fastfetch release URL for linux-amd64 deb file
-		FASTFETCH_URL=$(curl -s https://api.github.com/repos/fastfetch-cli/fastfetch/releases/latest | grep "browser_download_url.*linux-amd64.deb" | cut -d '"' -f 4)
-
-		# Download the latest fastfetch deb file
-		curl -sL $FASTFETCH_URL -o /tmp/fastfetch_latest_amd64.deb
-
-		# Install the downloaded deb file using apt-get
-		sudo apt-get install /tmp/fastfetch_latest_amd64.deb
-		;;
-	"arch")
-		sudo paru multitail tree zoxide trash-cli fzf bash-completion fastfetch
-		;;
-	"slackware")
-		echo "No install support for Slackware"
-		;;
-	*)
-		echo "Unknown distribution"
-		;;
-	esac
-}
-
-# Trim leading and trailing spaces (for scripts)
-trim() {
-	local var=$*
-	var="${var#"${var%%[![:space:]]*}"}" # remove leading whitespace characters
-	var="${var%"${var##*[![:space:]]}"}" # remove trailing whitespace characters
-	echo -n "$var"
-}
 # GitHub Additions
-
-gcom() {
-	git add .
-	git commit -m "$1"
-}
 gacp() {
 	git add .
 	git commit -m "$1"
@@ -452,7 +230,7 @@ gacp() {
 }
 
 git() {
-	if [[ "$1" == "clone" && "$2" == git@github.com:iocto-gmbh/remote-support-tool.git ]]; then
+	if [[ "$1" == "clone" && -z "$2" ]]; then
 		command git clone --recurse-submodules --remote-submodules "$2"
 	elif [[ "$1" == "pull" ]]; then
 		command git pull --recurse-submodules && command git submodule update --remote --merge

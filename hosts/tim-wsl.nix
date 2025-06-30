@@ -4,6 +4,7 @@
   inputs,
   home-manager,
   lib,
+  users,
   ...
 }: {
   # Import the common configuration shared across all machines
@@ -14,7 +15,7 @@
     ../packages/system-packages.nix
     ../packages/dependencies.nix
     (import ../common/home-manager.nix {
-      inherit config pkgs inputs home-manager lib;
+      inherit config pkgs inputs home-manager lib users;
       isDesktop = false;
       isWsl = true;
       isServer = false;
@@ -30,7 +31,7 @@
   wsl.wslConf.network.generateHosts = false;
   wsl.wslConf.interop = {
     enabled = true;
-    appendWindowsPath = true;   # keeps the Windows PATH additions
+    appendWindowsPath = true; # keeps the Windows PATH additions
   };
 
   programs.nix-ld = {

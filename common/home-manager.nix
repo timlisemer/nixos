@@ -8,6 +8,7 @@
   isWsl,
   isServer,
   isHomeAssistant,
+  users,
   ...
 }: let
 in {
@@ -23,31 +24,22 @@ in {
     })
   ];
 
-  # Home Manager configuration for the user 'tim'
-  home-manager.users.tim = {
-    # Git configuration
-    programs.git = {
-      enable = true;
-      userName = "timlisemer";
-      userEmail = "timlisemer@gmail.com";
-
-      # Set the default branch name using the attribute set format
-      extraConfig = {
-        init.defaultBranch = "main";
-        safe.directory = ["/etc/nixos" "/tmp/NixOs"];
-        pull.rebase = "true";
-        push.autoSetupRemote = true;
-        core.autocrlf = "input";
-        core.eol = "lf";
+  # Home Manager individual user configuration
+  home-manager.users =
+    lib.mapAttrs (_name: user: {
+      programs.git = {
+        enable = true;
+        userName = user.gitUsername;
+        userEmail = user.gitEmail;
+        extraConfig = {
+          init.defaultBranch = "main";
+          safe.directory = ["/etc/nixos" "/tmp/NixOs"];
+          pull.rebase = "true";
+          push.autoSetupRemote = true;
+          core.autocrlf = "input";
+          core.eol = "lf";
+        };
       };
-    };
-
-    # Files and folders to be symlinked into home
-    home.file = {
-      "Pictures/Wallpapers" = {
-        source = builtins.toPath ../files/Wallpapers;
-        force = true;
-      };
-    };
-  };
+    })
+    users;
 }

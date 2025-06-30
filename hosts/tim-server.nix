@@ -6,6 +6,7 @@
   home-manager,
   lib,
   disks,
+  users,
   ...
 }: {
   # Import the common configuration shared across all machines
@@ -18,7 +19,7 @@
     ../packages/system-packages.nix
     ../packages/dependencies.nix
     (import ../common/home-manager.nix {
-      inherit config pkgs inputs home-manager lib;
+      inherit config pkgs inputs home-manager lib users;
       isDesktop = false;
       isWsl = false;
       isServer = true;

@@ -4,6 +4,7 @@
   inputs,
   home-manager,
   lib,
+  users,
   ...
 }: {
   imports = [
@@ -11,7 +12,7 @@
     ../common/after_installer.nix
     ../common/desktop-only.nix
     (import ../common/home-manager.nix {
-      inherit config pkgs inputs home-manager lib;
+      inherit config pkgs inputs home-manager lib users;
       isDesktop = true;
       isWsl = false;
       isServer = false;

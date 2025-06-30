@@ -4,11 +4,9 @@
   inputs,
   home-manager,
   lib,
+  users,
   ...
 }: let
-  myAuthorizedKeys = pkgs.writeText "authorized_keys" ''
-    ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEae4h0Uk6x/lrmw0PZv/7GfWyLuEAVoc70AC4ykyFtX TimLisemer
-  '';
 in {
   # imports
   imports = [
@@ -180,12 +178,15 @@ in {
     };
   };
 
-  users.users.tim = {
-    isNormalUser = true;
-    hashedPassword = "$6$fhbC3/uvj6gKqkYC$Kh4HKuYYbKdaag/D7yWP7VZAIdS9oGWudxiyy1HPsH0mUaTEf6X/QzNOM6Su0RhzvT4fXKNrj3gFt.iGpKGIj0"; # mkpasswd -m sha-512 <your-password>
-    description = "Tim Lisemer";
-    extraGroups = ["networkmanager" "wheel" "dialout" "docker"];
-  };
+  users.users =
+    lib.mapAttrs (_name: user: {
+      isNormalUser = true;
+      description = user.fullName;
+      hashedPassword = user.hashedPassword;
+      extraGroups = ["networkmanager" "wheel" "dialout" "docker"];
+      openssh.authorizedKeys.keys = user.authorizedKeys or [];
+    })
+    users;
 
   environment.systemPackages = with pkgs; [
     git
@@ -259,37 +260,6 @@ in {
         fi
 
         chown -R "$user":"$(id -gn "$user")" "$home/.mozilla"
-      done
-    '';
-  };
-
-  ##########################################################################
-  ## authorized_keys – install the same key file for every real user      ##
-  ##########################################################################
-  systemd.services.install-authorized-keys = {
-    description = "Install authorized_keys for all users";
-    after = ["local-fs.target" "sshd.service"];
-    wantedBy = ["multi-user.target"];
-    serviceConfig.Type = "oneshot";
-
-    # Everything the script invokes goes here
-    path = with pkgs; [gawk glibc coreutils getent];
-
-    script = ''
-      keySrc="${myAuthorizedKeys}"
-
-      if [ ! -r "$keySrc" ]; then
-        echo "install-authorized-keys: $keySrc not found or unreadable" >&2
-        exit 1
-      fi
-
-      getent passwd | awk -F: '$3 >= 1000 && $7 !~ /(false|nologin)/ {print $1}' |
-      while read -r user; do
-        home="$(getent passwd "$user" | cut -d: -f6)"
-        sshDir="$home/.ssh"
-        install -m 700 -d "$sshDir"
-        install -m 600 -T "$keySrc" "$sshDir/authorized_keys"
-        chown -R "$user":"$(id -gn "$user")" "$sshDir"
       done
     '';
   };

@@ -83,6 +83,10 @@ in {
       source = builtins.toPath ../files/vimrc;
       force = true;
     };
+    "Pictures/Wallpapers" = {
+      source = builtins.toPath ../files/Wallpapers;
+      force = true;
+    };
 
     # Arduino
     ".arduinoIDE/arduino-cli.yaml" = {
