@@ -82,6 +82,9 @@
   "[markdown]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
   "[toml]": {
     "editor.defaultFormatter": "tamasfe.even-better-toml"
   },
@@ -93,6 +96,9 @@
   },
   "[nix]": {
     "editor.defaultFormatter": "kamadorueda.alejandra"
+  },
+  "[makefile]": {
+    "editor.defaultFormatter": "ms-vscode.makefile-tools"
   },
 
   // Prettier config (optional overrides)
