@@ -1,18 +1,21 @@
 import { For } from 'ags';
-import { Systemtray } from 'ags/fetch/systemtray';
 import { Gtk } from 'ags/gtk4';
+import { Tray as AstalTray, TrayItem } from 'ags/gtk4/Astal';
 
 export default function SysTray() {
+  const tray = AstalTray.get_default();
+  const items = tray.bind('items');
+
   return (
-    <box orientation={Gtk.Orientation.HORIZONTAL}>
-      <For each={Systemtray.bind('items')}>
-        {(item) => (
+    <box orientation={Gtk.Orientation.HORIZONTAL} class="systray">
+      <For each={items}>
+        {(item: TrayItem) => (
           <button
-            onClicked={(_, event) => item.activate(event)}
-            onSecondaryClicked={(_, event) => item.openMenu(event)}
-            tooltipMarkup={item.bind('tooltip_markup')}
+            tooltipMarkup={item.bind('tooltip-markup')}
+            onClicked={(_, ev) => item.activate(ev)}
+            onSecondaryClicked={(_, ev) => item.secondary_activate(ev)}
           >
-            <icon icon={item.bind('icon')} />
+            <icon gicon={item.bind('gicon')} />
           </button>
         )}
       </For>

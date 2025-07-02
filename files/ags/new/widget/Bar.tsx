@@ -1,14 +1,15 @@
-import app from "ags/gtk4/app"
-import Time from "./Time";
-import { Astal, Gtk, Gdk } from "ags/gtk4"
+import app from 'ags/gtk4/app';
+import Time from './Time';
+import SysTray from './SysTray';
+import { Astal, Gdk } from 'ags/gtk4';
 
 // Left component
 function Left() {
   return (
     <box>
-      <Time />
+      <SysTray />
     </box>
-  )
+  );
 }
 
 // Center component
@@ -17,7 +18,7 @@ function Center() {
     <box>
       <Time />
     </box>
-  )
+  );
 }
 
 // Right component
@@ -26,12 +27,12 @@ function Right() {
     <box>
       <Time />
     </box>
-  )
+  );
 }
 
 // Main Bar component
 export default function Bar(gdkmonitor: Gdk.Monitor) {
-  const { BOTTOM, LEFT, RIGHT } = Astal.WindowAnchor
+  const { BOTTOM, LEFT, RIGHT } = Astal.WindowAnchor;
 
   return (
     <window
@@ -49,5 +50,5 @@ export default function Bar(gdkmonitor: Gdk.Monitor) {
         <Right $type="end" />
       </centerbox>
     </window>
-  )
+  );
 }
