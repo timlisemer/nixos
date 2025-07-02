@@ -17,6 +17,12 @@
   # Enable the GDM Display Manager
   services.xserver.displayManager.gdm.enable = true;
 
+  # Export for every X/Wayland app that honours XCURSOR_*
+  environment.variables = {
+    XCURSOR_THEME = "Adwaita";
+    XCURSOR_SIZE = "24";
+  };
+
   # Enable Smartcard Support
   hardware.gpgSmartcards.enable = true;
   services.pcscd.enable = true;
@@ -29,6 +35,8 @@
     module: ${pkgs.opensc}/lib/opensc-pkcs11.so
   '';
   environment.systemPackages = with pkgs; [
+    adwaita-icon-theme
+
     # Wrapper for Chrome/Chromium to use p11-kit-proxy for PKCS#11
     (writeShellScriptBin "setup-browser-eid" ''
       NSSDB="''${HOME}/.pki/nssdb"

@@ -18,6 +18,11 @@
       inputs.nixpkgs.follows = "nixpkgs-stable";
     };
 
+    adwaita_hypercursor = {
+      url = "github:dp0sk/Adwaita-HyprCursor";
+      flake = false;
+    };
+
     sops-nix = {
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs-stable";
@@ -66,6 +71,7 @@
     firefox-gnome-theme,
     nixos-wsl,
     nixos-raspberrypi,
+    adwaita_hypercursor,
     tim-nvim,
     ...
   }: let
@@ -112,6 +118,7 @@
             inputs
             system
             home-manager
+            adwaita_hypercursor
             self
             nixos-raspberrypi
             users
@@ -201,7 +208,7 @@
 
         specialArgs = {
           disks = ["/dev/nvme0n1"];
-          inherit inputs home-manager self nixos-raspberrypi users;
+          inherit inputs home-manager adwaita_hypercursor self nixos-raspberrypi users;
         };
       };
 
@@ -218,7 +225,7 @@
         nixpkgs-stable.lib.nixosSystem {
           inherit system;
           specialArgs = {
-            inherit self inputs hosts hostDisks home-manager users;
+            inherit self inputs hosts hostDisks home-manager adwaita_hypercursor users;
           };
           modules = [
             disko.nixosModules.disko
@@ -231,7 +238,7 @@
             }: {
               imports = [
                 (import ./common/installer.nix {
-                  inherit pkgs self lib hosts hostDisks home-manager;
+                  inherit pkgs self lib hosts hostDisks home-manager adwaita_hypercursor;
                 })
               ];
             })
@@ -255,6 +262,7 @@
               hosts
               hostDisks
               home-manager
+              adwaita_hypercursor
               nixos-raspberrypi
               users
               ;
@@ -270,7 +278,7 @@
             }: {
               imports = [
                 (import ./common/installer.nix {
-                  inherit pkgs self lib hosts hostDisks home-manager;
+                  inherit pkgs self lib hosts hostDisks home-manager adwaita_hypercursor;
                 })
               ];
               boot.kernelPackages = pkgs.rpi.linuxPackages_rpi5;

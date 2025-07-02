@@ -10,6 +10,15 @@
   isHomeAssistant,
   ...
 }: let
+  adwaitaHyprCursor = pkgs.stdenv.mkDerivation {
+    pname = "adwaita-hyprcursor";
+    version = "git";
+    src = inputs.adwaita_hypercursor + "/Adwaita-HyprCursor";
+    installPhase = ''
+      mkdir -p $out/share/icons
+      cp -r $src $out/share/icons/Adwaita-HyprCursor
+    '';
+  };
 in {
   # Sops Home Configuration
   sops.defaultSopsFile = ../secrets/secrets.yaml;
@@ -64,6 +73,19 @@ in {
     enable = true;
     defaultCacheTtl = 1800;
     enableSshSupport = true;
+  };
+
+  nixpkgs.overlays = [
+    # Register the package so the rest of the system sees it, too.
+    (final: prev: {adwaita-hyprcursor = adwaitaHyprCursor;})
+  ];
+
+  home.pointerCursor = {
+    package = adwaitaHyprCursor; # works in *this* module as well
+    name = "Adwaita-HyprCursor";
+    size = 24;
+    hyprcursor.enable = true;
+    gtk.enable = true;
   };
 
   home.file = {
