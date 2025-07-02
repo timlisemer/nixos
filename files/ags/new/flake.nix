@@ -22,8 +22,17 @@
 
     astalPackages = with ags.packages.${system}; [
       io
-      astal4 # or astal3 for gtk3
-      # notifd tray wireplumber
+      astal4
+      notifd
+      tray
+      apps
+      battery
+      greet
+      mpris
+      network
+      notifd
+      notifd
+      wireplumber
     ];
 
     extraPackages =

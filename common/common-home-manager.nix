@@ -93,7 +93,6 @@ in {
   home.packages = [
     # Astal utilities
     astalPkgs.io
-    astalPkgs.notifd
   ];
 
   programs.ags = {
@@ -104,7 +103,16 @@ in {
 
     # additional packages and executables to add to gjs's runtime
     extraPackages = with pkgs; [
+      astalPkgs.notifd
+      astalPkgs.tray
+      astalPkgs.apps
       astalPkgs.battery
+      astalPkgs.greet
+      astalPkgs.mpris
+      astalPkgs.network
+      astalPkgs.notifd
+      astalPkgs.powerprofiles
+      astalPkgs.wireplumber
     ];
   };
 

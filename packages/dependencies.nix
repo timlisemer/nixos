@@ -43,6 +43,7 @@
     gtk4
     gtk4.dev
     gobject-introspection
+    gjs
     julia
     libadwaita
     libinput
