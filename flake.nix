@@ -13,6 +13,17 @@
       inputs.nixpkgs.follows = "nixpkgs-stable";
     };
 
+    astal = {
+      url = "github:aylur/astal";
+      inputs.nixpkgs.follows = "nixpkgs-stable";
+    };
+
+    ags = {
+      url = "github:aylur/ags";
+      inputs.nixpkgs.follows = "nixpkgs-stable";
+      inputs.astal.follows = "astal";
+    };
+
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs-stable";

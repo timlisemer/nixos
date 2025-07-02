@@ -41,6 +41,8 @@
     go
     gtk3
     gtk4
+    gtk4.dev
+    gobject-introspection
     julia
     libadwaita
     libinput

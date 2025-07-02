@@ -22,8 +22,10 @@ in {
         ms-python.vscode-pylance
         ms-python.debugpy
         ms-azuretools.vscode-docker
+        # ms-azuretools.vscode-containers
         ms-vscode-remote.remote-ssh
         ms-vscode-remote.remote-containers
+        ms-vscode.makefile-tools
         github.copilot
         github.copilot-chat
         egirlcatnip.adwaita-github-theme

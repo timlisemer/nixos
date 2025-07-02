@@ -9,7 +9,6 @@ alias gitree='git ls-files --cached --others --exclude-standard | tree --fromfil
 alias gittree='git ls-files --cached --others --exclude-standard | tree --fromfile'
 alias term='ghostty'
 alias terminal='ghostty'
-alias logout='loginctl terminate-user $USER'
 alias nixos='cd ~/Coding/Other/nixos'
 alias iocto='cd ~/Coding/iocto'
 alias install_tim_server='nix run nixpkgs#nixos-anywhere -- --flake /etc/nixos#tim-server root@142.132.234.128'
@@ -24,6 +23,12 @@ if [ "${WSL:-0}" = "1" ]; then
 else
 	# WSL is unset or not 1, set aliases for non-WSL environment
 	alias rebuild='sudo cp -a ~/Coding/Other/nixos/* /etc/nixos/ && clear && sudo nixos-rebuild switch && bash'
+fi
+
+if [[ -n "$HYPRLAND_INSTANCE_SIGNATURE" ]]; then
+	alias logout='hyprctl dispatch exit'
+else
+	alias logout='loginctl terminate-user $USER'
 fi
 
 #######################################################
