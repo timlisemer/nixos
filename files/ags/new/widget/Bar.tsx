@@ -1,5 +1,6 @@
 import app from 'ags/gtk4/app';
 import Time from './Time';
+import AppsBar from './Apps';
 import SysTray from './SysTray';
 import { Astal, Gdk } from 'ags/gtk4';
 
@@ -16,7 +17,7 @@ function Left() {
 function Center() {
   return (
     <box>
-      <Time />
+      <AppsBar />
     </box>
   );
 }
