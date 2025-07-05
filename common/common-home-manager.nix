@@ -146,6 +146,16 @@ in {
       force = true;
     };
 
+    # Wofi
+    ".config/wofi/config" = {
+      source = builtins.toPath ../files/wofi/config;
+      force = true;
+    };
+    ".config/wofi/style.css" = {
+      source = builtins.toPath ../files/wofi/style.css;
+      force = true;
+    };
+
     # OpenRGB
     ".config/OpenRGB/plugins/settings" = {
       source = ../files/OpenRGB/plugins/settings;
