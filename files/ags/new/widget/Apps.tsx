@@ -40,25 +40,32 @@ function widgetForApp(app: Apps.Application): Gtk.Box {
   const image = new Gtk.Image({
     icon_name: app.get_icon_name(),
     pixel_size: 32,
-    css_classes: ['app-icon'],
   });
 
   const box = new Gtk.Box({
     orientation: Gtk.Orientation.HORIZONTAL,
-    css_classes: ['app-entry'],
+    css_classes: ['widget'],
   });
   box.append(image);
 
   const clickLeft = new Gtk.GestureClick({ button: 1 });
-  clickLeft.connect('released', () =>
-    console.log(`Left click on ${app.get_name()}`)
-  );
+  clickLeft.connect('released', (gesture) => {
+    const ev = gesture.get_current_event();
+    if (ev) {
+      const [ok, x, y] = ev.get_position();
+      if (ok) console.log(`Left click on ${app.get_name()} at (${x},${y})`);
+    }
+  });
   box.add_controller(clickLeft);
 
   const clickRight = new Gtk.GestureClick({ button: 3 });
-  clickRight.connect('released', () =>
-    console.log(`Right click on ${app.get_name()}`)
-  );
+  clickRight.connect('released', (gesture) => {
+    const ev = gesture.get_current_event();
+    if (ev) {
+      const [ok, x, y] = ev.get_position();
+      if (ok) console.log(`Right click on ${app.get_name()} at (${x},${y})`);
+    }
+  });
   box.add_controller(clickRight);
 
   return box;
