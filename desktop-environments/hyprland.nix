@@ -7,9 +7,13 @@
 
   # Hyprland related packages
   environment.systemPackages = with pkgs; [
-    kitty # Terminal
     wofi
     cliphist
+    grim
+    slurp
+    pamixer
+    playerctl
+    evtest
   ];
 
   services.gnome.gnome-keyring.enable = true;
