@@ -113,6 +113,7 @@ in {
       astalPkgs.notifd
       astalPkgs.powerprofiles
       astalPkgs.wireplumber
+      astalPkgs.hyprland
     ];
   };
 

@@ -41,6 +41,7 @@ in {
         foxundermoon.shell-format
         bradlc.vscode-tailwindcss
         kamadorueda.alejandra
+        # google.geminicodeassist
       ];
     })
   ];
