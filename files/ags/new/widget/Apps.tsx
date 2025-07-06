@@ -1,6 +1,7 @@
 import Apps from 'gi://AstalApps';
 import { Gtk } from 'ags/gtk4';
-import { createWidgetContainer } from './WidgetContainer'; // ★
+import { createWidgetContainer } from './WidgetContainer';
+import Gio from 'gi://Gio'; // ★
 
 function queryApp(appName: string): Apps.Application {
   const apps = new Apps.Apps({
@@ -52,6 +53,23 @@ function widgetForApp(app: Apps.Application): Gtk.Box {
     onRightClick: (x, y) => {
       console.log(`Right click on ${app.get_name()} at (${x},${y})`);
 
+      // ------------------------------------------------------------------ ★
+      // OLD attempt – left here for reference
+      // const infoOld = app.get_app() as Gio.DesktopAppInfo;
+
+      // NEW – create DesktopAppInfo from desktop-file ID
+      const info = Gio.DesktopAppInfo.new(app.get_entry());
+
+      if (!info) {
+        console.log(`No DesktopAppInfo for ${app.get_name()}`);
+      } else {
+        const acts = info.list_actions() ?? [];
+        console.log(`Actions for ${app.get_name()}:`);
+        acts.forEach((a) => console.log(` • ${a}`));
+      }
+      // ------------------------------------------------------------------ ★
+
+      // existing debug dump
       console.log(
         `App Categories:\n${app.get_categories()} \n` +
           `App Entry: ${app.get_entry()} \n` +
