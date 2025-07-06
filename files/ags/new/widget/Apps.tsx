@@ -45,10 +45,23 @@ function widgetForApp(app: Apps.Application): Gtk.Box {
 
   // build via shared helper
   return createWidgetContainer(image, {
-    onLeftClick: (x, y) =>
-      console.log(`Left click on ${app.get_name()} at (${x},${y})`),
-    onRightClick: (x, y) =>
-      console.log(`Right click on ${app.get_name()} at (${x},${y})`),
+    onLeftClick: (x, y) => {
+      console.log(`Left click on ${app.get_name()} at (${x},${y})`);
+      app.launch();
+    },
+    onRightClick: (x, y) => {
+      console.log(`Right click on ${app.get_name()} at (${x},${y})`);
+
+      console.log(
+        `App Categories:\n${app.get_categories()} \n` +
+          `App Entry: ${app.get_entry()} \n` +
+          `App Executable: ${app.get_executable()} \n` +
+          `App Frequency: ${app.get_frequency()} \n` +
+          `App Icon Name: ${app.get_icon_name()} \n` +
+          `App Keywords: ${app.get_keywords()}` +
+          `App Name: ${app.get_name()} \n`
+      );
+    },
   });
 }
 
