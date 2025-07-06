@@ -2,7 +2,7 @@ import Apps from 'gi://AstalApps';
 import { Gtk } from 'ags/gtk4';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
-import { createWidgetContainer } from './WidgetContainer';
+import { createContainer } from './Container';
 import { createCustomPopoverMenu, MenuAction } from './SharedPopoverMenu';
 
 // ──────────────────────────────────────────────────────────
@@ -92,7 +92,7 @@ function widgetForApp(app: Apps.Application): Gtk.Widget {
     icon_name: app.get_icon_name(),
     pixel_size: 32,
   });
-  const container = createWidgetContainer(image, {
+  const container = createContainer(image, {
     onLeftClick: () => launchAppDetached(app),
     onRightClick: () => {
       GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {

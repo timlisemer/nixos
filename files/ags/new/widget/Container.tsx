@@ -2,23 +2,34 @@ import { Gtk } from 'ags/gtk4';
 
 export type ClickHandler = (x: number, y: number) => void;
 
-export function createWidgetContainer(
+/** Options accepted by `createContainer` */
+export interface ContainerOptions {
+  css?: string[]; // existing param (kept)
+  widget?: boolean; // NEW – defaults to true
+  overrideCss?: string[]; // NEW – defaults to []
+  onLeftClick?: ClickHandler;
+  onRightClick?: ClickHandler;
+}
+
+export function createContainer(
   child: Gtk.Widget,
   {
     css = [''],
+    widget = true,
+    overrideCss = [],
     onLeftClick,
     onRightClick,
-  }: {
-    css?: string[];
-    onLeftClick?: ClickHandler;
-    onRightClick?: ClickHandler;
-  } = {}
+  }: ContainerOptions = {}
 ): Gtk.Box {
-  child.add_css_class('widget');
+  if (widget) {
+    child.add_css_class('widget');
+  }
+
   const box = new Gtk.Box({
     orientation: Gtk.Orientation.HORIZONTAL,
-    css_classes: css,
+    css_classes: overrideCss.length ? overrideCss : css,
   });
+
   box.append(child);
 
   if (onLeftClick) {

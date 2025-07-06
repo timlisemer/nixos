@@ -1,6 +1,6 @@
 import Tray from 'gi://AstalTray';
 import { Gtk } from 'ags/gtk4';
-import { createWidgetContainer } from './WidgetContainer';
+import { createContainer } from './Container';
 import {
   createSystemTrayPopoverMenu,
   cleanupAllPopovers,
@@ -26,7 +26,7 @@ export default function SysTray() {
         gicon: icon,
         pixel_size: 16,
       });
-      const container = createWidgetContainer(image, {
+      const container = createContainer(image, {
         onLeftClick: (x, y) => {
           item.activate(x, y);
           log(

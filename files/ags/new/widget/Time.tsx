@@ -1,6 +1,6 @@
 import { createPoll } from 'ags/time';
 import { Gtk } from 'ags/gtk4';
-import { createWidgetContainer } from './WidgetContainer'; // ★
+import { createContainer } from './Container'; // ★
 
 export default function Time() {
   // Poll for the time string (HH:MM) every second
@@ -22,7 +22,7 @@ export default function Time() {
   ) as Gtk.Box;
 
   // Build the clock widget using shared helper
-  const clockBox = createWidgetContainer(innerClock, {
+  const clockBox = createContainer(innerClock, {
     onLeftClick: (x, y) => console.log(`Clock left click at (${x},${y})`),
     onRightClick: (x, y) => console.log(`Clock right click at (${x},${y})`),
   });

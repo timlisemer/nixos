@@ -1,6 +1,6 @@
 import { createPoll } from 'ags/time';
 import { Gtk } from 'ags/gtk4';
-import { createWidgetContainer } from './WidgetContainer';
+import { createContainer } from './Container';
 import Hyprland from 'gi://AstalHyprland';
 
 // ──────────────────────────────────────────────────────────
@@ -122,7 +122,7 @@ export default function Workspaces(monitorName: string) {
       }
     });
 
-    // Wrap in createWidgetContainer for click handling
+    // Wrap in createContainer for click handling
     const clickHandler = isEmpty
       ? () => {
           print(`Creating new workspace on monitor '${monitorName}'`);
@@ -135,7 +135,7 @@ export default function Workspaces(monitorName: string) {
           // TODO: Implement workspace switching
         };
 
-    return createWidgetContainer(drawingArea, {
+    return createContainer(drawingArea, {
       onLeftClick: clickHandler,
     });
   }
