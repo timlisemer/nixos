@@ -31,11 +31,11 @@ export function getNthWorkspaceForMonitor(
     .sort((a, b) => a[0] - b[0])
     .map(([local_id, ws]) => ({ local_id, ws }));
 
-  print(
+  /*print(
     `[getNthWorkspaceForMonitor] monitor=${monitorName}, n=${n}, ids=${JSON.stringify(
       wsArr.map((x) => x.local_id)
     )}, result=${wsArr[n] ? JSON.stringify(wsArr[n]) : null}`
-  );
+  );*/
 
   return wsArr[n] ?? null;
 }
@@ -45,15 +45,6 @@ export default function Workspaces(monitorName: string) {
   print(`[Workspaces] init for monitor='${monitorName}'`);
 
   const hyprland = Hyprland.get_default();
-  for (const client of hyprland.get_clients()) {
-    print('\n\n\n\nclient.title ', client.title);
-    print('client.get_monitor() ', client.get_monitor().name);
-    print(
-      'client.get_workspace().get_monitor().name ',
-      client.get_workspace().get_monitor().name
-    );
-    print('client.get_workspace().name ', client.get_workspace().name);
-  }
 
   // Main widget container with the "widget" css class
   const root = new Gtk.Box({
@@ -141,8 +132,8 @@ export default function Workspaces(monitorName: string) {
   }
 
   function rebuildIndicator(): void {
-    print('── rebuildIndicator() ──');
-    print(`  monitor='${monitorName}'`);
+    // print('── rebuildIndicator() ──');
+    print(`── rebuildIndicator() ──  monitor='${monitorName}'`);
 
     // clear previous indicators
     let child = root.get_first_child();
@@ -190,10 +181,8 @@ export default function Workspaces(monitorName: string) {
 
     let ids = workspaces.map((w) => w.local_id);
 
-    print(`  ids on monitor: ${JSON.stringify(ids)}`);
-    print(
-      `  activeWorkspace on monitor: ${JSON.stringify(activeWorkspace?.local_id)}`
-    );
+    // print(`  ids on monitor: ${JSON.stringify(ids)}`);
+    // print(`  activeWorkspace on monitor: ${JSON.stringify(activeWorkspace?.local_id)}`);
 
     // build the workspace indicators
     ids.forEach((id) => {
@@ -214,13 +203,13 @@ export default function Workspaces(monitorName: string) {
       childCount++;
       currentChild = currentChild.get_next_sibling();
     }
-    print(`  indicators in box: ${childCount} for monitor '${monitorName}'`);
-    print('── rebuildIndicator() END ── \n');
+    // print(`  indicators in box: ${childCount} for monitor '${monitorName}'`);
+    // print('── rebuildIndicator() END ── \n');
   }
 
   // ── connect to real Hyprland signals ────────────────────
   [
-    'event', // generic IPC events (includes workspace switches)
+    // 'event', // generic IPC events (includes workspace switches)
     'client-added',
     'client-removed',
     'monitor-added',

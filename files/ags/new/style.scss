@@ -1,6 +1,8 @@
+/* ----------  shared colours ---------- */
 $fg-color: #{'@theme_fg_color'};
 $bg-color: #{'@theme_bg_color'};
 
+/* =====================  BAR  ===================== */
 window.Bar {
   background: transparent;
   color: $fg-color;
@@ -9,10 +11,7 @@ window.Bar {
   > centerbox {
     background: $bg-color;
     border-radius: 5px;
-    padding-top: 2px;
-    padding-bottom: 2px;
-    padding-left: 5px;
-    padding-right: 5px;
+    padding: 2px 5px;
     opacity: 0.9;
   }
 
@@ -23,12 +22,46 @@ window.Bar {
   .widget {
     padding: 7.5px;
     border-radius: 15px;
+
     &:hover {
       background: rgba(255, 255, 255, 0.1);
     }
   }
 }
 
+/* =====================  OVERVIEW  ===================== */
 window.Overview {
   background-color: rgba(0, 0, 0, 0.5);
+
+  /* ----------  App launcher menu  ---------- */
+  .app-menu {
+    // margin-top: 100px;
+    background: $bg-color;
+    color: $fg-color;
+    font-weight: bold;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+
+    button {
+      border-radius: 8px;
+    }
+
+    .widget {
+      padding: 7.5px;
+      border-radius: 15px;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+    }
+
+    /* --------  SEARCH BAR  -------- */
+    .app-search-bar {
+      .inner-search-bar {
+        border: none;
+        border-radius: 5px 5px 15px 15px;
+        box-shadow: none;
+      }
+    }
+  }
 }

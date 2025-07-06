@@ -49,6 +49,8 @@ export default function Bar(gdkmonitor: Gdk.Monitor) {
       exclusivity={Astal.Exclusivity.EXCLUSIVE}
       anchor={BOTTOM | LEFT | RIGHT}
       application={app}
+      hexpand={false}
+      vexpand={false}
     >
       <centerbox cssName="centerbox">
         <Left $type="start" />
