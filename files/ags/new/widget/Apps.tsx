@@ -3,41 +3,88 @@ import { Gtk } from 'ags/gtk4';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import { createWidgetContainer } from './WidgetContainer';
+import { createCustomPopoverMenu, MenuAction } from './SharedPopoverMenu';
 
-let activePopover: Gtk.Popover | null = null;
+// ──────────────────────────────────────────────────────────
+// centralised logging toggle – set DEBUG = true to re-enable
+const DEBUG = false;
+const log = (...args: unknown[]) => {
+  if (DEBUG) console.log(...args);
+};
 
-function buildActionsBox(
+// helper: detached spawn without DO_NOT_REAP_CHILD
+const SPAWN_FLAGS = GLib.SpawnFlags.SEARCH_PATH;
+const spawnAsyncDetached = (argv: string[]) =>
+  GLib.spawn_async(null, argv, null, SPAWN_FLAGS, null);
+
+function launchAppDetached(app: Apps.Application): void {
+  try {
+    const desktopFile = app.get_entry();
+    if (!desktopFile) {
+      log(`No desktop file for ${app.get_name()}`);
+      return;
+    }
+
+    const success = spawnAsyncDetached(['gtk-launch', desktopFile]);
+    if (success[0]) {
+      log(`Launched detached: ${app.get_name()} (${desktopFile})`);
+    } else {
+      log(`Failed to launch detached: ${app.get_name()}`);
+      app.launch();
+    }
+  } catch (error) {
+    log(`Error launching ${app.get_name()}:`, error);
+    try {
+      app.launch();
+    } catch (e) {
+      log(`Final fallback failed for ${app.get_name()}:`, e);
+    }
+  }
+}
+
+function launchActionDetached(
+  info: Gio.DesktopAppInfo,
+  actionId: string
+): void {
+  try {
+    const desktopId = info.get_id();
+    if (!desktopId) {
+      log(`No desktop ID for action ${actionId}`);
+      return;
+    }
+
+    const success = spawnAsyncDetached(['gtk-launch', desktopId, actionId]);
+    if (success[0]) {
+      log(`Launched action detached: ${actionId}`);
+    } else {
+      log(`Failed to launch action detached: ${actionId}`);
+      info.launch_action(actionId, null);
+    }
+  } catch (error) {
+    log(`Error launching action ${actionId}:`, error);
+    try {
+      info.launch_action(actionId, null);
+    } catch (e) {
+      log(`Action launch fallback failed for ${actionId}:`, e);
+    }
+  }
+}
+
+function buildMenuActions(
   info: Gio.DesktopAppInfo,
   acts: string[],
   app: Apps.Application
-): Gtk.Box {
+): MenuAction[] {
   if (acts.length === 0) acts = ['__NEW_WINDOW__'];
-
-  const box = new Gtk.Box({
-    orientation: Gtk.Orientation.VERTICAL,
-    spacing: 4,
-    margin_top: 4,
-    margin_bottom: 4,
-    margin_start: 6,
-    margin_end: 6,
-  });
-
-  acts.forEach((id) => {
-    const label =
-      id === '__NEW_WINDOW__' ? 'New Window' : (info.get_action_name(id) ?? id);
-
-    const btn = Gtk.Button.new_with_label(label);
-    btn.connect('clicked', () => {
-      if (id === '__NEW_WINDOW__') app.launch();
-      else info.launch_action(id, null);
-
-      activePopover?.popdown();
-      activePopover = null;
-    });
-    box.append(btn);
-  });
-
-  return box;
+  return acts.map((id) => ({
+    id,
+    label:
+      id === '__NEW_WINDOW__' ? 'New Window' : (info.get_action_name(id) ?? id),
+    callback: () =>
+      id === '__NEW_WINDOW__'
+        ? launchAppDetached(app)
+        : launchActionDetached(info, id),
+  }));
 }
 
 function widgetForApp(app: Apps.Application): Gtk.Widget {
@@ -45,34 +92,23 @@ function widgetForApp(app: Apps.Application): Gtk.Widget {
     icon_name: app.get_icon_name(),
     pixel_size: 32,
   });
-
   const container = createWidgetContainer(image, {
-    onLeftClick: () => app.launch(),
+    onLeftClick: () => launchAppDetached(app),
     onRightClick: () => {
       GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-        if (activePopover) {
-          activePopover.popdown();
-          activePopover = null;
-        }
-
         const info = Gio.DesktopAppInfo.new(app.get_entry());
         if (!info) return GLib.SOURCE_REMOVE;
-
-        const acts = info.list_actions() ?? [];
-        const pop = new Gtk.Popover({
-          child: buildActionsBox(info, acts, app),
-          autohide: true,
-        });
-
-        (pop as any).set_parent(container);
-        pop.popup();
-        activePopover = pop;
-
+        const menuActions = buildMenuActions(
+          info,
+          info.list_actions() ?? [],
+          app
+        );
+        const appName = app.get_name() || app.get_entry() || 'Unknown App';
+        createCustomPopoverMenu(container, menuActions, appName);
         return GLib.SOURCE_REMOVE;
       });
     },
   });
-
   return container;
 }
 
@@ -96,21 +132,13 @@ export default function AppsWidget() {
     'Calendar',
     'Terminal',
   ];
-
   return (
-    <box orientation={Gtk.Orientation.HORIZONTAL} class="widget" spacing={8}>
+    <box orientation={Gtk.Orientation.HORIZONTAL} css_classes={['widget']}>
       {names.map((n) => {
         try {
           return widgetForApp(exactApp(n));
         } catch {
-          return (
-            <box orientation={Gtk.Orientation.HORIZONTAL} class="app-entry">
-              <label
-                label={`Error: could not find app '${n}'`}
-                cssName="error"
-              />
-            </box>
-          );
+          return <label label={`${n} not found`} css_classes={['widget']} />;
         }
       })}
     </box>

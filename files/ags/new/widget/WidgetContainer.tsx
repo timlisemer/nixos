@@ -5,7 +5,7 @@ export type ClickHandler = (x: number, y: number) => void;
 export function createWidgetContainer(
   child: Gtk.Widget,
   {
-    css = ['widget'],
+    css = [''],
     onLeftClick,
     onRightClick,
   }: {
@@ -14,6 +14,7 @@ export function createWidgetContainer(
     onRightClick?: ClickHandler;
   } = {}
 ): Gtk.Box {
+  child.add_css_class('widget');
   const box = new Gtk.Box({
     orientation: Gtk.Orientation.HORIZONTAL,
     css_classes: css,

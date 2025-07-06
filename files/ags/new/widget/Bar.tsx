@@ -1,6 +1,7 @@
 import app from 'ags/gtk4/app';
 import Time from './Time';
 import AppsBar from './Apps';
+import Workspaces from './Workspaces';
 import SysTray from './SysTray';
 import { Astal, Gdk } from 'ags/gtk4';
 
@@ -8,6 +9,7 @@ import { Astal, Gdk } from 'ags/gtk4';
 function Left() {
   return (
     <box>
+      <Workspaces />
       <SysTray />
     </box>
   );
