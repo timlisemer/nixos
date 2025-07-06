@@ -1,5 +1,6 @@
 import Apps from 'gi://AstalApps';
 import { Gtk } from 'ags/gtk4';
+import { createWidgetContainer } from './WidgetContainer'; // ★
 
 function queryApp(appName: string): Apps.Application {
   const apps = new Apps.Apps({
@@ -42,33 +43,13 @@ function widgetForApp(app: Apps.Application): Gtk.Box {
     pixel_size: 32,
   });
 
-  const box = new Gtk.Box({
-    orientation: Gtk.Orientation.HORIZONTAL,
-    css_classes: ['widget'],
+  // build via shared helper
+  return createWidgetContainer(image, {
+    onLeftClick: (x, y) =>
+      console.log(`Left click on ${app.get_name()} at (${x},${y})`),
+    onRightClick: (x, y) =>
+      console.log(`Right click on ${app.get_name()} at (${x},${y})`),
   });
-  box.append(image);
-
-  const clickLeft = new Gtk.GestureClick({ button: 1 });
-  clickLeft.connect('released', (gesture) => {
-    const ev = gesture.get_current_event();
-    if (ev) {
-      const [ok, x, y] = ev.get_position();
-      if (ok) console.log(`Left click on ${app.get_name()} at (${x},${y})`);
-    }
-  });
-  box.add_controller(clickLeft);
-
-  const clickRight = new Gtk.GestureClick({ button: 3 });
-  clickRight.connect('released', (gesture) => {
-    const ev = gesture.get_current_event();
-    if (ev) {
-      const [ok, x, y] = ev.get_position();
-      if (ok) console.log(`Right click on ${app.get_name()} at (${x},${y})`);
-    }
-  });
-  box.add_controller(clickRight);
-
-  return box;
 }
 
 export default function AppsWidget() {
