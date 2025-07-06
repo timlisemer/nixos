@@ -28,4 +28,24 @@ window.Bar {
       background: rgba(255, 255, 255, 0.1);
     }
   }
+
+  .ws-dot,
+  .ws-dot-active,
+  .ws-dot-empty {
+    min-width: 8px;
+    min-height: 8px;
+    border-radius: 4px; /* make them circles */
+  }
+
+  .ws-dot {
+    background: #777;
+    opacity: 0.6;
+  }
+  .ws-dot-active {
+    background: #fff;
+  } /* highlight */
+  .ws-dot-empty {
+    background: #777;
+    opacity: 0.25;
+  } /* subtle hint */
 }
