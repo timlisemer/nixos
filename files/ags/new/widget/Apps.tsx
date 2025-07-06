@@ -1,91 +1,93 @@
 import Apps from 'gi://AstalApps';
 import { Gtk } from 'ags/gtk4';
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
 import { createWidgetContainer } from './WidgetContainer';
-import Gio from 'gi://Gio'; // ★
 
-function queryApp(appName: string): Apps.Application {
-  const apps = new Apps.Apps({
-    nameMultiplier: 2,
-    entryMultiplier: 0,
-    executableMultiplier: 2,
+let activePopover: Gtk.Popover | null = null;
+
+function buildActionsBox(
+  info: Gio.DesktopAppInfo,
+  acts: string[],
+  app: Apps.Application
+): Gtk.Box {
+  if (acts.length === 0) acts = ['__NEW_WINDOW__'];
+
+  const box = new Gtk.Box({
+    orientation: Gtk.Orientation.VERTICAL,
+    spacing: 4,
+    margin_top: 4,
+    margin_bottom: 4,
+    margin_start: 6,
+    margin_end: 6,
   });
 
-  for (const app of apps.fuzzy_query(appName)) {
-    const iconName = app.get_icon_name();
-    const appName = app.get_name();
-    console.log(`App Name: ${appName}, Icon Name: ${iconName}`);
+  acts.forEach((id) => {
+    const label =
+      id === '__NEW_WINDOW__' ? 'New Window' : (info.get_action_name(id) ?? id);
 
-    return app;
-  }
-  throw new Error(`App with name ${appName} not found`);
-}
+    const btn = Gtk.Button.new_with_label(label);
+    btn.connect('clicked', () => {
+      if (id === '__NEW_WINDOW__') app.launch();
+      else info.launch_action(id, null);
 
-function exactApp(appName: string): Apps.Application {
-  const apps = new Apps.Apps({
-    nameMultiplier: 2,
-    entryMultiplier: 0,
-    executableMultiplier: 2,
+      activePopover?.popdown();
+      activePopover = null;
+    });
+    box.append(btn);
   });
 
-  for (const app of apps.exact_query(appName)) {
-    const iconName = app.get_icon_name();
-    const appName = app.get_name();
-    console.log(`App Name: ${appName}, Icon Name: ${iconName}`);
-
-    return app;
-  }
-  throw new Error(`App with name ${appName} not found`);
+  return box;
 }
 
-// helper that builds a widget for one application
-function widgetForApp(app: Apps.Application): Gtk.Box {
+function widgetForApp(app: Apps.Application): Gtk.Widget {
   const image = new Gtk.Image({
     icon_name: app.get_icon_name(),
     pixel_size: 32,
   });
 
-  // build via shared helper
-  return createWidgetContainer(image, {
-    onLeftClick: (x, y) => {
-      console.log(`Left click on ${app.get_name()} at (${x},${y})`);
-      app.launch();
-    },
-    onRightClick: (x, y) => {
-      console.log(`Right click on ${app.get_name()} at (${x},${y})`);
+  const container = createWidgetContainer(image, {
+    onLeftClick: () => app.launch(),
+    onRightClick: () => {
+      GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+        if (activePopover) {
+          activePopover.popdown();
+          activePopover = null;
+        }
 
-      // ------------------------------------------------------------------ ★
-      // OLD attempt – left here for reference
-      // const infoOld = app.get_app() as Gio.DesktopAppInfo;
+        const info = Gio.DesktopAppInfo.new(app.get_entry());
+        if (!info) return GLib.SOURCE_REMOVE;
 
-      // NEW – create DesktopAppInfo from desktop-file ID
-      const info = Gio.DesktopAppInfo.new(app.get_entry());
-
-      if (!info) {
-        console.log(`No DesktopAppInfo for ${app.get_name()}`);
-      } else {
         const acts = info.list_actions() ?? [];
-        console.log(`Actions for ${app.get_name()}:`);
-        acts.forEach((a) => console.log(` • ${a}`));
-      }
-      // ------------------------------------------------------------------ ★
+        const pop = new Gtk.Popover({
+          child: buildActionsBox(info, acts, app),
+          autohide: true,
+        });
 
-      // existing debug dump
-      console.log(
-        `App Categories:\n${app.get_categories()} \n` +
-          `App Entry: ${app.get_entry()} \n` +
-          `App Executable: ${app.get_executable()} \n` +
-          `App Frequency: ${app.get_frequency()} \n` +
-          `App Icon Name: ${app.get_icon_name()} \n` +
-          `App Keywords: ${app.get_keywords()}` +
-          `App Name: ${app.get_name()} \n`
-      );
+        (pop as any).set_parent(container);
+        pop.popup();
+        activePopover = pop;
+
+        return GLib.SOURCE_REMOVE;
+      });
     },
   });
+
+  return container;
+}
+
+function exactApp(name: string): Apps.Application {
+  const apps = new Apps.Apps({
+    nameMultiplier: 2,
+    entryMultiplier: 0,
+    executableMultiplier: 2,
+  });
+  for (const a of apps.exact_query(name)) return a;
+  throw new Error(`App '${name}' not found`);
 }
 
 export default function AppsWidget() {
-  // The list of app names to display
-  const appNames = [
+  const names = [
     'Files',
     'Firefox',
     'Discord',
@@ -96,20 +98,15 @@ export default function AppsWidget() {
   ];
 
   return (
-    // A Horizontal box to hold the list of all app widgets
     <box orientation={Gtk.Orientation.HORIZONTAL} class="widget" spacing={8}>
-      {/* Map each app name to a widget */}
-      {appNames.map((name) => {
+      {names.map((n) => {
         try {
-          // Attempt to find the exact application for the current name
-          const app = exactApp(name);
-          return widgetForApp(app); // If found, show its icon with click handlers
-        } catch (error) {
-          // If not found, display an error message for this specific app
+          return widgetForApp(exactApp(n));
+        } catch {
           return (
             <box orientation={Gtk.Orientation.HORIZONTAL} class="app-entry">
               <label
-                label={`Error: Could not find app '${name}'.`}
+                label={`Error: could not find app '${n}'`}
                 cssName="error"
               />
             </box>
