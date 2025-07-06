@@ -16,6 +16,7 @@
     dracut
     elfutils
     ethtool
+    dex
     wol
     fastfetch
     fd
