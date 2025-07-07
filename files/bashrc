@@ -17,12 +17,7 @@ alias git_amend='git add . && git commit --amend --no-edit && git push --force-w
 alias wake_tim-pc='wol 40:B0:76:DC:79:AA'
 
 if [ "${WSL:-0}" = "1" ]; then
-	# WSL=1, set aliases for WSL environment
-	alias rebuild='sudo sudo rsync -aAX --delete ~/Coding/Other/nixos/ /etc/nixos/ && clear && sudo nixos-rebuild switch --flake /etc/nixos#$(cat /etc/hostname) && bash'
 	alias code='wslcode'
-else
-	# WSL is unset or not 1, set aliases for non-WSL environment
-	alias rebuild='sudo rsync -aAX --delete ~/Coding/Other/nixos/ /etc/nixos/ && clear && sudo nixos-rebuild switch && bash'
 fi
 
 if [[ -n "$HYPRLAND_INSTANCE_SIGNATURE" ]]; then
@@ -30,6 +25,21 @@ if [[ -n "$HYPRLAND_INSTANCE_SIGNATURE" ]]; then
 else
 	alias logout='loginctl terminate-user $USER'
 fi
+
+alias rebuild='
+ sudo find /etc/nixos -mindepth 1 -maxdepth 1 ! -name "flake.lock" -exec rm -rf {} + \
+ && sudo cp -a ~/Coding/Other/nixos/. /etc/nixos/ \
+ && ([ -d /etc/nixos/.git ] && git -C /etc/nixos status --short || true) \
+ && clear \
+ && (sudo nixos-rebuild switch --flake /etc/nixos#$(cat /etc/hostname) \
+ || (echo "Rebuild failed, retrying with fresh flake.lock..." \
+ && sudo rm -rf /etc/nixos/* /etc/nixos/.[!.]* /etc/nixos/..?* \
+ && sudo cp -a ~/Coding/Other/nixos/. /etc/nixos/ \
+ && ([ -d /etc/nixos/.git ] && git -C /etc/nixos status --short || true) \
+ && clear \
+ && sudo nixos-rebuild switch --flake /etc/nixos#$(cat /etc/hostname))) \
+ && bash
+ '
 
 #######################################################
 # SOURCED ALIAS'S AND SCRIPTS BY zachbrowne.me
