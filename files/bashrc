@@ -129,6 +129,7 @@ alias vis='nvim "+set si"'
 
 # Change directory aliases
 alias home='cd ~'
+alias .='ls -aF --color=auto'
 alias cd..='cd ..'
 alias ..='cd ..'
 alias ...='cd ../..'
