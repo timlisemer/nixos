@@ -7,7 +7,6 @@
 
   # Hyprland related packages
   environment.systemPackages = with pkgs; [
-    wofi
     cliphist
     grim
     slurp
