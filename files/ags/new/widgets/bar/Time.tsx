@@ -1,6 +1,6 @@
 import { createPoll } from 'ags/time';
 import { Gtk } from 'ags/gtk4';
-import { createContainer } from './Container'; // ★
+import { createContainer } from '../../widget_helper/Container'; // ★
 
 export default function Time() {
   // Poll for the time string (HH:MM) every second

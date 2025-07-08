@@ -1,6 +1,6 @@
 import app from 'ags/gtk4/app';
 import style from './style.scss';
-import Manager from './widget/Manager';
+import Manager from './appManager';
 
 app.start({
   css: style,

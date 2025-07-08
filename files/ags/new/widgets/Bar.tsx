@@ -1,8 +1,8 @@
 import app from 'ags/gtk4/app';
-import Time from './Time';
-import AppsBar from './Apps';
-import Workspaces from './Workspaces';
-import SysTray from './SysTray';
+import Time from './bar/Time';
+import AppsBar from './bar/Apps';
+import Workspaces from './bar/Workspaces';
+import SysTray from './bar/SysTray';
 import { Astal, Gdk } from 'ags/gtk4';
 
 // Main Bar component

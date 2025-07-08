@@ -1,10 +1,10 @@
 import Tray from 'gi://AstalTray';
 import { Gtk } from 'ags/gtk4';
-import { createContainer } from './Container';
+import { createContainer } from '../../widget_helper/Container';
 import {
   createSystemTrayPopoverMenu,
   cleanupAllPopovers,
-} from './SharedPopoverMenu';
+} from '../../widget_helper/SharedPopoverMenu';
 
 // debug helper – flip DEBUG to true for verbose output
 const DEBUG = false;

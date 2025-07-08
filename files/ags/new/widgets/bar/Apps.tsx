@@ -2,8 +2,11 @@ import Apps from 'gi://AstalApps';
 import { Gtk } from 'ags/gtk4';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
-import { createContainer } from './Container';
-import { createCustomPopoverMenu, MenuAction } from './SharedPopoverMenu';
+import { createContainer } from '../../widget_helper/Container';
+import {
+  createCustomPopoverMenu,
+  MenuAction,
+} from '../../widget_helper/SharedPopoverMenu';
 
 // ──────────────────────────────────────────────────────────
 // centralised logging toggle – set DEBUG = true to re-enable

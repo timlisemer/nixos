@@ -1,7 +1,7 @@
 import app from 'ags/gtk4/app';
 import { Astal, Gdk, Gtk } from 'ags/gtk4';
-import { createContainer } from './Container';
-import AppMenu from './AppMenu';
+import { createContainer } from '../widget_helper/Container';
+import AppMenu from './overview/AppMenu';
 
 /**
  * Overview window: dim background that closes on click,
