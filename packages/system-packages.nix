@@ -42,6 +42,7 @@
     i2c-tools
     liquidctl
     glxinfo
+    jq
     libglvnd
     mesa
     nixpkgs-fmt

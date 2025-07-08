@@ -5,6 +5,6 @@ import Manager from './appManager';
 app.start({
   css: style,
   main() {
-    app.get_monitors().map(Manager);
+    app.get_monitors().map((m, i) => Manager(m, i));
   },
 });

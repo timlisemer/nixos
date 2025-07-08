@@ -6,7 +6,7 @@ import SysTray from './bar/SysTray';
 import { Astal, Gdk } from 'ags/gtk4';
 
 // Main Bar component
-export default function Bar(gdkmonitor: Gdk.Monitor) {
+export default function Bar(gdkmonitor: Gdk.Monitor, index: number) {
   const { BOTTOM, LEFT, RIGHT } = Astal.WindowAnchor;
 
   // Left component
@@ -43,7 +43,7 @@ export default function Bar(gdkmonitor: Gdk.Monitor) {
   return (
     <window
       visible
-      name="bar"
+      name={`bar-${index}`}
       class="Bar"
       gdkmonitor={gdkmonitor}
       exclusivity={Astal.Exclusivity.EXCLUSIVE}

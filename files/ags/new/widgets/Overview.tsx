@@ -11,7 +11,7 @@ import AppMenu from './overview/AppMenu';
  *       Overlay children simply receive events themselves; they do NOT
  *       propagate to the main child unless you set `can-target = false`.
  */
-export default function Overview(gdkmonitor: Gdk.Monitor) {
+export default function Overview(gdkmonitor: Gdk.Monitor, index: number) {
   const { TOP, BOTTOM, LEFT, RIGHT } = Astal.WindowAnchor;
 
   /* layer 1 — dim background that closes the overview */
@@ -20,8 +20,8 @@ export default function Overview(gdkmonitor: Gdk.Monitor) {
     {
       widget: false,
       overrideCss: ['overview'],
-      onLeftClick: () => app.toggle_window('overview'),
-      onRightClick: () => app.toggle_window('overview'),
+      onLeftClick: () => app.toggle_window(`overview-${index}`),
+      onRightClick: () => app.toggle_window(`overview-${index}`),
     }
   );
 
@@ -36,7 +36,7 @@ export default function Overview(gdkmonitor: Gdk.Monitor) {
 
   return (
     <window
-      name="overview"
+      name={`overview-${index}`}
       class="Overview"
       gdkmonitor={gdkmonitor}
       exclusivity={Astal.Exclusivity.NORMAL}
