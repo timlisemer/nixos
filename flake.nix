@@ -113,6 +113,8 @@
       };
       # add more people here …
     };
+
+    backupPaths = ["/home/tim/Downloads"];
   in {
     mkSystem = {
       hostFile,
@@ -120,6 +122,7 @@
       disks ? null,
       hostName,
       users,
+      backupPaths,
     }:
       nixpkgs-stable.lib.nixosSystem {
         inherit system;
@@ -133,6 +136,8 @@
             self
             nixos-raspberrypi
             users
+            hostName
+            backupPaths
             ;
 
           # This node’s own IP
@@ -174,6 +179,7 @@
         system = "x86_64-linux";
         disks = ["/dev/nvme0n1" "/dev/nvme1n1"];
         hostName = "tim-pc";
+        backupPaths = backupPaths;
         inherit users;
       };
 
@@ -183,6 +189,7 @@
         system = "x86_64-linux";
         disks = ["/dev/sda"];
         hostName = "tim-server";
+        backupPaths = backupPaths ++ (let v = "/mnt/docker-data/volumes/"; in ["${v}vaultwarden" "${v}minecraft" "${v}syncthing" "${v}traefik" "${v}portainer" "${v}immich/upload_location" "${v}immich/model-cache" "${v}immich/database"]);
         inherit users;
       };
 
@@ -190,6 +197,7 @@
         hostFile = ./hosts/tim-wsl.nix;
         system = "x86_64-linux";
         hostName = "tim-wsl";
+        backupPaths = backupPaths;
         inherit users;
       };
 
@@ -197,6 +205,7 @@
         hostFile = ./hosts/rpi4.nix;
         system = "aarch64-linux";
         hostName = "tim-pi4";
+        backupPaths = backupPaths;
         inherit users;
       };
 

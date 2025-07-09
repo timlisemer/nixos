@@ -302,6 +302,26 @@ wslcode() {
 }
 # -------------------------------------------------------------------------
 
+# --- start_backup: start the restic backup service for the current host ---
+start_backup() {
+	local host
+	host="$(hostname -s)"
+	local unit="restic-backups-${host}.service"
+
+	echo "Starting backup unit: $unit"
+	sudo systemctl start "$unit"
+}
+alias backup_start='start_backup'
+# -------------------------------------------------------------------------
+
+# --- tail the logs of the current host’s restic job ---
+restic_logs() {
+	local unit="restic-backups-$(hostname -s).service"
+	journalctl -u "$unit" -n 100 --follow
+}
+alias backup_logs='restic_logs'
+# -------------------------------------------------------------------------
+
 # --- nixos_generate_iso_image: generate a iso image for NixOS --------
 alias nixos_generate_iso_image='nixos_generate_iso_image'
 alias iso_image_create='nixos_generate_iso_image'

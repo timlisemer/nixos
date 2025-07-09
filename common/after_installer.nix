@@ -3,6 +3,8 @@
   pkgs,
   inputs,
   lib,
+  backupPaths,
+  hostName,
   ...
 }: let
 in {
@@ -125,5 +127,17 @@ in {
       "x-systemd.requires=network-online.target"
       "x-systemd.after=network-online.target"
     ];
+  };
+
+  # ─── Restic Backup Configuration ────────────────────────────────────────────────
+  services.restic.backups.${hostName} = {
+    initialize = true;
+    paths = backupPaths;
+    passwordFile = config.sops.secrets.restic_password.path;
+    environmentFile = config.sops.secrets.restic_environment.path;
+    repositoryFile = config.sops.templates.restic_repo.path; # hides R2 URL
+    pruneOpts = ["--keep-daily 7" "--keep-weekly 4" "--keep-monthly 12"];
+    timerConfig.OnCalendar = "06:30";
+    timerConfig.Persistent = false; # don't run on boot or rebuild
   };
 }

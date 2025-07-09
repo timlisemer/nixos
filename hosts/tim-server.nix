@@ -42,7 +42,7 @@
 
   environment.variables.SERVER = "1";
 
-  networking.firewall = {
+  networking.firewall = lib.mkForce {
     enable = true;
 
     # TCP ports to open

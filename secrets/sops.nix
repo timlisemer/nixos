@@ -2,14 +2,16 @@
   config,
   pkgs,
   inputs,
+  hostName,
   ...
 }: {
-  # sops encription settings
+  # sops encryption settings
   sops.defaultSopsFile = ./secrets.yaml;
   sops.defaultSopsFormat = "yaml";
   sops.age.sshKeyPaths = ["/etc/ssh/nixos_personal_sops_key"];
-  # sops.age.keyFile = "/home/tim/.config/sops/age/keys.txt";
-  # sops.age.generateKey = true;
+  # sops.age.keyFile      = "/home/tim/.config/sops/age/keys.txt";
+  # sops.age.generateKey  = true;
+
   sops.secrets.github_token = {};
   sops.secrets.google_oauth_client_id = {};
   sops.secrets.vaultwardenEnv = {};
@@ -23,5 +25,17 @@
     key = "google_drive_sa_json";
     path = "/run/secrets/google-sa";
     # restartUnits = ["rclone-gdrive.mount"]; # auto-reload after key rotation
+  };
+  sops.secrets.restic_password = {};
+  sops.secrets.restic_environment = {};
+  sops.secrets.restic_repo_base = {};
+
+  # build a tiny file at runtime that *does* include the hostname
+  sops.templates.restic_repo = {
+    owner = "root";
+    mode = "0400";
+    content = "${config.sops.placeholder."restic_repo_base"}/${hostName}";
+    # optional: restart backup unit on change
+    restartUnits = ["restic-backups-${hostName}.service"];
   };
 }
