@@ -42,6 +42,20 @@
 
   environment.variables.SERVER = "1";
 
+  networking.firewall = {
+    enable = true;
+
+    # TCP ports to open
+    allowedTCPPorts = [
+      22 # SSH
+      443 # HTTPS / Traefik
+      25565 # Minecraft server
+    ];
+
+    # ICMP (ping) is allowed separately
+    allowPing = true;
+  };
+
   environment.systemPackages = with pkgs; [
   ];
 
@@ -95,6 +109,34 @@
 
         DEBIAN_FRONTEND = "noninteractive";
       };
+    };
+
+    # ----------------------------------------------------------
+    # minecraft-server (Paper 1.21.x)
+    # ----------------------------------------------------------
+    minecraft-server = {
+      image = "openjdk:latest-slim";
+      autoStart = true;
+      autoRemoveOnStop = false;
+      extraOptions = ["--network=docker-network"];
+
+      ports = ["25565:25565"];
+
+      volumes = [
+        "/mnt/docker-data/volumes/minecraft:/data:rw"
+      ];
+
+      workdir = "/data"; # Where paper.jar lives
+      cmd = [
+        "java"
+        "-Xms1G" # minimum heap
+        "-Xmx3G" # maximum heap
+        "-jar"
+        "paper.jar"
+        "nogui"
+      ];
+
+      environment = {EULA = "TRUE";}; # Accept Mojang EULA
     };
 
     # -------------------------------------------------------------------------
