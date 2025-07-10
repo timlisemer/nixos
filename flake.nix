@@ -209,28 +209,33 @@
         inherit users;
       };
 
-      homeassistant-yellow = nixos-raspberrypi.lib.nixosSystem {
-        system = "aarch64-linux";
-        modules = [
-          disko.nixosModules.disko
-          vscode-server.nixosModules.default
-          ./hosts/homeassistant-yellow.nix
+      homeassistant-yellow = let
+        hostName = "homeassistant-yellow";
+      in
+        nixos-raspberrypi.lib.nixosSystem {
+          system = "aarch64-linux";
+          modules = [
+            disko.nixosModules.disko
+            vscode-server.nixosModules.default
+            ./hosts/homeassistant-yellow.nix
 
-          # Make the mapping (+ /etc/hosts entries) available everywhere
-          ({lib, ...}: {
-            networking.hostName = "homeassistant-yellow";
+            # Make the mapping (+ /etc/hosts entries) available everywhere
+            ({lib, ...}: {
+              networking.hostName = hostName;
 
-            networking.extraHosts =
-              lib.concatStringsSep "\n"
-              (lib.mapAttrsToList (name: ip: "${ip} ${name}") hostIps);
-          })
-        ];
+              networking.extraHosts =
+                lib.concatStringsSep "\n"
+                (lib.mapAttrsToList (name: ip: "${ip} ${name}") hostIps);
+            })
+          ];
 
-        specialArgs = {
-          disks = ["/dev/nvme0n1"];
-          inherit inputs home-manager adwaita_hypercursor self nixos-raspberrypi users;
+          specialArgs = {
+            disks = ["/dev/nvme0n1"];
+            hostName = hostName;
+            backupPaths = backupPaths;
+            inherit inputs home-manager adwaita_hypercursor self nixos-raspberrypi users;
+          };
         };
-      };
 
       installer = let
         system = "x86_64-linux";
