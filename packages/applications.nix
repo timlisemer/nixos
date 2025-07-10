@@ -39,6 +39,8 @@ in {
     webcord-vencord
     spotify
 
+    inputs.claude.packages.${system}.claude-desktop-with-fhs
+
     arduino-ide
     qtcreator
     jetbrains.clion

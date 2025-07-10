@@ -63,5 +63,5 @@
   boot.loader.systemd-boot.configurationLimit = 5;
   boot.loader.timeout = lib.mkForce 1;
 
-  hardware.graphics.extraPackages = lib.mkForce [pkgs.mesa];
+  hardware.graphics.enable = false;
 }

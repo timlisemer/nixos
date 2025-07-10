@@ -24,14 +24,19 @@
       inputs.astal.follows = "astal";
     };
 
-    disko = {
-      url = "github:nix-community/disko";
-      inputs.nixpkgs.follows = "nixpkgs-stable";
-    };
-
     adwaita_hypercursor = {
       url = "github:dp0sk/Adwaita-HyprCursor";
       flake = false;
+    };
+
+    claude = {
+      url = "github:k3d3/claude-desktop-linux-flake";
+      inputs.nixpkgs.follows = "nixpkgs-stable";
+    };
+
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs-stable";
     };
 
     sops-nix = {
@@ -84,6 +89,7 @@
     nixos-raspberrypi,
     adwaita_hypercursor,
     tim-nvim,
+    claude,
     ...
   }: let
     # ────────────────────────────────────────────────────────────────

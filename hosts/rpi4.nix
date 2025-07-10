@@ -87,7 +87,7 @@
     })
   ];
 
-  hardware.graphics.extraPackages = lib.mkForce [pkgs.mesa];
+  hardware.graphics.enable = false;
 
   # Machine specific configurations
   environment.systemPackages = with pkgs; [
