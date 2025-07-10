@@ -42,6 +42,8 @@
     distrobox
     dive
     i2c-tools
+    gemini-cli
+    codex
     liquidctl
     glxinfo
     jq
