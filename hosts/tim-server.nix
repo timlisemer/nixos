@@ -115,7 +115,7 @@
     # minecraft-server (Paper 1.21.x)
     # ----------------------------------------------------------
     minecraft-server = {
-      image = "openjdk:latest-slim";
+      image = "openjdk:21-jdk-slim";
       autoStart = true;
       autoRemoveOnStop = false;
       extraOptions = ["--network=docker-network"];

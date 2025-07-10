@@ -31,6 +31,8 @@
     nix-prefetch
     nix-prefetch-git
     qemu
+    inetutils
+    nmap
     ripgrep
     trash-cli
     vdpauinfo
