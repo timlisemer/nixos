@@ -10,6 +10,7 @@
   isHomeAssistant,
   ...
 }: let
+  astalPkgs = inputs.astal.packages.${pkgs.system};
   adwaitaHyprCursor = pkgs.stdenv.mkDerivation {
     pname = "adwaita-hyprcursor";
     version = "git";
@@ -89,11 +90,31 @@ in {
     gtk.enable = true;
   };
 
-  programs.ags = {
+  home.packages = lib.optionals isDesktop [
+    # Astal utilities
+    astalPkgs.io
+  ];
+
+  programs.ags = lib.mkIf isDesktop {
     enable = true;
 
     # symlink to ~/.config/ags
     configDir = ../files/ags/new;
+
+    # additional packages and executables to add to gjs's runtime
+    extraPackages = with pkgs; [
+      astalPkgs.notifd
+      astalPkgs.tray
+      astalPkgs.apps
+      astalPkgs.battery
+      astalPkgs.greet
+      astalPkgs.mpris
+      astalPkgs.network
+      astalPkgs.notifd
+      astalPkgs.powerprofiles
+      astalPkgs.wireplumber
+      astalPkgs.hyprland
+    ];
   };
 
   home.file = {
