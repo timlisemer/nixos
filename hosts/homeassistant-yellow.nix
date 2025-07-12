@@ -12,7 +12,7 @@
 }: {
   # Import the common configuration shared across all machines
   imports = [
-    (import ../common/disko.nix {inherit disks;})
+    #(import ../common/disko.nix {inherit disks;})
     ../common/after_installer.nix
     ./rpi-hardware-configuration.nix
     ../common/common.nix
@@ -27,13 +27,22 @@
     })
   ];
 
-  # Allows missing modules, needed to build the system with the nixos-raspberrypi flake
-  nixpkgs.overlays = [
-    (final: super: {
-      makeModulesClosure = x:
-        super.makeModulesClosure (x // {allowMissing = true;});
-    })
-  ];
+  fileSystems = {
+    "/" = {
+      device = "/dev/nvme0n1p2";
+      fsType = "ext4"; # Change to "btrfs" if your current root is BTRFS (check with `lsblk -f`)
+      options = ["noatime" "nodiratime" "discard"]; # Optional performance tweaks
+    };
+
+    "/boot/firmware" = {
+      device = "/dev/nvme0n1p1";
+      fsType = "vfat";
+      options = ["fmask=0077" "dmask=0077" "defaults"];
+    };
+  };
+
+  # May break stuff on aarch64, but is needed for some packages
+  nixpkgs.config.allowUnsupportedSystem = true;
 
   # Fix shebangs in scripts # Try to bring this back to common/common.nix however currently it breaks a lot of things for example npm
   services.envfs.enable = true;
@@ -50,18 +59,4 @@
       };
     };
   };
-
-  # May break stuff on arch64, but is needed for some packages
-  nixpkgs.config.allowUnsupportedSystem = true;
-
-  # Leave the kernel untouched so its hash matches the cache
-  boot.kernelPackages = pkgs.rpi.linuxPackages_rpi5;
-
-  # Bootloader
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
-  boot.loader.systemd-boot.configurationLimit = 5;
-  boot.loader.timeout = lib.mkForce 1;
-
-  hardware.graphics.enable = false;
 }

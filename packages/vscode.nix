@@ -13,9 +13,13 @@
     config = {allowUnfree = true;};
     inherit system;
   };
-  vscodeExtensions = pkgs.vscode-extensions;
+  unstablePkgs = import inputs.nixpkgs-unstable {
+    config = {allowUnfree = true;};
+    inherit system;
+  };
+  vscodeExtensions = unstablePkgs.vscode-extensions;
 in {
-  environment.systemPackages = with pkgs; [
+  environment.systemPackages = with unstablePkgs; [
     (vscode-with-extensions.override {
       vscodeExtensions = with vscodeExtensions; [
         ms-python.python

@@ -39,7 +39,7 @@ in {
     webcord-vencord
     spotify
 
-    inputs.claude.packages.${system}.claude-desktop-with-fhs
+    inputs.claude.packages.${system}.claude-desktop
 
     arduino-ide
     qtcreator

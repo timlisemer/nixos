@@ -12,6 +12,7 @@ alias terminal='ghostty'
 alias nixos='cd ~/Coding/Other/nixos'
 alias iocto='cd ~/Coding/iocto'
 alias install_tim_server='nix run nixpkgs#nixos-anywhere -- --flake /etc/nixos#tim-server root@142.132.234.128'
+alias install_homeassistant_yellow='nix run nixpkgs#nixos-anywhere -- --flake /etc/nixos#homeassistant-yellow nixos@homeassistant-yellow'
 alias nix_clean='sudo nix-collect-garbage -d && sudo nix-store --gc && sudo nix-store --optimize && sudo nix-store --verify --check-contents'
 alias git_amend='git add . && git commit --amend --no-edit && git push --force-with-lease'
 alias wake_tim-pc='wol 40:B0:76:DC:79:AA'
@@ -27,20 +28,20 @@ else
 fi
 
 alias rebuild='
- stop_all_docker_containers && \
- sudo find /etc/nixos -mindepth 1 -maxdepth 1 ! -name "flake.lock" -exec rm -rf {} + \
- && sudo cp -a ~/Coding/Other/nixos/. /etc/nixos/ \
- && ([ -d /etc/nixos/.git ] && git -C /etc/nixos status --short || true) \
- && clear \
- && (sudo nixos-rebuild switch --flake /etc/nixos#$(cat /etc/hostname) \
- || (echo "Rebuild failed, retrying with fresh flake.lock..." \
- && sudo rm -rf /etc/nixos/* /etc/nixos/.[!.]* /etc/nixos/..?* \
- && sudo cp -a ~/Coding/Other/nixos/. /etc/nixos/ \
- && ([ -d /etc/nixos/.git ] && git -C /etc/nixos status --short || true) \
- && clear \
- && sudo nixos-rebuild switch --flake /etc/nixos#$(cat /etc/hostname))) \
- && bash
- '
+stop_all_docker_containers &&
+	sudo find /etc/nixos -mindepth 1 -maxdepth 1 ! -name "flake.lock" -exec rm -rf {} + &&
+	sudo cp -a ~/Coding/Other/nixos/. /etc/nixos/ &&
+	([ -d /etc/nixos/.git ] && git -C /etc/nixos status --short || true) &&
+	clear &&
+	(sudo nixos-rebuild switch --flake /etc/nixos#$(cat /etc/hostname) ||
+		(echo "Rebuild failed, retrying with fresh flake.lock..." &&
+			sudo rm -rf /etc/nixos/* /etc/nixos/.[!.]* /etc/nixos/..?* &&
+			sudo cp -a ~/Coding/Other/nixos/. /etc/nixos/ &&
+			([ -d /etc/nixos/.git ] && git -C /etc/nixos status --short || true) &&
+			clear &&
+			sudo nixos-rebuild switch --flake /etc/nixos#$(cat /etc/hostname))) &&
+	bash
+'
 
 #######################################################
 # SOURCED ALIAS'S AND SCRIPTS BY zachbrowne.me
@@ -615,7 +616,7 @@ rebuild_remote() {
 
 	nixos-rebuild switch \
 		--flake "/home/$USER/Coding/Other/nixos#$host" \
-		--target-host "$USER@$host" \
+		--target-host "nixos@$host" \
 		--build-host localhost \
 		--use-remote-sudo \
 		--keep-going
@@ -790,7 +791,7 @@ fi
 eval "$(zoxide init bash)"
 
 [[ -f ~/.bash-preexec.sh ]] && source ~/.bash-preexec.sh
-[[ ! -d ~/.local/share/blesh || -z "$(ls -A ~/.local/share/blesh 2>/dev/null)" ]] && { mkdir -p ~/.local/share/blesh && sudo cp -a $BLESH_PATH/* ~/.local/share/blesh; }
+[[ ! -d ~/.local/share/blesh || -z "$(ls -A ~/.local/share/blesh 2>/dev/null)" ]] && { mkdir -p ~/.local/share/blesh && cp -a $BLESH_PATH/* ~/.local/share/blesh; }
 source ~/.local/share/blesh/ble.sh
 eval "$(atuin init bash)"
 

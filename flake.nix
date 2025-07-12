@@ -221,17 +221,36 @@
         nixos-raspberrypi.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
+            {
+              imports = with nixos-raspberrypi.nixosModules; [
+                raspberry-pi-5.base
+                raspberry-pi-5.bluetooth
+              ];
+            }
             disko.nixosModules.disko
             vscode-server.nixosModules.default
             ./hosts/homeassistant-yellow.nix
 
             # Make the mapping (+ /etc/hosts entries) available everywhere
-            ({lib, ...}: {
+            ({
+              config,
+              pkgs,
+              lib,
+              ...
+            }: {
               networking.hostName = hostName;
 
               networking.extraHosts =
                 lib.concatStringsSep "\n"
                 (lib.mapAttrsToList (name: ip: "${ip} ${name}") hostIps);
+
+              system.nixos.tags = let
+                cfg = config.boot.loader.raspberryPi;
+              in [
+                "raspberry-pi-${cfg.variant}"
+                cfg.bootloader
+                config.boot.kernelPackages.kernel.version
+              ];
             })
           ];
 
