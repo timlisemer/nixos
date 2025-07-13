@@ -36,6 +36,7 @@
   '';
   environment.systemPackages = with pkgs; [
     adwaita-icon-theme
+    dbus
 
     # Wrapper for Chrome/Chromium to use p11-kit-proxy for PKCS#11
     (writeShellScriptBin "setup-browser-eid" ''

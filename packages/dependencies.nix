@@ -31,7 +31,6 @@
     conda
     cmake
     composefs
-    dbus
     dos2unix
     libgcc
     jdk

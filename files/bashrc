@@ -616,7 +616,7 @@ rebuild_remote() {
 
 	nixos-rebuild switch \
 		--flake "/home/$USER/Coding/Other/nixos#$host" \
-		--target-host "nixos@$host" \
+		--target-host "$USER@$host" \
 		--build-host localhost \
 		--use-remote-sudo \
 		--keep-going
