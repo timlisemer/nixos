@@ -111,7 +111,7 @@
         fullName = "Tim Lisemer";
         gitUsername = "timlisemer";
         gitEmail = "timlisemer@gmail.com";
-        hashedPassword = "$6$K1WwF1Hn0r3j$6Pr1jZDl9yGsbM10Anwq7ieF6N61n3vg5EvAM9lGTRsaaqQwDmgeJ7NDNbgmZGCjqy7s1tt1XPB9I6G6SxSSi/"; # sha-512 crypt
+        hashedPassword = "$6$fhbC3/uvj6gKqkYC$Kh4HKuYYbKdaag/D7yWP7VZAIdS9oGWudxiyy1HPsH0mUaTEf6X/QzNOM6Su0RhzvT4fXKNrj3gFt.iGpKGIj0"; # sha-512 crypt
         authorizedKeys = [
           "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEae4h0Uk6x/lrmw0PZv/7GfWyLuEAVoc70AC4ykyFtX TimLisemer"
           # add more keys freely …

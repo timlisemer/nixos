@@ -12,7 +12,7 @@
 }: {
   # Import the common configuration shared across all machines
   imports = [
-    #(import ../common/disko.nix {inherit disks;})
+    (import ../common/disko.nix {inherit disks;})
     ../common/after_installer.nix
     ./rpi-hardware-configuration.nix
     ../common/common.nix
@@ -26,20 +26,6 @@
       isHomeAssistant = true;
     })
   ];
-
-  fileSystems = {
-    "/" = {
-      device = "/dev/nvme0n1p2";
-      fsType = "ext4"; # Change to "btrfs" if your current root is BTRFS (check with `lsblk -f`)
-      options = ["noatime" "nodiratime" "discard"]; # Optional performance tweaks
-    };
-
-    "/boot/firmware" = {
-      device = "/dev/nvme0n1p1";
-      fsType = "vfat";
-      options = ["fmask=0077" "dmask=0077" "defaults"];
-    };
-  };
 
   # May break stuff on aarch64, but is needed for some packages
   nixpkgs.config.allowUnsupportedSystem = true;
