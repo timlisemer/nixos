@@ -177,6 +177,7 @@
         system = "x86_64-linux";
         disks = ["/dev/nvme0n1"];
         hostName = "tim-laptop";
+        backupPaths = backupPaths;
         inherit users;
       };
 
@@ -227,7 +228,6 @@
                 raspberry-pi-5.bluetooth
               ];
             }
-            disko.nixosModules.disko
             vscode-server.nixosModules.default
             ./hosts/homeassistant-yellow.nix
 
@@ -255,7 +255,6 @@
           ];
 
           specialArgs = {
-            disks = ["/dev/nvme0n1"];
             hostName = hostName;
             backupPaths = backupPaths;
             inherit inputs home-manager adwaita_hypercursor self nixos-raspberrypi users;

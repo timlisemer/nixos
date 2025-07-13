@@ -1,5 +1,4 @@
 {
-  disks,
   modulesPath,
   config,
   pkgs,
@@ -12,7 +11,6 @@
 }: {
   # Import the common configuration shared across all machines
   imports = [
-    # (import ../common/disko.nix {inherit disks;})
     ../common/after_installer.nix
     ./rpi-hardware-configuration.nix
     ../common/common.nix
