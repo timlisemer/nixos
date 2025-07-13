@@ -59,4 +59,71 @@
       };
     };
   };
+
+  virtualisation.oci-containers.containers = {
+    # -------------------------------------------------------------------------
+    # traefik  (uses a secret file for the Cloudflare token)
+    # -------------------------------------------------------------------------
+    traefik = {
+      image = "traefik:latest";
+      autoStart = true;
+
+      autoRemoveOnStop = false; # prevent implicit --rm
+      extraOptions = ["--network=docker-network"];
+
+      ports = [
+        "443:443"
+        "80:80"
+        "8085:8080" # Traefik dashboard
+      ];
+
+      volumes = [
+        "/mnt/docker-data/volumes/traefik:/etc/traefik:rw"
+        "/var/run/docker.sock:/var/run/docker.sock:rw"
+      ];
+
+      environmentFiles = [
+        "/run/secrets/traefikENV"
+      ];
+
+      environment = {
+        # Keys with dots must be quoted to be valid Nix attribute names
+        "traefik.http.routers.api.rule" = "Host(`traefik.local.yakweide.de`)";
+        "traefik.http.routers.api.entryPoints" = "https";
+        "traefik.http.routers.api.service" = "api@internal";
+        "traefik.enable" = "true";
+      };
+    };
+
+    # -------------------------------------------------------------------------
+    # pihole
+    # -------------------------------------------------------------------------
+    pihole = {
+      image = "pihole/pihole:latest";
+      autoStart = true;
+
+      autoRemoveOnStop = false; # prevent implicit --rm
+      extraOptions = ["--network=docker-network" "--cap-add=NET_ADMIN"];
+
+      ports = [
+        "53:53/tcp"
+        "53:53/udp"
+        "8081:80/tcp" # Map to 8081 to avoid conflict with Traefik on port 80
+      ];
+
+      volumes = [
+        "/mnt/docker-data/volumes/pihole/etc-pihole:/etc/pihole:rw"
+        "/mnt/docker-data/volumes/pihole/etc-dnsmasq.d:/etc/dnsmasq.d:rw"
+      ];
+
+      environmentFiles = [
+        "/run/secrets/piholeENV" # Assuming WEBPASSWORD is set here
+      ];
+
+      environment = {
+        TZ = "Europe/Berlin"; # Adjust to your timezone
+        PIHOLE_DNS_ = "8.8.8.8;8.8.4.4;1.1.1.1;1.0.0.1;2001:4860:4860::8888;2001:4860:4860::8844;2606:4700:4700::1111;2606:4700:4700::1001";
+      };
+    };
+  };
 }

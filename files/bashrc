@@ -391,6 +391,46 @@ nixos_generate_img_image() {
 }
 # -----------------------------------------------------------------------
 
+# --- transfer and install keys: transfer id_ed25519 key and execute install_keys on the remote host ---
+transfer_and_install_keys() {
+	local host="$1"
+	if [[ -z "$host" ]]; then
+		echo "Usage: transfer_and_install_keys <host>"
+		return 1
+	fi
+
+	local remote_user="${USER}@${host}"
+	local key_path="$HOME/.ssh/id_ed25519"
+
+	if [[ ! -f "$key_path" ]]; then
+		echo "Error: SSH key $key_path does not exist." >&2
+		return 1
+	fi
+
+	echo "Transferring SSH key to $remote_user..."
+	scp "$key_path" "${remote_user}:/tmp/id_ed25519"
+
+	if [[ $? -ne 0 ]]; then
+		echo "Failed to transfer SSH key." >&2
+		return 1
+	fi
+
+	echo "Executing install_keys on remote host..."
+	ssh "$remote_user" 'bash -s' < <(
+		declare -f install_keys
+		install_keys
+	)
+
+	if [[ $? -ne 0 ]]; then
+		echo "Failed to execute install_keys on remote host." >&2
+		return 1
+	fi
+
+	echo "SSH key transferred and install_keys executed successfully."
+}
+alias install_keys_remote='transfer_and_install_keys'
+# -----------------------------------------------------------------------
+
 # --- print_drives: print all block devices, rclone mounts, and network drives ---
 alias drives_print='print_drives'
 print_drives() {

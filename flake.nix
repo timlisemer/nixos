@@ -294,55 +294,6 @@
             })
           ];
         };
-
-      installer-arm = let
-        system = "aarch64-linux";
-        pkgs = import nixpkgs-stable {inherit system;};
-        hosts = ["homeassistant-yellow"];
-        hostDisks = {
-          "homeassistant-yellow" = ["/dev/nvme0n1"];
-        };
-      in
-        nixos-raspberrypi.lib.nixosSystem {
-          inherit system;
-          specialArgs = {
-            inherit
-              self
-              inputs
-              hosts
-              hostDisks
-              home-manager
-              adwaita_hypercursor
-              nixos-raspberrypi
-              users
-              ;
-          };
-          modules = [
-            disko.nixosModules.disko
-            vscode-server.nixosModules.default
-            ({
-              pkgs,
-              lib,
-              inputs,
-              ...
-            }: {
-              imports = [
-                (import ./common/installer.nix {
-                  inherit pkgs self lib hosts hostDisks home-manager adwaita_hypercursor;
-                })
-              ];
-              boot.kernelPackages = pkgs.rpi.linuxPackages_rpi5;
-
-              # Allows missing modules, needed to build the system with the nixos-raspberrypi flake
-              nixpkgs.overlays = [
-                (final: super: {
-                  makeModulesClosure = x:
-                    super.makeModulesClosure (x // {allowMissing = true;});
-                })
-              ];
-            })
-          ];
-        };
     };
   };
 }
