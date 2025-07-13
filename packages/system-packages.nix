@@ -18,6 +18,7 @@
     ethtool
     dex
     wol
+    restic
     fastfetch
     fd
     ffmpeg

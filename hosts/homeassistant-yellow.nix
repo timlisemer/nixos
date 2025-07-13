@@ -58,6 +58,28 @@
     };
   };
 
+  networking.firewall = lib.mkForce {
+    enable = true;
+
+    # TCP ports to open
+    allowedTCPPorts = [
+      22 # SSH
+      443 # HTTPS / Traefik
+      80 # HTTP / Traefik
+      8085 # Traefik dashboard
+      53 # Pi-hole DNS
+      8081 # Pi-hole web UI
+    ];
+
+    # UDP ports to open
+    allowedUDPPorts = [
+      53 # Pi-hole DNS
+    ];
+
+    # ICMP (ping) is allowed separately
+    allowPing = true;
+  };
+
   virtualisation.oci-containers.containers = {
     # -------------------------------------------------------------------------
     # traefik  (uses a secret file for the Cloudflare token)

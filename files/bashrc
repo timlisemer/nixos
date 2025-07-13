@@ -304,26 +304,6 @@ wslcode() {
 }
 # -------------------------------------------------------------------------
 
-# --- start_backup: start the restic backup service for the current host ---
-start_backup() {
-	local host
-	host="$(hostname -s)"
-	local unit="restic-backups-${host}.service"
-
-	echo "Starting backup unit: $unit"
-	sudo systemctl start "$unit"
-}
-alias backup_start='start_backup'
-# -------------------------------------------------------------------------
-
-# --- tail the logs of the current host’s restic job ---
-restic_logs() {
-	local unit="restic-backups-$(hostname -s).service"
-	journalctl -u "$unit" -n 100 --follow
-}
-alias backup_logs='restic_logs'
-# -------------------------------------------------------------------------
-
 # --- nixos_generate_iso_image: generate a iso image for NixOS --------
 alias nixos_generate_iso_image='nixos_generate_iso_image'
 alias iso_image_create='nixos_generate_iso_image'
@@ -389,46 +369,6 @@ nixos_generate_img_image() {
 		return 1
 	fi
 }
-# -----------------------------------------------------------------------
-
-# --- transfer and install keys: transfer id_ed25519 key and execute install_keys on the remote host ---
-transfer_and_install_keys() {
-	local host="$1"
-	if [[ -z "$host" ]]; then
-		echo "Usage: transfer_and_install_keys <host>"
-		return 1
-	fi
-
-	local remote_user="${USER}@${host}"
-	local key_path="$HOME/.ssh/id_ed25519"
-
-	if [[ ! -f "$key_path" ]]; then
-		echo "Error: SSH key $key_path does not exist." >&2
-		return 1
-	fi
-
-	echo "Transferring SSH key to $remote_user..."
-	scp "$key_path" "${remote_user}:/tmp/id_ed25519"
-
-	if [[ $? -ne 0 ]]; then
-		echo "Failed to transfer SSH key." >&2
-		return 1
-	fi
-
-	echo "Executing install_keys on remote host..."
-	ssh "$remote_user" 'bash -s' < <(
-		declare -f install_keys
-		install_keys
-	)
-
-	if [[ $? -ne 0 ]]; then
-		echo "Failed to execute install_keys on remote host." >&2
-		return 1
-	fi
-
-	echo "SSH key transferred and install_keys executed successfully."
-}
-alias install_keys_remote='transfer_and_install_keys'
 # -----------------------------------------------------------------------
 
 # --- print_drives: print all block devices, rclone mounts, and network drives ---
@@ -650,95 +590,6 @@ transfer() {
 	fi
 }
 # --------------------------------------------------------------------------
-
-# --- install_keys: generate and install local SSH and SOPS keys ------
-# Checks for required key files, generates them from the primary SSH key
-# if missing, and sets the correct ownership and permissions.
-# Usage:  install_keys
-install_keys() {
-	set -euo pipefail
-
-	# --- Trap for error handling ---------------------------------------------
-	trap 'ret=$?; echo "install_keys failed at line $LINENO with exit code $ret" >&2; if [ -t 1 ]; then read -n 1 -s -r -p "Press any key to continue..."; fi; exit $ret' ERR
-
-	# --- Paths and User Info ---------------------------------------------------
-	local USER=$(printenv USER)
-	local HOME="/home/${USER}" # Use explicit home path for clarity in sudo contexts
-	local PRIMARY_KEY_PATH="${HOME}/.ssh/id_ed25519"
-	local SOPS_KEY_PATH="/etc/ssh/nixos_personal_sops_key"
-	local AGE_KEYS_DIR="${HOME}/.config/sops/age/"
-	local AGE_KEYS_PATH="${AGE_KEYS_DIR}keys.txt"
-
-	# --- Preconditions ---------------------------------------------------------
-	echo "Checking for primary SSH key..."
-	if [[ ! -f "$PRIMARY_KEY_PATH" ]]; then
-		echo "Error: Primary key $PRIMARY_KEY_PATH does not exist." >&2
-		echo "Please generate an ed25519 SSH key before running this script." >&2
-		return 1
-	fi
-	echo "Primary SSH key found."
-
-	# --- Check for existing files and set generation flag --------------------
-	local MISSING_FILES=false
-	if [[ ! -f "$SOPS_KEY_PATH" || ! -f "$AGE_KEYS_PATH" ]]; then
-		MISSING_FILES=true
-	fi
-
-	if [[ "$MISSING_FILES" = false ]]; then
-		echo "All keys and configuration files are already in place. Nothing to do."
-		trap - ERR
-		return 0
-	fi
-
-	# --- Key Generation --------------------------------------------------------
-	echo "One or more key files are missing. Starting generation process..."
-
-	# Generate SOPS key if missing
-	if [[ ! -f "$SOPS_KEY_PATH" ]]; then
-		echo "... $SOPS_KEY_PATH is missing, generating..."
-		echo "This requires sudo privileges."
-		sudo cp "$PRIMARY_KEY_PATH" "$SOPS_KEY_PATH"
-		echo "Successfully created $SOPS_KEY_PATH."
-	else
-		echo "... $SOPS_KEY_PATH already exists."
-	fi
-
-	# Generate age key file if missing
-	if [[ ! -f "$AGE_KEYS_PATH" ]]; then
-		echo "... $AGE_KEYS_PATH is missing, generating..."
-		if ! command -v ssh-to-age &>/dev/null; then
-			echo "Error: ssh-to-age command not found. Please install it to proceed." >&2
-			return 1
-		fi
-		mkdir -p "$AGE_KEYS_DIR"
-		# Generate the age public key from the corresponding public SSH key
-		ssh-to-age <"${PRIMARY_KEY_PATH}.pub" >"$AGE_KEYS_PATH"
-		echo "Successfully created $AGE_KEYS_PATH."
-	else
-		echo "... $AGE_KEYS_PATH already exists."
-	fi
-
-	# --- Fix ownership & permissions ------------------------------------------
-	echo "Setting permissions and ownership for local keys..."
-	# Use sudo for the system-wide key
-	sudo chown root:root "$SOPS_KEY_PATH"
-	sudo chmod 600 "$SOPS_KEY_PATH"
-
-	# Set permissions for user-specific keys and directories
-	chown -R "${USER}:users" "${HOME}/.config/sops"
-	chmod 700 "$AGE_KEYS_DIR"
-	chmod 600 "$AGE_KEYS_PATH"
-
-	# Ensure .ssh directory permissions are correct as a baseline
-	chmod 700 "${HOME}/.ssh"
-	chmod 600 "${HOME}/.ssh/id_ed25519"
-	chmod 644 "${HOME}/.ssh/id_ed25519.pub"
-
-	echo "Key installation and setup completed."
-	trap - ERR
-	return 0
-}
-# ---------------------------------------------------------------------------
 
 #######################################################
 # Set the ultimate amazing command prompt
