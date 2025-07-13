@@ -85,6 +85,29 @@ in {
           method = "auto";
         };
       };
+      "iocto_guest" = {
+        connection = {
+          id = "iocto_guest";
+          type = "wifi";
+          autoconnect = true;
+        };
+
+        wifi = {
+          ssid = "iocto_guest";
+          mode = "infrastructure";
+        };
+
+        wifi-security = {
+          key-mgmt = "wpa-psk";
+          psk = "$IOCTO_WIFI_PSK"; # substituted from env file
+        };
+
+        ipv4 = {method = "auto";};
+        ipv6 = {
+          addr-gen-mode = "default";
+          method = "auto";
+        };
+      };
     };
   };
 
