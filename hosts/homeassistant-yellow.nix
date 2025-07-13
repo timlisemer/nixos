@@ -123,12 +123,17 @@
       autoStart = true;
 
       autoRemoveOnStop = false; # prevent implicit --rm
-      extraOptions = ["--network=docker-network" "--cap-add=NET_ADMIN"];
+      extraOptions = [
+        "--network=docker-network"
+        "--cap-add=NET_ADMIN"
+      ];
 
       ports = [
         "53:53/tcp"
         "53:53/udp"
         "8081:80/tcp" # Map to 8081 to avoid conflict with Traefik on port 80
+        "67:67/udp" # DHCP
+        "4711:4711/udp" # FTL metrics
       ];
 
       volumes = [
@@ -141,7 +146,23 @@
       ];
 
       environment = {
-        TZ = "Europe/Berlin"; # Adjust to your timezone
+        TZ = "Europe/London";
+        HOST_OS = "Unraid";
+        HOST_HOSTNAME = "Tim-Server";
+        HOST_CONTAINERNAME = "pihole";
+        VIRTUAL_HOST = "pihole.local.yakweide.de";
+        WEB_BIND_ADDR = "10.0.0.2";
+        WEB_PORT = "8086";
+        DNS_FQDN_REQUIRED = "true";
+        DNSSEC = "true";
+        IPv6 = "True";
+        DNSMASQ_LISTENING = "all";
+        DNSMASQ_USER = "pihole";
+        WEBUIBOXEDLAYOUT = "boxed";
+        REV_SERVER = "true";
+        REV_SERVER_CIDR = "10.0.0.0/8";
+        REV_SERVER_TARGET = "10.0.0.1";
+        REV_SERVER_DOMAIN = "fritz.box";
         PIHOLE_DNS_ = "8.8.8.8;8.8.4.4;1.1.1.1;1.0.0.1;2001:4860:4860::8888;2001:4860:4860::8844;2606:4700:4700::1111;2606:4700:4700::1001";
       };
     };

@@ -179,7 +179,7 @@ in {
     nodejs
   ];
 
-  systemd.services."docker-network-docker-network" = {
+  systemd.services."docker-network-create" = {
     description = "Ensure the custom Docker bridge docker-network exists";
     after = ["docker.service"];
     wants = ["docker.service"];

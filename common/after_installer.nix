@@ -171,68 +171,196 @@ in {
       (pkgs.writeShellScriptBin "restic_size" ''
         #! /usr/bin/env bash
         set -euo pipefail
+
+        # Color definitions
+        RED='\033[0;31m'
+        GREEN='\033[0;32m'
+        BLUE='\033[0;34m'
+        BOLD='\033[1m'
+        NC='\033[0m' # No Color
+
+        echo_info() { echo -e "''${BLUE}''${BOLD}[INFO]''${NC} $1"; }
+        echo_success() { echo -e "''${GREEN}''${BOLD}[SUCCESS]''${NC} $1"; }
+        echo_error() { echo -e "''${RED}''${BOLD}[ERROR]''${NC} $1" >&2; }
+
+        ENV_FILE="/run/secrets/restic_environment"
+        REPO_FILE="/run/secrets/restic_repo_base"
+        REPO="$(sudo cat "$REPO_FILE")/$(hostname -s)"
+
         if [[ $# -ne 1 ]]; then
-          echo "Usage: restic_size <path>" >&2
+          echo_error "Usage: restic_size <path>"
           exit 1
         fi
-        CHECK="$(realpath "$1")"
-        if ! restic snapshots --json --path "$CHECK" >/dev/null 2>&1; then
-          echo "Path '$CHECK' is not present in any snapshot." >&2
+        CHECK="$(sudo realpath "$1")"
+        echo_info "Checking size for path: ''${BOLD}$CHECK''${NC}"
+
+        echo_info "Verifying if path exists in snapshots..."
+        if ! sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+             restic --repo "$REPO" --password-file /run/secrets/restic_password \
+             snapshots --json --path "$CHECK" >/dev/null 2>&1; then
+          echo_error "Path '$CHECK' is not present in any snapshot."
           exit 1
         fi
-        BYTES=$(restic stats latest --mode raw-data --json --path "$CHECK" | jq '.total_size')
-        echo "$CHECK: $(numfmt --to=iec --suffix=B "$BYTES")"
+        echo_success "Path found in snapshots."
+
+        echo_info "Calculating size..."
+        BYTES=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+                 restic --repo "$REPO" --password-file /run/secrets/restic_password \
+                 stats latest --mode raw-data --json --path "$CHECK" \
+                 | jq '.total_size')
+        echo_success "$CHECK: ''${BOLD}$(numfmt --to=iec --suffix=B "$BYTES")''${NC}"
       '')
 
       # List every unique path stored in the repo together with its size
       (pkgs.writeShellScriptBin "restic_list" ''
         #! /usr/bin/env bash
         set -euo pipefail
-        restic snapshots --json \
+
+        # Color definitions
+        RED='\033[0;31m'
+        GREEN='\033[0;32m'
+        BLUE='\033[0;34m'
+        BOLD='\033[1m'
+        NC='\033[0m' # No Color
+
+        echo_info() { echo -e "''${BLUE}''${BOLD}[INFO]''${NC} $1"; }
+        echo_success() { echo -e "''${GREEN}''${BOLD}[SUCCESS]''${NC} $1"; }
+        echo_error() { echo -e "''${RED}''${BOLD}[ERROR]''${NC} $1" >&2; }
+
+        ENV_FILE="/run/secrets/restic_environment"
+        REPO_FILE="/run/secrets/restic_repo_base"
+        REPO="$(sudo cat "$REPO_FILE")/$(hostname -s)"
+
+        echo_info "Listing all unique paths in the repository..."
+
+        sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+          restic --repo "$REPO" --password-file /run/secrets/restic_password \
+          snapshots --json \
           | jq -r '.[] | .paths[]' \
           | sort -u \
           | while read -r p; do
+              echo_info "Processing path: ''${BOLD}$p''${NC}"
               restic_size "$p"
             done
+
+        echo_success "Listing complete."
       '')
 
-      # Restore the latest snapshot of PATH into /tmp/restic…
+      # Restore the latest snapshot of PATH into /tmp/restic/partial…
       (pkgs.writeShellScriptBin "restic_restore_to_tmp" ''
         #! /usr/bin/env bash
         set -euo pipefail
-        if [[ $# -ne 1 ]]; then
-          echo "Usage: restic_restore_to_tmp <path>" >&2
+
+        # Color definitions
+        RED='\033[0;31m'
+        GREEN='\033[0;32m'
+        BLUE='\033[0;34m'
+        BOLD='\033[1m'
+        NC='\033[0m' # No Color
+
+        echo_info() { echo -e "''${BLUE}''${BOLD}[INFO]''${NC} $1"; }
+        echo_success() { echo -e "''${GREEN}''${BOLD}[SUCCESS]''${NC} $1"; }
+        echo_error() { echo -e "''${RED}''${BOLD}[ERROR]''${NC} $1" >&2; }
+
+        ENV_FILE="/run/secrets/restic_environment"
+        REPO_FILE="/run/secrets/restic_repo_base"
+        REPO="$(sudo cat "$REPO_FILE")/$(hostname -s)"
+        HOST="$(hostname -s)"
+
+        if [[ $# -eq 0 ]]; then
+          echo_info "No path argument provided, restoring all paths for ''${BOLD}$HOST''${NC}. Use ''${BOLD}restic_list''${NC} for a full overview of all paths."
+          DEST="/tmp/restic/complete"
+          echo_info "Preparing destination: ''${BOLD}$DEST''${NC}"
+          rm -rf "$DEST"
+          mkdir -p "$DEST"
+
+          echo_info "Starting full restore..."
+          sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+            restic --repo "$REPO" --password-file /run/secrets/restic_password \
+            restore latest --target "$DEST"
+
+          echo_success "Full restore finished at ''${BOLD}$DEST''${NC}"
+          exit 0
+        elif [[ $# -ne 1 ]]; then
+          echo_error "Usage: restic_restore_to_tmp <path>"
           exit 1
         fi
-        SRC="$(realpath "$1")"
-        if ! restic snapshots --json --path "$SRC" >/dev/null 2>&1; then
-          echo "Path '$SRC' is not present in any snapshot." >&2
+
+        SRC="$(sudo realpath "$1")"
+        echo_info "Restoring path: ''${BOLD}$SRC''${NC}"
+
+        echo_info "Verifying if path exists in snapshots..."
+        if ! sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+             restic --repo "$REPO" --password-file /run/secrets/restic_password \
+             snapshots --json --path "$SRC" >/dev/null 2>&1; then
+          echo_error "Path '$SRC' is not present in any snapshot."
           exit 1
         fi
-        DEST="/tmp/restic$SRC"
-        echo "Restoring to $DEST"
+        echo_success "Path found in snapshots."
+
+        DEST="/tmp/restic/partial"
+        echo_info "Preparing destination: ''${BOLD}$DEST''${NC}"
         rm -rf "$DEST"
         mkdir -p "$DEST"
-        restic restore latest --path "$SRC" --target "$DEST"
-        echo "Restore finished at $DEST"
+
+        echo_info "Starting restore..."
+        sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+          restic --repo "$REPO" --password-file /run/secrets/restic_password \
+          restore latest --path "$SRC" --target "$DEST"
+
+        echo_success "Restore finished at ''${BOLD}$DEST''${NC}"
       '')
 
       # --- restic_start_backup -------------------------------------------------
       (pkgs.writeShellScriptBin "restic_start_backup" ''
         #! /usr/bin/env bash
         set -euo pipefail
+
+        # Color definitions
+        RED='\033[0;31m'
+        GREEN='\033[0;32m'
+        BLUE='\033[0;34m'
+        BOLD='\033[1m'
+        NC='\033[0m' # No Color
+
+        echo_info() { echo -e "''${BLUE}''${BOLD}[INFO]''${NC} $1"; }
+        echo_success() { echo -e "''${GREEN}''${BOLD}[SUCCESS]''${NC} $1"; }
+        echo_error() { echo -e "''${RED}''${BOLD}[ERROR]''${NC} $1" >&2; }
+
         host="$(hostname -s)"
-        unit="restic-backups-${host}.service"
-        echo "Starting backup unit: $unit"
-        sudo systemctl start "$unit"
+        unit="restic-backups-''${host}.service"
+        echo_info "Starting backup unit: ''${BOLD}$unit''${NC}"
+
+        if sudo systemctl start "$unit"; then
+          echo_success "Backup service started successfully."
+          echo_info "You can follow the logs with: ''${BOLD}restic_logs''${NC}"
+        else
+          echo_error "Failed to start backup service."
+          exit 1
+        fi
       '')
 
       # --- restic_logs ---------------------------------------------------------
       (pkgs.writeShellScriptBin "restic_logs" ''
         #! /usr/bin/env bash
         set -euo pipefail
+
+        # Color definitions
+        RED='\033[0;31m'
+        GREEN='\033[0;32m'
+        BLUE='\033[0;34m'
+        BOLD='\033[1m'
+        NC='\033[0m' # No Color
+
+        echo_info() { echo -e "''${BLUE}''${BOLD}[INFO]''${NC} $1"; }
+        echo_success() { echo -e "''${GREEN}''${BOLD}[SUCCESS]''${NC} $1"; }
+        echo_error() { echo -e "''${RED}''${BOLD}[ERROR]''${NC} $1" >&2; }
+
         unit="restic-backups-$(hostname -s).service"
-        journalctl -u "$unit" -n 100 --follow
+        echo_info "Following logs for unit: ''${BOLD}$unit''${NC}"
+        echo_info "Showing last 100 lines and following..."
+
+        sudo journalctl -u "$unit" -n 100 --follow
       '')
 
       # --- install_keys ---------------------------------------------------------
@@ -304,6 +432,7 @@ in {
         echo "→ copying SSH key…"
         ssh "$REMOTE_USER" 'mkdir -p ~/.ssh'
         scp "$KEY_PATH" "$REMOTE_USER:~/.ssh/id_ed25519"
+        scp "$KEY_PATH".pub "$REMOTE_USER:~/.ssh/id_ed25519.pub"
 
         echo "→ running install_keys on $HOST…"
         ssh "$REMOTE_USER" 'bash install_keys'
