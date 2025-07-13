@@ -5,8 +5,11 @@
   home-manager,
   lib,
   users,
+  hostName,
+  hostIps,
   ...
 }: let
+  dockerBin = "${pkgs.docker}/bin/docker";
 in {
   # imports
   imports = [
@@ -179,21 +182,45 @@ in {
     nodejs
   ];
 
-  systemd.services."docker-network-create" = {
-    description = "Ensure the custom Docker bridge docker-network exists";
-    after = ["docker.service"];
-    wants = ["docker.service"];
-    wantedBy = ["multi-user.target"];
+  networking.hostName = hostName;
 
-    serviceConfig = {
-      Type = "oneshot";
-    };
+  networking.extraHosts =
+    lib.concatStringsSep "\n"
+    (lib.mapAttrsToList (name: ip: "${ip} ${name}") hostIps);
+
+  ##########################################################################
+  ## Docker bridge network creation – run once at boot, ensure it exists ##
+  ##########################################################################
+  systemd.services.docker-network-create = {
+    description = "Ensure docker bridge network “docker-network” exists";
+    after = ["docker.service"];
+    wantedBy = ["docker.service" "multi-user.target"];
+
+    serviceConfig = {Type = "oneshot";};
 
     script = ''
-      # create the bridge if it isn't there yet
-      ${pkgs.docker}/bin/docker network inspect docker-network \
-        >/dev/null 2>&1 || \
-      ${pkgs.docker}/bin/docker network create docker-network
+      set -euo pipefail
+
+      # --- Wait until Docker answers -------------------------------------------------
+      for i in {1..30}; do
+        if ${dockerBin} info >/dev/null 2>&1; then
+          break
+        fi
+        sleep 1
+      done || {
+        echo "Docker daemon did not become ready within 30 s" >&2
+        exit 1
+      }
+
+      # --- Create network if missing -------------------------------------------------
+      if ! ${dockerBin} network inspect docker-network >/dev/null 2>&1; then
+        echo "Creating bridge network docker-network"
+        ${dockerBin} network create \
+          --driver bridge \
+          docker-network
+      else
+        echo "Bridge network docker-network already exists"
+      fi
     '';
   };
 

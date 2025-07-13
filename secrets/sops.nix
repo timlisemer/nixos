@@ -17,6 +17,7 @@
   sops.secrets.vaultwardenEnv = {};
   sops.secrets.traefikENV = {};
   sops.secrets.yakweideENV = {};
+  sops.secrets.piholePWD = {};
   sops.secrets.immichENV = {};
   sops.secrets.wifiENV = {};
   sops.secrets.cloudflare_rclone = {};

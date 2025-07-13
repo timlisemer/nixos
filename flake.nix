@@ -65,7 +65,7 @@
     };
   };
 
-  # Optional: Binary cache for the flake
+  # Optional: Binary cache for the nixos-raspberrypi flake
   nixConfig = {
     extra-substituters = ["https://nixos-raspberrypi.cachix.org"];
     extra-trusted-public-keys = [
@@ -93,14 +93,18 @@
     ...
   }: let
     # ────────────────────────────────────────────────────────────────
-    # Set IP Addresses for each host here
+    # Set IP Addresses for each host here, this will also be imported into pihole locale dns
     # ────────────────────────────────────────────────────────────────
     hostIps = {
-      tim-laptop = "10.0.0.25";
-      tim-pc = "10.0.0.3";
-      tim-server = "142.132.234.128";
-      tim-pi4 = "10.0.0.76";
-      homeassistant-yellow = "10.0.0.2";
+      "tim-laptop" = "10.0.0.25";
+      "tim-pc" = "10.0.0.3";
+      "tim-server" = "142.132.234.128";
+      "tim-pi4" = "10.0.0.76";
+      "homeassistant-yellow" = "10.0.0.2";
+      "traefik.local.yakweide.de" = "10.0.0.2";
+      "pihole.local.yakweide.de" = "10.0.0.2";
+      "homeassistant.local.yakweide.de" = "10.0.0.2";
+      # add more hosts here …
     };
 
     # ────────────────────────────────────────────────────────────────
@@ -114,7 +118,7 @@
         hashedPassword = "$6$fhbC3/uvj6gKqkYC$Kh4HKuYYbKdaag/D7yWP7VZAIdS9oGWudxiyy1HPsH0mUaTEf6X/QzNOM6Su0RhzvT4fXKNrj3gFt.iGpKGIj0"; # sha-512 crypt
         authorizedKeys = [
           "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEae4h0Uk6x/lrmw0PZv/7GfWyLuEAVoc70AC4ykyFtX TimLisemer"
-          # add more keys freely …
+          # add more keys here …
         ];
       };
       # add more people here …
@@ -143,6 +147,7 @@
             nixos-raspberrypi
             users
             hostName
+            hostIps
             backupPaths
             ;
 
@@ -154,15 +159,6 @@
           disko.nixosModules.disko
           flatpaks.nixosModule
           vscode-server.nixosModules.default
-
-          # Make the mapping (+ /etc/hosts entries) available everywhere
-          ({lib, ...}: {
-            networking.hostName = hostName;
-
-            networking.extraHosts =
-              lib.concatStringsSep "\n"
-              (lib.mapAttrsToList (name: ip: "${ip} ${name}") hostIps);
-          })
 
           (import hostFile)
         ];
@@ -191,7 +187,6 @@
       };
 
       tim-server = self.mkSystem {
-        # nix run nixpkgs#nixos-anywhere -- --flake ./#tim-server root@142.132.234.128
         hostFile = ./hosts/tim-server.nix;
         system = "x86_64-linux";
         disks = ["/dev/sda"];
@@ -238,12 +233,6 @@
               lib,
               ...
             }: {
-              networking.hostName = hostName;
-
-              networking.extraHosts =
-                lib.concatStringsSep "\n"
-                (lib.mapAttrsToList (name: ip: "${ip} ${name}") hostIps);
-
               system.nixos.tags = let
                 cfg = config.boot.loader.raspberryPi;
               in [
@@ -256,8 +245,8 @@
 
           specialArgs = {
             hostName = hostName;
-            backupPaths = backupPaths;
-            inherit inputs home-manager adwaita_hypercursor self nixos-raspberrypi users;
+            backupPaths = backupPaths ++ (let v = "/mnt/docker-data/volumes/"; in ["${v}traefik" "${v}pihole"]);
+            inherit inputs home-manager adwaita_hypercursor self nixos-raspberrypi users hostIps;
           };
         };
 

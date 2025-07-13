@@ -7,6 +7,7 @@
   nixos-raspberrypi,
   lib,
   users,
+  hostIps,
   ...
 }: {
   # Import the common configuration shared across all machines
@@ -64,10 +65,10 @@
     # TCP ports to open
     allowedTCPPorts = [
       22 # SSH
-      443 # HTTPS / Traefik
-      80 # HTTP / Traefik
-      8085 # Traefik dashboard
       53 # Pi-hole DNS
+      80 # HTTP / Traefik
+      443 # HTTPS / Traefik
+      8080 # Traefik dashboard
       8081 # Pi-hole web UI
     ];
 
@@ -94,7 +95,7 @@
       ports = [
         "443:443"
         "80:80"
-        "8085:8080" # Traefik dashboard
+        "8080:8080" # Traefik dashboard
       ];
 
       volumes = [
@@ -118,13 +119,19 @@
     # -------------------------------------------------------------------------
     # pihole
     # -------------------------------------------------------------------------
-    pihole = {
-      image = "pihole/pihole:latest";
+    pihole = let
+      extraHosts =
+        builtins.concatStringsSep ";"
+        (lib.attrsets.mapAttrsToList
+          (name: ip: "${ip} ${name}")
+          hostIps);
+    in {
+      image = "pihole/pihole";
       autoStart = true;
 
       autoRemoveOnStop = false; # prevent implicit --rm
       extraOptions = [
-        "--network=docker-network"
+        "--network=host" # Use host networking for Pi-hole
         "--cap-add=NET_ADMIN"
       ];
 
@@ -142,28 +149,26 @@
       ];
 
       environmentFiles = [
-        "/run/secrets/piholeENV" # Assuming WEBPASSWORD is set here
+        "/run/secrets/piholePWD"
       ];
 
       environment = {
         TZ = "Europe/London";
-        HOST_OS = "Unraid";
-        HOST_HOSTNAME = "Tim-Server";
-        HOST_CONTAINERNAME = "pihole";
-        VIRTUAL_HOST = "pihole.local.yakweide.de";
-        WEB_BIND_ADDR = "10.0.0.2";
-        WEB_PORT = "8086";
-        DNS_FQDN_REQUIRED = "true";
-        DNSSEC = "true";
-        IPv6 = "True";
-        DNSMASQ_LISTENING = "all";
         DNSMASQ_USER = "pihole";
-        WEBUIBOXEDLAYOUT = "boxed";
-        REV_SERVER = "true";
-        REV_SERVER_CIDR = "10.0.0.0/8";
-        REV_SERVER_TARGET = "10.0.0.1";
-        REV_SERVER_DOMAIN = "fritz.box";
-        PIHOLE_DNS_ = "8.8.8.8;8.8.4.4;1.1.1.1;1.0.0.1;2001:4860:4860::8888;2001:4860:4860::8844;2606:4700:4700::1111;2606:4700:4700::1001";
+
+        # ---- Pi-hole v6 settings ----
+        FTLCONF_dns_hosts = extraHosts;
+        FTLCONF_dns_upstreams =
+          "8.8.8.8;8.8.4.4;1.1.1.1;1.0.0.1;"
+          + "2001:4860:4860::8888;2001:4860:4860::8844;"
+          + "2606:4700:4700::1111;2606:4700:4700::1001";
+        FTLCONF_webserver_port = "10.0.0.2:8081o,[::]:8081o";
+        FTLCONF_webserver_webhome = "/";
+        FTLCONF_dns_domainNeeded = "true";
+        FTLCONF_dns_dnssec = "true";
+        FTLCONF_dns_listeningMode = "all";
+        FTLCONF_dns_revServers = "true,10.0.0.0/8,10.0.0.1,fritz.box";
+        FTLCONF_dns_domain = "fritz.box";
       };
     };
   };
