@@ -13,11 +13,11 @@
   # Import the common configuration shared across all machines
   imports = [
     # (import ../common/disko.nix {inherit disks;})
-    #../common/after_installer.nix
+    ../common/after_installer.nix
     ./rpi-hardware-configuration.nix
     ../common/common.nix
-    #./packages/system-packages.nix
-    #../packages/dependencies.nix
+    ../packages/system-packages.nix
+    ../packages/dependencies.nix
     (import ../common/home-manager.nix {
       inherit config pkgs inputs home-manager lib users;
       isDesktop = false;
