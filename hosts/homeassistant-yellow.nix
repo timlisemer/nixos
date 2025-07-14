@@ -59,6 +59,12 @@
     };
   };
 
+  networking.networkmanager.dns = "none"; # Prevents NetworkManager from overwriting /etc/resolv.conf
+  networking.nameservers = [
+    "127.0.0.1" # Primary: localhost - intentionally set to Pi-hole
+    "1.1.1.1" # Backup: Cloudflare DNS
+  ];
+
   networking.firewall = lib.mkForce {
     enable = true;
 
