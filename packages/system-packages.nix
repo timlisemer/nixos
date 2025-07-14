@@ -6,6 +6,7 @@
   environment.systemPackages = with pkgs; [
     adw-gtk3
     alejandra
+    dbus
     nautilus-open-any-terminal
     syncthing
     vaapiVdpau

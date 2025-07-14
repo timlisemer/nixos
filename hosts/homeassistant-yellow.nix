@@ -59,10 +59,11 @@
     };
   };
 
-  networking.networkmanager.dns = "none"; # Prevents NetworkManager from overwriting /etc/resolv.conf
-  networking.nameservers = [
+  networking.networkmanager.insertNameservers = [
     "127.0.0.1" # Primary: localhost - intentionally set to Pi-hole
     "1.1.1.1" # Backup: Cloudflare DNS
+    "2606:4700:4700::1111" # Cloudflare IPv6
+    "2001:4860:4860::8888" # Google DNS IPv6
   ];
 
   networking.firewall = lib.mkForce {
@@ -189,8 +190,7 @@
       autoRemoveOnStop = false; # prevent implicit --rm
       extraOptions = [
         "--network=host"
-        "--device=/dev/ttyACM0:/dev/ttyACM0"
-        "--device=/dev/dri:/dev/dri"
+        "--device=/dev/dri:/dev/dri" # GPU access
       ];
 
       ports = [
@@ -200,6 +200,7 @@
       volumes = [
         "/mnt/docker-data/volumes/homeassistant/config:/config:rw"
         "/mnt/docker-data/volumes/homeassistant/media:/media:rw"
+        "/run/dbus:/run/dbus:ro" # DBus access, needed for some integrations for example Bluetooth
       ];
 
       #environmentFiles = [

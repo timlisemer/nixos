@@ -42,6 +42,13 @@
 
   environment.variables.SERVER = "1";
 
+  networking.networkmanager.insertNameservers = [
+    "1.1.1.1" # Primary: Cloudflare DNS
+    "8.8.8.8" # Backup: Google DNS
+    "2606:4700:4700::1111" # Cloudflare IPv6
+    "2001:4860:4860::8888" # Google DNS IPv6
+  ];
+
   networking.firewall = lib.mkForce {
     enable = true;
 
