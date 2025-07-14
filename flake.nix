@@ -103,7 +103,7 @@
       "homeassistant-yellow" = "10.0.0.2";
       "traefik.local.yakweide.de" = "10.0.0.2";
       "pihole.local.yakweide.de" = "10.0.0.2";
-      "homeassistant.local.yakweide.de" = "10.0.0.2";
+      "homeassistant.yakweide.de" = "10.0.0.2";
       # add more hosts here …
     };
 

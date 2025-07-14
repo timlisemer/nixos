@@ -70,6 +70,7 @@
       443 # HTTPS / Traefik
       8080 # Traefik dashboard
       8081 # Pi-hole web UI
+      8123 # HomeAssistant
     ];
 
     # UDP ports to open
@@ -170,6 +171,36 @@
         FTLCONF_dns_revServers = "true,10.0.0.0/8,10.0.0.1,fritz.box";
         FTLCONF_dns_domain = "fritz.box";
       };
+    };
+
+    # -------------------------------------------------------------------------
+    # homeassistant
+    # -------------------------------------------------------------------------
+    homeassistant = {
+      image = "ghcr.io/home-assistant/home-assistant:stable";
+      autoStart = true;
+
+      autoRemoveOnStop = false; # prevent implicit --rm
+      extraOptions = [
+        "--network=host"
+        "--device=/dev/ttyACM0:/dev/ttyACM0"
+        "--device=/dev/dri:/dev/dri"
+      ];
+
+      ports = [
+        "8123:8123" # Home Assistant
+      ];
+
+      volumes = [
+        "/mnt/docker-data/volumes/homeassistant/config:/config:rw"
+        "/mnt/docker-data/volumes/homeassistant/media:/media:rw"
+      ];
+
+      #environmentFiles = [
+      #  "/run/secrets/homeassistantENV"
+      #];
+
+      environment.TZ = "Europe/Berlin";
     };
   };
 }
