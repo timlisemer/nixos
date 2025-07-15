@@ -7,6 +7,22 @@
   hostName,
   ...
 }: let
+  getLocation = path: let
+    cleanParts = lib.filter (x: x != "") (lib.splitString "/" path);
+  in
+    if (lib.hasPrefix "/home/" path) && (builtins.length cleanParts >= 2) && (builtins.elemAt cleanParts 0 == "home")
+    then let
+      username = builtins.elemAt cleanParts 1;
+      subParts = lib.drop 2 cleanParts;
+      subPathStr =
+        if subParts == []
+        then ""
+        else "/" + lib.concatStringsSep "_" subParts;
+    in
+      "user_home/" + username + subPathStr
+    else if (lib.hasPrefix "/mnt/docker-data/volumes/" path) && (builtins.length cleanParts >= 4) && (builtins.elemAt cleanParts 0 == "mnt") && (builtins.elemAt cleanParts 1 == "docker-data") && (builtins.elemAt cleanParts 2 == "volumes")
+    then "docker_volume/" + (lib.concatStringsSep "_" (lib.drop 3 cleanParts))
+    else "system";
 in {
   # imports
   imports = [
@@ -153,17 +169,32 @@ in {
   };
 
   # ─── Restic Backup Configuration ────────────────────────────────────────────────
-  # ─── Restic Backup Configuration ────────────────────────────────────────────────
-  services.restic.backups = lib.listToAttrs (builtins.map (path: {
+  sops.templates = lib.listToAttrs (builtins.map (path: let
+      location = getLocation path;
       name = "backup-${hostName}-${lib.replaceStrings ["/"] ["-"] (lib.removePrefix "/" path)}";
+    in {
+      name = "restic_repo_${name}";
+      value = {
+        owner = "root";
+        mode = "0400";
+        content = "${config.sops.placeholder."restic_repo_base"}/${hostName}/${location}";
+        restartUnits = ["restic-backups-${name}.service"];
+      };
+    })
+    backupPaths);
+  services.restic.backups = lib.listToAttrs (builtins.map (path: let
+      location = getLocation path;
+      name = "backup-${hostName}-${lib.replaceStrings ["/"] ["-"] (lib.removePrefix "/" path)}";
+    in {
+      name = name;
       value = {
         initialize = true;
         paths = [path];
         passwordFile = config.sops.secrets.restic_password.path;
         environmentFile = config.sops.secrets.restic_environment.path;
-        repositoryFile = config.sops.templates.restic_repo.path;
+        repositoryFile = config.sops.templates."restic_repo_${name}".path;
         pruneOpts = ["--keep-daily 7" "--keep-weekly 4" "--keep-monthly 12"];
-        timerConfig.OnCalendar = "06:30";
+        timerConfig.OnCalendar = "07:30";
         timerConfig.Persistent = false;
       };
     })
@@ -431,7 +462,7 @@ in {
         KEY_PATH="$HOME/.ssh/id_ed25519"
         LOCAL_INSTALL_KEYS_BIN="$(command -v install_keys || true)"
 
-        [[ -f "$KEY_PATH"          ]] || { echo "Missing $KEY_PATH" >&2; exit 1; }
+        [[ -f "$KEY_PATH" ]] || { echo "Missing $KEY_PATH" >&2; exit 1; }
         [[ -n "$LOCAL_INSTALL_KEYS_BIN" ]] || { echo "install_keys not in \$PATH" >&2; exit 1; }
 
         echo "→ copying SSH key…"
