@@ -6,6 +6,7 @@
   environment.systemPackages = with pkgs; [
     adw-gtk3
     alejandra
+    awscli2
     dbus
     nautilus-open-any-terminal
     syncthing

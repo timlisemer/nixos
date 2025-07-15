@@ -124,7 +124,14 @@
       # add more people here …
     };
 
-    backupPaths = ["/home/tim/Downloads"];
+    userBackupDirs = ["Coding" "Downloads" "Desktop" "Documents" "Pictures" "Videos" "Music" "Public" "Templates"];
+    userDotFiles = [".config" ".mozilla" ".bash_history" ".steam" ".vscode-server" ".arduinoIDE" ".npm" ".vscode"];
+    backupPaths = builtins.concatLists (builtins.map (
+      username: let
+        h = "/home/${username}/";
+      in
+        (map (dir: "${h}${dir}") userBackupDirs) ++ (map (dir: "${h}${dir}") userDotFiles)
+    ) (builtins.attrNames users));
   in {
     mkSystem = {
       hostFile,
@@ -245,7 +252,7 @@
 
           specialArgs = {
             hostName = hostName;
-            backupPaths = backupPaths ++ (let v = "/mnt/docker-data/volumes/"; in ["${v}traefik" "${v}pihole"]);
+            backupPaths = backupPaths ++ (let v = "/mnt/docker-data/volumes/"; in ["${v}traefik" "${v}pihole" "${v}homeassistant"]);
             inherit inputs home-manager adwaita_hypercursor self nixos-raspberrypi users hostIps;
           };
         };

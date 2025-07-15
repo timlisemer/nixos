@@ -153,16 +153,21 @@ in {
   };
 
   # ─── Restic Backup Configuration ────────────────────────────────────────────────
-  services.restic.backups.${hostName} = {
-    initialize = true;
-    paths = backupPaths;
-    passwordFile = config.sops.secrets.restic_password.path;
-    environmentFile = config.sops.secrets.restic_environment.path;
-    repositoryFile = config.sops.templates.restic_repo.path; # hides R2 URL
-    pruneOpts = ["--keep-daily 7" "--keep-weekly 4" "--keep-monthly 12"];
-    timerConfig.OnCalendar = "06:30";
-    timerConfig.Persistent = false; # don't run on boot or rebuild
-  };
+  # ─── Restic Backup Configuration ────────────────────────────────────────────────
+  services.restic.backups = lib.listToAttrs (builtins.map (path: {
+      name = "backup-${hostName}-${lib.replaceStrings ["/"] ["-"] (lib.removePrefix "/" path)}";
+      value = {
+        initialize = true;
+        paths = [path];
+        passwordFile = config.sops.secrets.restic_password.path;
+        environmentFile = config.sops.secrets.restic_environment.path;
+        repositoryFile = config.sops.templates.restic_repo.path;
+        pruneOpts = ["--keep-daily 7" "--keep-weekly 4" "--keep-monthly 12"];
+        timerConfig.OnCalendar = "06:30";
+        timerConfig.Persistent = false;
+      };
+    })
+    backupPaths);
 
   # Restic helper scripts
   environment.systemPackages = with pkgs;
