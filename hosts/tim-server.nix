@@ -55,24 +55,17 @@
     # TCP ports to open
     allowedTCPPorts = [
       22 # SSH
-      443 # HTTPS / Traefik
-      25565 # Minecraft server
-      4743 # Vaultwarden
-      8384 # Syncthing UI
-      9001 # Portainer agent
-      2283 # Immich server
       80 # Traefik HTTP
-      8085 # Traefik dashboard
-      22000 # Syncthing
-      22067 # Syncthing
-      21027 # Syncthing
+      443 # HTTPS / Traefik
+      2283 # Immich server
+      4743 # Vaultwarden
+      8123 # Home Assistant
+      9001 # Portainer agent
+      25565 # Minecraft server
     ];
 
     # UDP ports to open
     allowedUDPPorts = [
-      21027 # Syncthing
-      22000 # Syncthing
-      22067 # Syncthing
     ];
 
     # ICMP (ping) is allowed separately

@@ -21,6 +21,38 @@ if [ "${WSL:-0}" = "1" ]; then
 	alias code='wslcode'
 fi
 
+# --- Override 'code' for native vs SSH sessions ----------
+code() {
+	if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then
+		local remote_host="${USER}@$(hostname)"
+		local args=()
+		if [[ $# -eq 0 ]]; then
+			args=(".")
+		else
+			local unique_dirs=()
+			local files=()
+			for p in "$@"; do
+				abs="$(realpath "$p")"
+				if [[ -d "$abs" ]]; then
+					args+=("$abs")
+				else
+					dir="$(dirname "$abs")"
+					if [[ ! " ${unique_dirs[*]} " =~ " ${dir} " ]]; then
+						unique_dirs+=("$dir")
+						args+=("$dir")
+					fi
+					files+=("$abs")
+				fi
+			done
+			args+=("${files[@]}")
+		fi
+		echo -e "\033[1;37mTo open in host VS Code:\033[0m \033[1;34mcode --remote ssh-remote+${remote_host} ${args[*]}\033[0m"
+	else
+		command code "$@"
+	fi
+}
+# -------------------------------------------------------------------------
+
 if [[ -n "$HYPRLAND_INSTANCE_SIGNATURE" ]]; then
 	alias logout='hyprctl dispatch exit'
 else
