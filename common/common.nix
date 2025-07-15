@@ -217,6 +217,8 @@ in {
         echo "Creating bridge network docker-network"
         ${dockerBin} network create \
           --driver bridge \
+          --subnet 172.18.0.0/16 \
+          --gateway 172.18.0.1 \
           docker-network
       else
         echo "Bridge network docker-network already exists"

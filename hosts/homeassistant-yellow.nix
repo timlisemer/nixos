@@ -98,7 +98,7 @@
       autoStart = true;
 
       autoRemoveOnStop = false; # prevent implicit --rm
-      extraOptions = ["--network=docker-network"];
+      extraOptions = ["--network=docker-network" "--ip=172.18.0.2"];
 
       ports = [
         "443:443"
