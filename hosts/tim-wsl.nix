@@ -52,4 +52,51 @@
       "tcp://0.0.0.0:2375"
     ];
   };
+
+  environment.shellAliases = {
+    code = lib.mkForce "wslcode";
+  };
+
+  environment.systemPackages = with pkgs;
+    lib.mkAfter [
+      (pkgs.writeShellScriptBin "wslcode" ''
+        #! /usr/bin/env bash
+        set -euo pipefail
+
+        if [[ "''${WSL:-0}" = "0" ]]; then
+          echo "This function is only available from within a wsl environment"
+          exit 1
+        fi
+
+        win_user="$(wslvar USERNAME | tr -d '\r')"
+        vscode="/mnt/c/Users/''${win_user}/AppData/Local/Programs/Microsoft VS Code/Code.exe"
+        if [[ ! -x "$vscode" ]]; then
+          echo "wslcode: VS Code not found at $vscode" >&2
+          exit 1
+        fi
+
+        distro="''${WSL_DISTRO_NAME:-$(wslvar WSL_DISTRO_NAME | tr -d '\r')}"
+        if [[ $# -eq 0 ]]; then
+          set -- .
+        fi
+
+        args=()
+        for p in "$@"; do
+          abs="$(realpath "$p")"
+          uri="vscode-remote://wsl+''${distro}''${abs}"
+          if [[ -d "$abs" ]]; then
+            args+=(--folder-uri "$uri")
+          else
+            args+=(--file-uri "$uri")
+          fi
+        done
+
+        (
+          nohup "$vscode" "''${args[@]}" >/dev/null 2>&1 &
+          disown
+        ) >/dev/null 2>&1
+
+        exit 0
+      '')
+    ];
 }

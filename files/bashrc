@@ -17,42 +17,6 @@ alias nix_clean='sudo nix-collect-garbage -d && sudo nix-store --gc && sudo nix-
 alias git_amend='git add . && git commit --amend --no-edit && git push --force-with-lease'
 alias wake_tim-pc='wol 40:B0:76:DC:79:AA'
 
-if [ "${WSL:-0}" = "1" ]; then
-	alias code='wslcode'
-fi
-
-# --- Override 'code' for native vs SSH sessions ----------
-code() {
-	if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then
-		local remote_host="${USER}@$(hostname)"
-		local args=()
-		if [[ $# -eq 0 ]]; then
-			args=(".")
-		else
-			local unique_dirs=()
-			local files=()
-			for p in "$@"; do
-				abs="$(realpath "$p")"
-				if [[ -d "$abs" ]]; then
-					args+=("$abs")
-				else
-					dir="$(dirname "$abs")"
-					if [[ ! " ${unique_dirs[*]} " =~ " ${dir} " ]]; then
-						unique_dirs+=("$dir")
-						args+=("$dir")
-					fi
-					files+=("$abs")
-				fi
-			done
-			args+=("${files[@]}")
-		fi
-		echo -e "\033[1;37mTo open in host VS Code:\033[0m \033[1;34mcode --remote ssh-remote+${remote_host} ${args[*]}\033[0m"
-	else
-		command code "$@"
-	fi
-}
-# -------------------------------------------------------------------------
-
 if [[ -n "$HYPRLAND_INSTANCE_SIGNATURE" ]]; then
 	alias logout='hyprctl dispatch exit'
 else
@@ -290,51 +254,6 @@ git() {
 }
 
 alias gclean='git clean -fdn'
-
-# --- wslcode: open Windows-side VS Code directly in a WSL window ----------
-wslcode() {
-
-	if [ "${WSL:-0}" = "0" ]; then
-		echo "This function is only available from within a wsl environment"
-		return 1
-	fi
-
-	local win_user distro vscode args abs uri
-
-	win_user=$(wslvar USERNAME | tr -d '\r')
-	vscode="/mnt/c/Users/${win_user}/AppData/Local/Programs/Microsoft VS Code/Code.exe"
-	if [[ ! -x "$vscode" ]]; then
-		echo "wslcode: VS Code not found at $vscode" >&2
-		return 1
-	fi
-
-	distro="${WSL_DISTRO_NAME:-$(wslvar WSL_DISTRO_NAME | tr -d '\r')}"
-
-	if [[ $# -eq 0 ]]; then
-		set -- .
-	fi
-
-	args=()
-	for p in "$@"; do
-		abs="$(realpath "$p")"
-		uri="vscode-remote://wsl+${distro}${abs}"
-		if [[ -d "$abs" ]]; then
-			args+=(--folder-uri "$uri")
-		else
-			args+=(--file-uri "$uri")
-		fi
-	done
-
-	# Start VS Code detached and redirect output to /dev/null
-	(
-		nohup "$vscode" "${args[@]}" >/dev/null 2>&1 &
-		disown
-	) >/dev/null 2>&1
-
-	# Return control immediately
-	return 0
-}
-# -------------------------------------------------------------------------
 
 # --- nixos_generate_iso_image: generate a iso image for NixOS --------
 alias nixos_generate_iso_image='nixos_generate_iso_image'

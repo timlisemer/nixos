@@ -16,6 +16,7 @@
     (modulesPath + "/profiles/qemu-guest.nix")
     (import ../common/disko.nix {inherit disks;})
     ../common/common.nix
+    ../packages/vscode.nix
     ../packages/system-packages.nix
     ../packages/dependencies.nix
     (import ../common/home-manager.nix {
@@ -198,7 +199,7 @@
       autoStart = true;
 
       autoRemoveOnStop = false; # prevent implicit --rm
-      extraOptions = ["--network=docker-network"];
+      extraOptions = ["--network=host"];
 
       ports = [
         "443:443"
