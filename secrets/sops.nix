@@ -39,4 +39,10 @@
     # optional: restart backup unit on change
     restartUnits = ["restic-backups-${hostName}.service"];
   };
+
+  sops.secrets.openvpn_ca = {};
+  sops.secrets.openvpn_extra_certs = {};
+  sops.secrets.openvpn_cert = {};
+  sops.secrets.openvpn_key = {};
+  sops.secrets.openvpn_ta = {};
 }

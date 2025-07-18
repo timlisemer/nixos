@@ -39,10 +39,6 @@
     package = pkgs.nix-ld-rs;
   };
 
-  environment.systemPackages = with pkgs; [
-    wslu
-  ];
-
   # docker context create nixos-wsl --docker "host=tcp://localhost:2375"
   # docker context use nixos-wsl
   virtualisation.docker.daemon.settings = {
@@ -59,6 +55,8 @@
 
   environment.systemPackages = with pkgs;
     lib.mkAfter [
+      wslu
+
       (pkgs.writeShellScriptBin "wslcode" ''
         #! /usr/bin/env bash
         set -euo pipefail

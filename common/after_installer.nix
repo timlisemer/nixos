@@ -34,6 +34,10 @@
     firewall.enable = false;
     networkmanager.enable = true;
 
+    networkmanager.plugins = with pkgs; [
+      networkmanager-openvpn
+    ];
+
     networkmanager.ensureProfiles.environmentFiles = [
       "/run/secrets/wifiENV"
     ];
@@ -100,6 +104,44 @@
         wifi-security = {
           key-mgmt = "wpa-psk";
           psk = "$IOCTO_WIFI_PSK"; # substituted from env file
+        };
+
+        ipv4 = {method = "auto";};
+        ipv6 = {
+          addr-gen-mode = "default";
+          method = "auto";
+        };
+      };
+      "Work-VPN" = {
+        connection = {
+          id = "Work-VPN";
+          type = "vpn";
+          autoconnect = false;
+        };
+
+        vpn = {
+          service-type = "org.freedesktop.NetworkManager.openvpn";
+          connection-type = "password-tls";
+          remote = "vpn1.kr.iocto.com,vpn2.kr.iocto.com";
+          port = "1196";
+          proto-tcp = "no";
+          ca = "/run/secrets/openvpn_ca";
+          extra-certs = "/run/secrets/openvpn_extra_certs";
+          cert = "/run/secrets/openvpn_cert";
+          key = "/run/secrets/openvpn_key";
+          ta = "/run/secrets/openvpn_ta";
+          ta-dir = "1";
+          auth = "SHA256";
+          remote-cert-tls = "server";
+          verify-x509-name = "iocto OpenVPN Automation Server";
+          reneg-seconds = "0";
+          connect-timeout = "30";
+          remote-random = "yes";
+          ping = "10";
+          ping-restart = "60";
+          local-port = "0";
+          dev-type = "tun";
+          password-flags = "2";
         };
 
         ipv4 = {method = "auto";};
