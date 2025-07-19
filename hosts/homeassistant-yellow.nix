@@ -75,6 +75,7 @@
       53 # Pi-hole DNS
       80 # HTTP / Traefik
       443 # HTTPS / Traefik
+      3080 # LibreChat
       8080 # Traefik dashboard
       8081 # Pi-hole web UI
       8123 # HomeAssistant
@@ -208,6 +209,75 @@
       #];
 
       environment.TZ = "Europe/Berlin";
+    };
+
+    # -------------------------------------------------------------------------
+    # librechat
+    # -------------------------------------------------------------------------
+    librechat = {
+      image = "ghcr.io/danny-avila/librechat:latest";
+      autoStart = true;
+
+      autoRemoveOnStop = false; # prevent implicit --rm
+      extraOptions = [
+        "--network=docker-network"
+        "--ip=172.18.0.4"
+      ];
+
+      ports = [
+        "3080:3080" # LibreChat web interface
+      ];
+
+      volumes = [
+        "/mnt/docker-data/volumes/librechat/config:/app/librechat.yaml:ro"
+        "/mnt/docker-data/volumes/librechat/images:/app/client/public/images:rw"
+        "/mnt/docker-data/volumes/librechat/logs:/app/api/logs:rw"
+      ];
+
+      environmentFiles = [
+        "/run/secrets/librechatENV"
+      ];
+
+      environment = {
+        TZ = "Europe/Berlin";
+        HOST = "0.0.0.0";
+        PORT = "3080";
+        DATABASE_URL = "postgresql://librechat:librechat@librechat-postgres:5432/librechat";
+        DOMAIN_CLIENT = "http://localhost:3080";
+        DOMAIN_SERVER = "http://localhost:3080";
+        # Traefik labels for reverse proxy
+        "traefik.enable" = "true";
+        "traefik.http.routers.librechat.rule" = "Host(`librechat.local.yakweide.de`)";
+        "traefik.http.routers.librechat.entryPoints" = "https";
+        "traefik.http.routers.librechat.tls.certresolver" = "cloudflare";
+        "traefik.http.services.librechat.loadbalancer.server.port" = "3080";
+      };
+    };
+
+    # -------------------------------------------------------------------------
+    # librechat-postgres (required for LibreChat)
+    # -------------------------------------------------------------------------
+    librechat-postgres = {
+      image = "postgres:15";
+      autoStart = true;
+
+      autoRemoveOnStop = false; # prevent implicit --rm
+      extraOptions = [
+        "--network=docker-network"
+        "--ip=172.18.0.5"
+      ];
+
+      volumes = [
+        "/mnt/docker-data/volumes/librechat-postgres/data:/var/lib/postgresql/data:rw"
+      ];
+
+      environment = {
+        TZ = "Europe/Berlin";
+        POSTGRES_DB = "librechat";
+        POSTGRES_USER = "librechat";
+        POSTGRES_PASSWORD = "librechat";
+        PGDATA = "/var/lib/postgresql/data/pgdata";
+      };
     };
   };
 }
