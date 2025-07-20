@@ -210,28 +210,35 @@
 
       environment.TZ = "Europe/Berlin";
     };
-
     # -------------------------------------------------------------------------
-    # librechat
+    # librechat-mongodb
     # -------------------------------------------------------------------------
-    librechat = {
-      image = "ghcr.io/danny-avila/librechat:latest";
+    librechat-mongodb = {
+      image = "mongo:6";
       autoStart = true;
 
       autoRemoveOnStop = false; # prevent implicit --rm
-      extraOptions = [
-        "--network=docker-network"
-        "--ip=172.18.0.4"
-      ];
-
-      ports = [
-        "3080:3080" # LibreChat web interface
-      ];
+      extraOptions = ["--network=docker-network" "--ip=172.18.0.3"];
 
       volumes = [
-        "/mnt/docker-data/volumes/librechat/config:/app/librechat.yaml:ro"
-        "/mnt/docker-data/volumes/librechat/images:/app/client/public/images:rw"
-        "/mnt/docker-data/volumes/librechat/logs:/app/api/logs:rw"
+        "/mnt/docker-data/volumes/librechat-mongodb:/data/db:rw"
+      ];
+
+      cmd = ["--quiet"];
+    };
+
+    # -------------------------------------------------------------------------
+    # librechat-meilisearch
+    # -------------------------------------------------------------------------
+    librechat-meilisearch = {
+      image = "getmeili/meilisearch:v1.9";
+      autoStart = true;
+
+      autoRemoveOnStop = false; # prevent implicit --rm
+      extraOptions = ["--network=docker-network" "--ip=172.18.0.4"];
+
+      volumes = [
+        "/mnt/docker-data/volumes/librechat-meilisearch:/meili_data:rw"
       ];
 
       environmentFiles = [
@@ -239,44 +246,37 @@
       ];
 
       environment = {
-        TZ = "Europe/Berlin";
-        HOST = "0.0.0.0";
-        PORT = "3080";
-        DATABASE_URL = "postgresql://librechat:librechat@librechat-postgres:5432/librechat";
-        DOMAIN_CLIENT = "http://localhost:3080";
-        DOMAIN_SERVER = "http://localhost:3080";
-        # Traefik labels for reverse proxy
-        "traefik.enable" = "true";
-        "traefik.http.routers.librechat.rule" = "Host(`librechat.local.yakweide.de`)";
-        "traefik.http.routers.librechat.entryPoints" = "https";
-        "traefik.http.routers.librechat.tls.certresolver" = "cloudflare";
-        "traefik.http.services.librechat.loadbalancer.server.port" = "3080";
+        MEILI_ENV = "production";
       };
     };
 
     # -------------------------------------------------------------------------
-    # librechat-postgres (required for LibreChat)
+    # librechat-api
     # -------------------------------------------------------------------------
-    librechat-postgres = {
-      image = "postgres:15";
+    librechat-api = {
+      image = "ghcr.io/danny-avila/librechat:latest";
       autoStart = true;
 
       autoRemoveOnStop = false; # prevent implicit --rm
-      extraOptions = [
-        "--network=docker-network"
-        "--ip=172.18.0.5"
+      extraOptions = ["--network=docker-network" "--ip=172.18.0.5"];
+
+      ports = [
+        "3080:3080"
+      ];
+
+      environmentFiles = [
+        "/run/secrets/librechatENV"
       ];
 
       volumes = [
-        "/mnt/docker-data/volumes/librechat-postgres/data:/var/lib/postgresql/data:rw"
+        "/mnt/docker-data/volumes/librechat-api:/app/:rw"
       ];
 
       environment = {
-        TZ = "Europe/Berlin";
-        POSTGRES_DB = "librechat";
-        POSTGRES_USER = "librechat";
-        POSTGRES_PASSWORD = "librechat";
-        PGDATA = "/var/lib/postgresql/data/pgdata";
+        HOST = "0.0.0.0";
+        PORT = "3080";
+        MONGO_URI = "mongodb://librechat-mongodb:27017/LibreChat";
+        MEILI_HOST = "http://librechat-meilisearch:7700";
       };
     };
   };
