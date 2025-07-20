@@ -59,6 +59,7 @@
       80 # Traefik HTTP
       443 # HTTPS / Traefik
       2283 # Immich server
+      3080 # LibreChat
       4743 # Vaultwarden
       8123 # Home Assistant
       9001 # Portainer agent
@@ -79,6 +80,59 @@
   virtualisation.docker.storageDriver = "btrfs";
 
   virtualisation.oci-containers.containers = {
+    # -------------------------------------------------------------------------
+    # traefik  (uses a secret file for the Cloudflare token)
+    # -------------------------------------------------------------------------
+    traefik = {
+      image = "traefik:latest";
+      autoStart = true;
+
+      autoRemoveOnStop = false; # prevent implicit --rm
+      extraOptions = ["--network=docker-network" "--ip=172.18.0.2"];
+
+      ports = [
+        "443:443"
+        "80:80"
+        "8085:8080" # Traefik dashboard
+      ];
+
+      volumes = [
+        "/mnt/docker-data/volumes/traefik:/etc/traefik:rw"
+        "/var/run/docker.sock:/var/run/docker.sock:rw"
+      ];
+
+      environmentFiles = [
+        "/run/secrets/traefikENV"
+      ];
+
+      environment = {
+        # Keys with dots must be quoted to be valid Nix attribute names
+        "traefik.http.routers.api.rule" = "Host(`traefik.yakweide.de`)";
+        "traefik.http.routers.api.entryPoints" = "https";
+        "traefik.http.routers.api.service" = "api@internal";
+        "traefik.enable" = "true";
+      };
+    };
+
+    # -------------------------------------------------------------------------
+    # portainer_agent
+    # -------------------------------------------------------------------------
+    portainer_agent = {
+      image = "portainer/agent:latest";
+      autoStart = true;
+
+      autoRemoveOnStop = false; # prevent implicit --rm
+      extraOptions = ["--network=docker-network" "--ip=172.18.0.3"];
+
+      ports = ["9001:9001"];
+
+      volumes = [
+        "/mnt/docker-data/volumes/portainer:/var/lib/docker/volumes:rw"
+        "/var/run/docker.sock:/var/run/docker.sock:rw"
+      ];
+      # No environment values needed for the agent
+    };
+
     # --------------------------------------------------------------------------
     # yakweide-discord-bot
     # --------------------------------------------------------------------------
@@ -87,7 +141,7 @@
       autoStart = true;
 
       autoRemoveOnStop = false; # prevent implicit --rm
-      extraOptions = ["--network=docker-network"];
+      extraOptions = ["--network=docker-network" "--ip=172.18.0.4"];
 
       environmentFiles = [
         "/run/secrets/yakweideENV"
@@ -102,7 +156,7 @@
       autoStart = true;
 
       autoRemoveOnStop = false; # prevent implicit --rm
-      extraOptions = ["--network=docker-network"];
+      extraOptions = ["--network=docker-network" "--ip=172.18.0.5"];
 
       ports = [
         "4743:4743" # hostPort:containerPort
@@ -135,7 +189,7 @@
       image = "openjdk:21-jdk-slim";
       autoStart = true;
       autoRemoveOnStop = false;
-      extraOptions = ["--network=docker-network"];
+      extraOptions = ["--network=docker-network" "--ip=172.18.0.6"];
 
       ports = ["25565:25565"];
 
@@ -164,7 +218,7 @@
       autoStart = true;
 
       autoRemoveOnStop = false; # prevent implicit --rm
-      extraOptions = ["--network=docker-network"];
+      extraOptions = ["--network=docker-network" "--ip=172.18.0.7"];
 
       # TCP and UDP ports – duplicates from the original command removed
       ports = [
@@ -191,65 +245,12 @@
       };
     };
 
-    # -------------------------------------------------------------------------
-    # traefik  (uses a secret file for the Cloudflare token)
-    # -------------------------------------------------------------------------
-    traefik = {
-      image = "traefik:latest";
-      autoStart = true;
-
-      autoRemoveOnStop = false; # prevent implicit --rm
-      extraOptions = ["--network=host"];
-
-      ports = [
-        "443:443"
-        "80:80"
-        "8085:8080" # Traefik dashboard
-      ];
-
-      volumes = [
-        "/mnt/docker-data/volumes/traefik:/etc/traefik:rw"
-        "/var/run/docker.sock:/var/run/docker.sock:rw"
-      ];
-
-      environmentFiles = [
-        "/run/secrets/traefikENV"
-      ];
-
-      environment = {
-        # Keys with dots must be quoted to be valid Nix attribute names
-        "traefik.http.routers.api.rule" = "Host(`traefik.local.yakweide.de`)";
-        "traefik.http.routers.api.entryPoints" = "https";
-        "traefik.http.routers.api.service" = "api@internal";
-        "traefik.enable" = "true";
-      };
-    };
-
-    # -------------------------------------------------------------------------
-    # portainer_agent
-    # -------------------------------------------------------------------------
-    portainer_agent = {
-      image = "portainer/agent:latest";
-      autoStart = true;
-
-      autoRemoveOnStop = false; # prevent implicit --rm
-      extraOptions = ["--network=docker-network"];
-
-      ports = ["9001:9001"];
-
-      volumes = [
-        "/mnt/docker-data/volumes/portainer:/var/lib/docker/volumes:rw"
-        "/var/run/docker.sock:/var/run/docker.sock:rw"
-      ];
-      # No environment values needed for the agent
-    };
-
     immich-server = {
       image = "ghcr.io/immich-app/immich-server:release";
       autoStart = true;
 
       autoRemoveOnStop = false; # prevent implicit --rm
-      extraOptions = ["--network=docker-network"];
+      extraOptions = ["--network=docker-network" "--ip=172.18.0.8"];
 
       ports = [
         "2283:2283"
@@ -274,7 +275,7 @@
       autoStart = true;
 
       autoRemoveOnStop = false; # prevent implicit --rm
-      extraOptions = ["--network=docker-network"];
+      extraOptions = ["--network=docker-network" "--ip=172.18.0.9"];
 
       volumes = [
         "/mnt/docker-data/volumes/immich/model-cache:/cache:rw"
@@ -293,7 +294,7 @@
       autoStart = true;
 
       autoRemoveOnStop = false; # prevent implicit --rm
-      extraOptions = ["--network=docker-network"];
+      extraOptions = ["--network=docker-network" "--ip=172.18.0.10"];
     };
 
     immich_postgres = {
@@ -301,7 +302,7 @@
       autoStart = true;
 
       autoRemoveOnStop = false; # prevent implicit --rm
-      extraOptions = ["--network=docker-network"];
+      extraOptions = ["--network=docker-network" "--ip=172.18.0.11"];
 
       volumes = [
         "/mnt/docker-data/volumes/immich/database:/var/lib/postgresql/data:rw"
@@ -315,5 +316,81 @@
         "POSTGRES_INITDB_ARGS" = "--data-checksums";
       };
     };
+
+    # -------------------------------------------------------------------------
+    # librechat-mongodb
+    # -------------------------------------------------------------------------
+    librechat-mongodb = {
+      image = "mongo:6";
+      autoStart = true;
+
+      autoRemoveOnStop = false; # prevent implicit --rm
+      extraOptions = ["--network=docker-network" "--ip=172.18.0.12"];
+
+      volumes = [
+        "/mnt/docker-data/volumes/librechat-mongodb:/data/db:rw"
+      ];
+
+      cmd = ["--quiet"];
+    };
+
+    # -------------------------------------------------------------------------
+    # librechat-meilisearch
+    # -------------------------------------------------------------------------
+    librechat-meilisearch = {
+      image = "getmeili/meilisearch:v1.9";
+      autoStart = true;
+
+      autoRemoveOnStop = false; # prevent implicit --rm
+      extraOptions = ["--network=docker-network" "--ip=172.18.0.13"];
+
+      volumes = [
+        "/mnt/docker-data/volumes/librechat-meilisearch:/meili_data:rw"
+      ];
+
+      environmentFiles = [
+        "/run/secrets/librechatENV"
+      ];
+
+      environment = {
+        MEILI_ENV = "production";
+      };
+    };
+
+    # -------------------------------------------------------------------------
+    # librechat-api
+    # -------------------------------------------------------------------------
+    librechat-api = {
+      image = "ghcr.io/danny-avila/librechat:latest";
+      autoStart = true;
+
+      autoRemoveOnStop = false; # prevent implicit --rm
+      extraOptions = ["--network=docker-network" "--ip=172.18.0.14"];
+
+      ports = [
+        "3080:3080"
+      ];
+
+      environmentFiles = [
+        "/run/secrets/librechatENV"
+      ];
+
+      volumes = [
+        "/mnt/docker-data/volumes/librechat-api/librechat.yaml:/app/librechat.yaml:rw"
+      ];
+
+      environment = {
+        PORT = "3080";
+        MONGO_URI = "mongodb://librechat-mongodb:27017/LibreChat";
+        MEILI_HOST = "http://librechat-meilisearch:7700";
+        ALLOW_REGISTRATION = "false";
+      };
+    };
   };
+
+  system.activationScripts.copyLibrechatYaml = lib.stringAfter ["var"] ''
+    mkdir -p /mnt/docker-data/volumes/librechat-api
+    cp ${./../files/librechat.yaml} /mnt/docker-data/volumes/librechat-api/librechat.yaml
+    chmod 644 /mnt/docker-data/volumes/librechat-api/librechat.yaml
+  '';
 }

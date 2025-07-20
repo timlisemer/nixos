@@ -104,6 +104,8 @@
       "traefik.local.yakweide.de" = "10.0.0.2";
       "pihole.local.yakweide.de" = "10.0.0.2";
       "homeassistant.yakweide.de" = "10.0.0.2";
+      "librechat.yakweide.de" = "142.132.234.128";
+      "traefik.yakweide.de" = "142.132.234.128";
       # add more hosts here …
     };
 

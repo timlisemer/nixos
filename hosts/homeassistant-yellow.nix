@@ -75,7 +75,6 @@
       53 # Pi-hole DNS
       80 # HTTP / Traefik
       443 # HTTPS / Traefik
-      3080 # LibreChat
       8080 # Traefik dashboard
       8081 # Pi-hole web UI
       8123 # HomeAssistant
@@ -209,75 +208,6 @@
       #];
 
       environment.TZ = "Europe/Berlin";
-    };
-    # -------------------------------------------------------------------------
-    # librechat-mongodb
-    # -------------------------------------------------------------------------
-    librechat-mongodb = {
-      image = "mongo:6";
-      autoStart = true;
-
-      autoRemoveOnStop = false; # prevent implicit --rm
-      extraOptions = ["--network=docker-network" "--ip=172.18.0.3"];
-
-      volumes = [
-        "/mnt/docker-data/volumes/librechat-mongodb:/data/db:rw"
-      ];
-
-      cmd = ["--quiet"];
-    };
-
-    # -------------------------------------------------------------------------
-    # librechat-meilisearch
-    # -------------------------------------------------------------------------
-    librechat-meilisearch = {
-      image = "getmeili/meilisearch:v1.9";
-      autoStart = true;
-
-      autoRemoveOnStop = false; # prevent implicit --rm
-      extraOptions = ["--network=docker-network" "--ip=172.18.0.4"];
-
-      volumes = [
-        "/mnt/docker-data/volumes/librechat-meilisearch:/meili_data:rw"
-      ];
-
-      environmentFiles = [
-        "/run/secrets/librechatENV"
-      ];
-
-      environment = {
-        MEILI_ENV = "production";
-      };
-    };
-
-    # -------------------------------------------------------------------------
-    # librechat-api
-    # -------------------------------------------------------------------------
-    librechat-api = {
-      image = "ghcr.io/danny-avila/librechat:latest";
-      autoStart = true;
-
-      autoRemoveOnStop = false; # prevent implicit --rm
-      extraOptions = ["--network=docker-network" "--ip=172.18.0.5"];
-
-      ports = [
-        "3080:3080"
-      ];
-
-      environmentFiles = [
-        "/run/secrets/librechatENV"
-      ];
-
-      volumes = [
-        "/mnt/docker-data/volumes/librechat-api:/app/:rw"
-      ];
-
-      environment = {
-        HOST = "0.0.0.0";
-        PORT = "3080";
-        MONGO_URI = "mongodb://librechat-mongodb:27017/LibreChat";
-        MEILI_HOST = "http://librechat-meilisearch:7700";
-      };
     };
   };
 }

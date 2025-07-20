@@ -12,6 +12,8 @@
   # sops.age.keyFile      = "/home/tim/.config/sops/age/keys.txt";
   # sops.age.generateKey  = true;
 
+  sops.secrets."aimodels/OPENAI_API_KEY" = {};
+
   sops.secrets.github_token = {};
   sops.secrets.google_oauth_client_id = {};
   sops.secrets.vaultwardenEnv = {};
