@@ -149,13 +149,16 @@
 
         ipv4 = {
           method = "auto";
-          ignore-auto-dns = false; # accept the DNS servers sent by the VPN
+          # ignore-auto-dns = false; # accept the DNS servers sent by the VPN
+          ignore-auto-dns = true; # ignore the DNS servers sent by the VPN
           never-default = true; # keep the local default route
-          dns = "1.1.1.1;8.8.8.8"; # Backup to the local DNS servers
+          dns = "172.16.2.254;172.22.0.2;172.22.0.3;1.1.1.1;8.8.8.8";
         };
         ipv6 = {
-          addr-gen-mode = "default";
+          # addr-gen-mode = "default";
+          ignore-auto-dns = true; # ignore the DNS servers sent by the VPN
           method = "auto";
+          dns = "fec0:0:0:ffff::1;fec0:0:0:ffff::2;fec0:0:0:ffff::3";
         };
       };
     };
