@@ -14,7 +14,7 @@ alias iocto='cd ~/Coding/iocto'
 alias install_tim_server='nix run nixpkgs#nixos-anywhere -- --flake /etc/nixos#tim-server root@142.132.234.128'
 alias install_homeassistant_yellow='nix run nixpkgs#nixos-anywhere -- --flake /etc/nixos#homeassistant-yellow nixos@homeassistant-yellow'
 alias nix_clean='sudo nix-collect-garbage -d && sudo nix-store --gc && sudo nix-store --optimize && sudo nix-store --verify --check-contents'
-alias git_amend='git add . && git commit --amend --no-edit && git push --force-with-lease'
+alias git_amend='git amend'
 alias wake_tim-pc='wol 40:B0:76:DC:79:AA'
 
 if [[ -n "$HYPRLAND_INSTANCE_SIGNATURE" ]]; then
@@ -243,17 +243,115 @@ gacp() {
 	git push
 }
 
-git() {
-	if [[ "$1" == "clone" && -z "$2" ]]; then
-		command git clone --recurse-submodules --remote-submodules "$2"
-	elif [[ "$1" == "pull" ]]; then
+git_update_fork() {
+	local branch="${1:-main}"
+	local upstream_remote="upstream"
+	local upstream_url="$2"
+
+	# Check if working directory is clean
+	if ! git diff-index --quiet HEAD --; then
+		echo "Error: Working directory is not clean. Please commit or stash changes first."
+		return 1
+	fi
+
+	# Check if upstream remote exists, add it if not
+	if ! git remote | grep -q "^${upstream_remote}$"; then
+		if [ -z "$upstream_url" ]; then
+			echo "Upstream remote not found. Please provide the URL of the original (template/fork) repository:"
+			read upstream_url
+		fi
+		git remote add "${upstream_remote}" "${upstream_url}"
+	fi
+
+	# Fetch and merge
+	git fetch "${upstream_remote}"
+	git checkout "${branch}"
+	if git merge "${upstream_remote}/${branch}" --no-commit --no-ff; then
+		# Merge succeeded without conflicts
+		git commit --no-edit || true # Commit if there's something to commit
+		git push origin "${branch}"
+		echo "Sync completed successfully."
+	else
+		# Merge failed due to conflicts
+		echo "Merge conflict detected. Conflicting files:"
+		git ls-files -u | awk '{print $4}' | sort -u
+		echo "You can:"
+		echo "  1. Resolve conflicts manually, then run: git commit; git push origin ${branch}"
+		echo "  2. Automatically resolve by keeping local changes (prefer ours, handle deletions)"
+		echo "  3. Automatically resolve by keeping incoming changes (prefer theirs, handle deletions)"
+		echo "  4. Abort the merge and reject incoming changes: git merge --abort"
+		echo "Enter your choice (1-4):"
+		read choice
+		case "$choice" in
+		1)
+			echo "Proceeding with manual resolution. Resolve conflicts, then commit and push."
+			;;
+		2)
+			conflicting_files=$(git ls-files -u | awk '{print $4}' | sort -u)
+			for file in $conflicting_files; do
+				# Check if file is deleted in 'ours' (HEAD)
+				if ! git diff --name-status --cached HEAD^ HEAD | grep -q "^[^D].*\b$file\b"; then
+					git rm "$file"
+				elif git checkout --ours -- "$file" 2>/dev/null; then
+					git add "$file"
+				else
+					git rm "$file"
+				fi
+			done
+			if git commit --no-edit; then
+				git push origin "${branch}"
+				echo "Auto-resolved by keeping local changes and pushed successfully."
+			else
+				echo "Auto-resolution failed; some issues remain. Resolve manually or abort."
+				return 1
+			fi
+			;;
+		3)
+			conflicting_files=$(git ls-files -u | awk '{print $4}' | sort -u)
+			for file in $conflicting_files; do
+				if git checkout --theirs -- "$file" 2>/dev/null; then
+					git add "$file"
+				else
+					git rm "$file"
+				fi
+			done
+			if git commit --no-edit; then
+				git push origin "${branch}"
+				echo "Auto-resolved by keeping incoming changes and pushed successfully."
+			else
+				echo "Auto-resolution failed; some issues remain. Resolve manually or abort."
+				return 1
+			fi
+			;;
+		4)
+			git merge --abort
+			echo "Merge aborted."
+			;;
+		*)
+			echo "Invalid choice. Merge remains in conflicted state."
+			return 1
+			;;
+		esac
+		return 0
+	fi
+}
+
+function git() {
+	if [ "$1" = "clone" ]; then
+		shift
+		command git clone --recurse-submodules --remote-submodules "$@"
+	elif [ "$1" = "pull" ]; then
 		command git pull --recurse-submodules && command git submodule update --remote --merge
+	elif [ "$1" = "amend" ]; then
+		command git add . && git commit --amend --no-edit && git push --force-with-lease
+	elif [ "$1" = "update" ]; then
+		git_update_fork
+	elif [ "$1" = "clean" ]; then
+		command git clean -fdn
 	else
 		command git "$@"
 	fi
 }
-
-alias gclean='git clean -fdn'
 
 # --- nixos_generate_iso_image: generate a iso image for NixOS --------
 alias nixos_generate_iso_image='nixos_generate_iso_image'
