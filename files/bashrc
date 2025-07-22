@@ -282,46 +282,33 @@ git_update_fork() {
 		echo "  4. Abort the merge and reject incoming changes: git merge --abort"
 		echo "Enter your choice (1-4):"
 		read choice
+		auto_resolve() {
+			local strategy="$1" msg="$2"
+			conflicting_files=$(git ls-files -u | awk '{print $4}' | sort -u)
+			for file in $conflicting_files; do
+				if git checkout --"$strategy" -- "$file" 2>/dev/null; then
+					git add "$file"
+				else
+					git rm --quiet "$file"
+				fi
+			done
+			if git commit --no-edit; then
+				git push origin "${branch}"
+				echo "$msg and pushed successfully."
+			else
+				echo "Auto-resolution failed; some issues remain. Resolve manually or abort."
+				return 1
+			fi
+		}
 		case "$choice" in
 		1)
 			echo "Proceeding with manual resolution. Resolve conflicts, then commit and push."
 			;;
 		2)
-			conflicting_files=$(git ls-files -u | awk '{print $4}' | sort -u)
-			for file in $conflicting_files; do
-				# Check if file is deleted in 'ours' (HEAD)
-				if ! git diff --name-status --cached HEAD^ HEAD | grep -q "^[^D].*\b$file\b"; then
-					git rm "$file"
-				elif git checkout --ours -- "$file" 2>/dev/null; then
-					git add "$file"
-				else
-					git rm "$file"
-				fi
-			done
-			if git commit --no-edit; then
-				git push origin "${branch}"
-				echo "Auto-resolved by keeping local changes and pushed successfully."
-			else
-				echo "Auto-resolution failed; some issues remain. Resolve manually or abort."
-				return 1
-			fi
+			auto_resolve ours "Auto-resolved by keeping local changes"
 			;;
 		3)
-			conflicting_files=$(git ls-files -u | awk '{print $4}' | sort -u)
-			for file in $conflicting_files; do
-				if git checkout --theirs -- "$file" 2>/dev/null; then
-					git add "$file"
-				else
-					git rm "$file"
-				fi
-			done
-			if git commit --no-edit; then
-				git push origin "${branch}"
-				echo "Auto-resolved by keeping incoming changes and pushed successfully."
-			else
-				echo "Auto-resolution failed; some issues remain. Resolve manually or abort."
-				return 1
-			fi
+			auto_resolve theirs "Auto-resolved by keeping incoming changes"
 			;;
 		4)
 			git merge --abort
