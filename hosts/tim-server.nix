@@ -143,6 +143,10 @@
       autoRemoveOnStop = false; # prevent implicit --rm
       extraOptions = ["--network=docker-network" "--ip=172.18.0.4"];
 
+      volumes = [
+        "/mnt/docker-data/volumes/yakweide-discord-bot:/app/:rw"
+      ];
+
       environmentFiles = [
         "/run/secrets/yakweideENV"
       ];
@@ -293,6 +297,10 @@
       image = "docker.io/valkey/valkey:8-bookworm@sha256:ff21bc0f8194dc9c105b769aeabf9585fea6a8ed649c0781caeac5cb3c247884";
       autoStart = true;
 
+      volumes = [
+        "/mnt/docker-data/volumes/redis:/data:rw"
+      ];
+
       autoRemoveOnStop = false; # prevent implicit --rm
       extraOptions = ["--network=docker-network" "--ip=172.18.0.10"];
     };
@@ -384,6 +392,9 @@
         MONGO_URI = "mongodb://librechat-mongodb:27017/LibreChat";
         MEILI_HOST = "http://librechat-meilisearch:7700";
         ALLOW_REGISTRATION = "false";
+        # Basic Model Configuration
+        OPENAI_MODELS = "o4-mini,o3,gpt-4.1-nano";
+        GOOGLE_MODELS = "gemini-2.5-pro,gemini-2.5-flash,gemini-2.5-flash-lite";
       };
     };
   };
