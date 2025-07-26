@@ -23,6 +23,7 @@ in {
     lib.mkAfter [
       (vscode-with-extensions.override {
         vscodeExtensions = with vscodeExtensions; [
+          anthropic.claude-code
           ms-python.python
           ms-python.vscode-pylance
           ms-python.debugpy

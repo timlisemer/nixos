@@ -75,11 +75,12 @@
       53 # Pi-hole DNS
       80 # HTTP / Traefik
       443 # HTTPS / Traefik
+      8000 # Portainer API
       8080 # Traefik dashboard
       8081 # Pi-hole web UI
       8082 # Filebrowser UI
       8123 # HomeAssistant
-      9000 # Portainer UI
+      9443 # Portainer UI
     ];
 
     # UDP ports to open
@@ -218,21 +219,21 @@
     # portainer
     # -------------------------------------------------------------------------
     portainer = {
-      image = "portainer/portainer-ce:lts";
+      image = "portainer/portainer-ce:latest"; # Or use :lts for stability
       autoStart = true;
 
       autoRemoveOnStop = false; # prevent implicit --rm
       extraOptions = ["--network=docker-network" "--ip=172.18.0.3"];
 
-      ports = ["9000:9000"]; # Expose Portainer UI on host port 9000
-
-      volumes = [
-        "/var/run/docker.sock:/var/run/docker.sock" # Allow Portainer to manage Docker
-        "/mnt/docker-data/volumes:/var/lib/docker/volumes:rw"
-        "/mnt/docker-data/volumes/portainer:/data" # Persistent Portainer data
+      ports = [
+        "8000:8000"
+        "9443:9443"
       ];
 
-      cmd = ["--host" "unix:///var/run/docker.sock"];
+      volumes = [
+        "/var/run/docker.sock:/var/run/docker.sock"
+        "/mnt/docker-data/volumes/portainer_data:/data"
+      ];
     };
 
     # -------------------------------------------------------------------------
@@ -243,7 +244,7 @@
       autoStart = true;
 
       autoRemoveOnStop = false; # prevent implicit --rm
-      extraOptions = ["--network=docker-network" "--ip=172.18.0.4"];
+      extraOptions = ["--network=docker-network" "--user=0:0" "--ip=172.18.0.4"];
 
       ports = ["8082:80"]; # Expose Filebrowser UI on host port 8082
 

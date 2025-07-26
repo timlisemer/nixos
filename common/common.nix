@@ -321,7 +321,6 @@ in {
       autoRemoveOnStop = false; # prevent implicit --rm
 
       volumes = [
-        "/mnt/docker-data/volumes/watchtower:/data:rw"
         "/var/run/docker.sock:/var/run/docker.sock:rw"
       ];
 
