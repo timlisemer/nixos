@@ -78,6 +78,7 @@
       8080 # Traefik dashboard
       8081 # Pi-hole web UI
       8123 # HomeAssistant
+      9000 # Portainer UI
     ];
 
     # UDP ports to open
@@ -211,5 +212,26 @@
 
       environment.TZ = "Europe/Berlin";
     };
+  };
+
+  # ----------------------------------------------------------------------------
+  # Portainer
+  # ----------------------------------------------------------------------------
+  portainer = {
+    image = "portainer/portainer-ce:lts";
+    autoStart = true;
+
+    autoRemoveOnStop = false; # prevent implicit --rm
+    extraOptions = ["--network=docker-network" "--ip=172.18.0.3"];
+
+    ports = ["9000:9000"]; # Expose Portainer UI on host port 9000
+
+    volumes = [
+      "/var/run/docker.sock:/var/run/docker.sock" # Allow Portainer to manage Docker
+      "/mnt/docker-data/volumes:/var/lib/docker/volumes:rw"
+      "/mnt/docker-data/volumes/portainer:/data" # Persistent Portainer data
+    ];
+
+    cmd = ["--host" "unix:///var/run/docker.sock"];
   };
 }

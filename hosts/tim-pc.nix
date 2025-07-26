@@ -34,18 +34,23 @@
 
   # Portainer Container
   virtualisation.oci-containers.containers = {
-    portainer = {
-      image = "portainer/portainer-ce:lts";
+    # -------------------------------------------------------------------------
+    # portainer_agent
+    # -------------------------------------------------------------------------
+    portainer_agent = {
+      image = "portainer/agent:latest";
       autoStart = true;
-      ports = ["9000:9000"]; # Expose Portainer UI on host port 9000
+
+      autoRemoveOnStop = false; # prevent implicit --rm
+      extraOptions = ["--network=docker-network" "--ip=172.18.0.3"];
+
+      ports = ["9001:9001"];
+
       volumes = [
-        "/var/run/docker.sock:/var/run/docker.sock" # Allow Portainer to manage Docker
-        "/mnt/docker-data/volumes:/var/lib/docker/volumes:rw"
-        "/mnt/docker-data/volumes/portainer:/data" # Persistent Portainer data
+        "/mnt/docker-data/volumes/portainer:/var/lib/docker/volumes:rw"
+        "/var/run/docker.sock:/var/run/docker.sock:rw"
       ];
-      cmd = ["--host" "unix:///var/run/docker.sock"];
-      # Optional: if you want to limit privileges further, add extra options:
-      # extraOptions = [ "--restart=always" ];
+      # No environment values needed for the agent
     };
   };
 

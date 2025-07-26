@@ -128,11 +128,14 @@
 
     userBackupDirs = ["Coding" "Downloads" "Desktop" "Documents" "Pictures" "Videos" "Music" "Public" "Templates"];
     userDotFiles = [".config" ".mozilla" ".bash_history" ".steam" ".vscode-server" ".arduinoIDE" ".npm" ".vscode"];
+    dockerVolumePaths = ["/mnt/docker-data/volumes/*"];
     backupPaths = builtins.concatLists (builtins.map (
       username: let
         h = "/home/${username}/";
       in
-        (map (dir: "${h}${dir}") userBackupDirs) ++ (map (dir: "${h}${dir}") userDotFiles)
+        (map (dir: "${h}${dir}") userBackupDirs)
+        ++ (map (dir: "${h}${dir}") userDotFiles)
+        ++ (map (path: "${path}") dockerVolumePaths)
     ) (builtins.attrNames users));
   in {
     mkSystem = {
@@ -200,7 +203,7 @@
         system = "x86_64-linux";
         disks = ["/dev/sda"];
         hostName = "tim-server";
-        backupPaths = backupPaths ++ (let v = "/mnt/docker-data/volumes/"; in ["${v}vaultwarden" "${v}minecraft" "${v}syncthing" "${v}traefik" "${v}portainer" "${v}immich/upload_location" "${v}immich/model-cache" "${v}immich/database"]);
+        backupPaths = backupPaths;
         inherit users;
       };
 
@@ -254,7 +257,7 @@
 
           specialArgs = {
             hostName = hostName;
-            backupPaths = backupPaths ++ (let v = "/mnt/docker-data/volumes/"; in ["${v}traefik" "${v}pihole" "${v}homeassistant"]);
+            backupPaths = backupPaths;
             inherit inputs home-manager adwaita_hypercursor self nixos-raspberrypi users hostIps;
           };
         };
