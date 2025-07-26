@@ -77,6 +77,7 @@
       443 # HTTPS / Traefik
       8080 # Traefik dashboard
       8081 # Pi-hole web UI
+      8082 # Filebrowser UI
       8123 # HomeAssistant
       9000 # Portainer UI
     ];
@@ -232,6 +233,27 @@
       ];
 
       cmd = ["--host" "unix:///var/run/docker.sock"];
+    };
+
+    # -------------------------------------------------------------------------
+    # filebrowser
+    # -------------------------------------------------------------------------
+    filebrowser = {
+      image = "filebrowser/filebrowser:latest";
+      autoStart = true;
+
+      autoRemoveOnStop = false; # prevent implicit --rm
+      extraOptions = ["--network=docker-network" "--ip=172.18.0.4"];
+
+      ports = ["8082:80"]; # Expose Filebrowser UI on host port 8082
+
+      volumes = [
+        "/mnt/docker-data/volumes/filebrowser:/srv:rw" # Files to browse
+        "/mnt/docker-data/volumes/filebrowser/config:/config:rw" # Filebrowser config
+        "/mnt/docker-data/volumes/filebrowser/database:/database:rw" # Filebrowser database
+      ];
+
+      environment.TZ = "Europe/Berlin";
     };
   };
 }

@@ -164,6 +164,7 @@ in {
     tree
     blesh
     wl-clipboard
+    osc
     starship
     zoxide
     dconf2nix
