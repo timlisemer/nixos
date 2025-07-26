@@ -212,26 +212,26 @@
 
       environment.TZ = "Europe/Berlin";
     };
-  };
 
-  # ----------------------------------------------------------------------------
-  # Portainer
-  # ----------------------------------------------------------------------------
-  portainer = {
-    image = "portainer/portainer-ce:lts";
-    autoStart = true;
+    # -------------------------------------------------------------------------
+    # portainer
+    # -------------------------------------------------------------------------
+    portainer = {
+      image = "portainer/portainer-ce:lts";
+      autoStart = true;
 
-    autoRemoveOnStop = false; # prevent implicit --rm
-    extraOptions = ["--network=docker-network" "--ip=172.18.0.3"];
+      autoRemoveOnStop = false; # prevent implicit --rm
+      extraOptions = ["--network=docker-network" "--ip=172.18.0.3"];
 
-    ports = ["9000:9000"]; # Expose Portainer UI on host port 9000
+      ports = ["9000:9000"]; # Expose Portainer UI on host port 9000
 
-    volumes = [
-      "/var/run/docker.sock:/var/run/docker.sock" # Allow Portainer to manage Docker
-      "/mnt/docker-data/volumes:/var/lib/docker/volumes:rw"
-      "/mnt/docker-data/volumes/portainer:/data" # Persistent Portainer data
-    ];
+      volumes = [
+        "/var/run/docker.sock:/var/run/docker.sock" # Allow Portainer to manage Docker
+        "/mnt/docker-data/volumes:/var/lib/docker/volumes:rw"
+        "/mnt/docker-data/volumes/portainer:/data" # Persistent Portainer data
+      ];
 
-    cmd = ["--host" "unix:///var/run/docker.sock"];
+      cmd = ["--host" "unix:///var/run/docker.sock"];
+    };
   };
 }

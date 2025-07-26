@@ -29,13 +29,7 @@ stop_all_docker_containers &&
 	sudo cp -a ~/Coding/Other/nixos/. /etc/nixos/ &&
 	([ -d /etc/nixos/.git ] && git -C /etc/nixos status --short || true) &&
 	clear &&
-	(sudo nixos-rebuild switch --flake /etc/nixos#$(cat /etc/hostname) ||
-		(echo "Rebuild failed, retrying with fresh flake.lock..." &&
-			sudo rm -rf /etc/nixos/* /etc/nixos/.[!.]* /etc/nixos/..?* &&
-			sudo cp -a ~/Coding/Other/nixos/. /etc/nixos/ &&
-			([ -d /etc/nixos/.git ] && git -C /etc/nixos status --short || true) &&
-			clear &&
-			sudo nixos-rebuild switch --flake /etc/nixos#$(cat /etc/hostname))) &&
+	sudo nixos-rebuild switch --flake /etc/nixos#$(cat /etc/hostname) &&
 	bash
 '
 

@@ -128,14 +128,12 @@
 
     userBackupDirs = ["Coding" "Downloads" "Desktop" "Documents" "Pictures" "Videos" "Music" "Public" "Templates"];
     userDotFiles = [".config" ".mozilla" ".bash_history" ".steam" ".vscode-server" ".arduinoIDE" ".npm" ".vscode"];
-    dockerVolumePaths = ["/mnt/docker-data/volumes/*"];
     backupPaths = builtins.concatLists (builtins.map (
       username: let
         h = "/home/${username}/";
       in
         (map (dir: "${h}${dir}") userBackupDirs)
         ++ (map (dir: "${h}${dir}") userDotFiles)
-        ++ (map (path: "${path}") dockerVolumePaths)
     ) (builtins.attrNames users));
   in {
     mkSystem = {
