@@ -29,7 +29,7 @@
   fileSystems = {
     "/" = {
       device = "/dev/nvme0n1p2";
-      fsType = "ext4"; # Change to "btrfs" if your current root is BTRFS (check with `lsblk -f`)
+      fsType = "ext4";
       options = ["noatime" "nodiratime" "discard"]; # Optional performance tweaks
     };
 
@@ -191,6 +191,8 @@
       extraOptions = [
         "--network=host"
         "--device=/dev/dri:/dev/dri" # GPU access
+        "--device=/dev/ttyAMA10:/dev/ttyAMA10"
+        "--privileged"
       ];
 
       ports = [
@@ -208,6 +210,21 @@
       #];
 
       environment.TZ = "Europe/Berlin";
+    };
+
+    # -------------------------------------------------------------------------
+    # watchtower - automatically update containers
+    # -------------------------------------------------------------------------
+    watchtower = {
+      image = "containrrr/watchtower";
+      autoStart = true;
+
+      autoRemoveOnStop = false; # prevent implicit --rm
+
+      volumes = [
+        "/mnt/docker-data/volumes/watchtower:/data:rw"
+        "/var/run/docker.sock:/var/run/docker.sock:rw"
+      ];
     };
   };
 }
