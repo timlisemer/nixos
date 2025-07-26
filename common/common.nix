@@ -309,6 +309,67 @@ in {
     };
   };
 
+  virtualisation.oci-containers.containers = {
+    # -------------------------------------------------------------------------
+    # watchtower - automatically update containers
+    # -------------------------------------------------------------------------
+    watchtower = {
+      image = "containrrr/watchtower";
+      autoStart = true;
+
+      autoRemoveOnStop = false; # prevent implicit --rm
+
+      volumes = [
+        "/mnt/docker-data/volumes/watchtower:/data:rw"
+        "/var/run/docker.sock:/var/run/docker.sock:rw"
+      ];
+
+      environment = {
+        # Keep default 24-hour poll interval
+        WATCHTOWER_POLL_INTERVAL = "86400"; # 24 hours in seconds
+        # Cleanup old images after updating
+        WATCHTOWER_CLEANUP = "true";
+        # Set timezone for logs
+        TZ = "Europe/Berlin";
+        # Enable debug logging for better visibility
+        WATCHTOWER_DEBUG = "true";
+      };
+    };
+  };
+
+  ##########################################################################
+  ## Watchtower immediate startup check service                           ##
+  ##########################################################################
+  systemd.services.watchtower-startup-check = {
+    description = "Run Watchtower check immediately on startup";
+    after = ["docker-watchtower.service"];
+    wants = ["docker-watchtower.service"];
+    wantedBy = ["multi-user.target"];
+
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = false;
+    };
+
+    script = ''
+      set -euo pipefail
+
+      # Wait a moment for watchtower container to be fully started
+      sleep 10
+
+      # Run a one-time watchtower check immediately
+      ${dockerBin} run --rm \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -e WATCHTOWER_CLEANUP=true \
+        -e TZ=Europe/Berlin \
+        -e WATCHTOWER_DEBUG=true \
+        containrrr/watchtower \
+        --run-once
+
+      echo "Initial Watchtower check completed"
+    '';
+  };
+
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
   # on your system were taken. It’s perfectly fine and recommended to leave
