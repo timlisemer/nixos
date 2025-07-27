@@ -259,6 +259,7 @@
           specialArgs = {
             hostName = hostName;
             backupPaths = backupPaths;
+            system = "aarch64-linux";
             inherit inputs home-manager adwaita_hypercursor self nixos-raspberrypi users hostIps;
           };
         };

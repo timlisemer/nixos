@@ -59,7 +59,7 @@
     };
   };
 
-  boot.kernelParams = ["console=ttyAMA10,115200n8" "console=tty0"];
+  boot.kernelParams = ["console=tty0"];
   systemd.services."serial-getty@ttyAMA10".enable = false;
 
   networking.networkmanager.insertNameservers = [
