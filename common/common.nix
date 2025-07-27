@@ -320,10 +320,6 @@ in {
 
       autoRemoveOnStop = false; # prevent implicit --rm
 
-      volumes = [
-        "/var/run/docker.sock:/var/run/docker.sock:rw"
-      ];
-
       environment = {
         # Keep default 24-hour poll interval
         WATCHTOWER_POLL_INTERVAL = "86400"; # 24 hours in seconds

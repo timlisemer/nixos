@@ -95,6 +95,48 @@
     allowPing = true;
   };
 
+  systemd.services.flash-silabs-firmware = {
+    description = "Flash Silabs chip firmware for Thread support";
+    wantedBy = ["multi-user.target"];
+    serviceConfig = {
+      Type = "oneshot";
+    };
+    script = ''
+      set -euo pipefail
+
+      # Fetch the latest firmware file name from GitHub API
+      api_url="https://api.github.com/repos/darkxst/silabs-firmware-builder/contents/firmware_builds/yellow"
+      latest_file=$(${pkgs.curl}/bin/curl -s "$api_url" | ${pkgs.jq}/bin/jq -r '
+        [ .[] | select(.type == "file" and (.name | startswith("ot-rcp-") and endswith("-yellow-460800.gbl"))) | .name ]
+        | sort_by(split("-")[2] | ltrimstr("v") | split(".") | map(tonumber)) | last
+      ')
+
+      if [ -z "$latest_file" ]; then
+        echo "Error: No matching firmware file found."
+        exit 1
+      fi
+
+      firmware_path="/tmp/$latest_file"
+      firmware_url="https://github.com/darkxst/silabs-firmware-builder/raw/main/firmware_builds/yellow/$latest_file"
+
+      # Download the latest firmware
+      ${pkgs.curl}/bin/curl -L -o "$firmware_path" "$firmware_url"
+
+      # Probe specifically for Spinel; temporarily disable set -e to continue on failure
+      set +e
+      ${pkgs.python3Packages.universal-silabs-flasher}/bin/universal-silabs-flasher --device /dev/ttyAMA10 --probe-method spinel --spinel-baudrate 460800 probe
+      probe_status=$?
+      set -e
+
+      if [ $probe_status -ne 0 ]; then
+        echo "Probing failed; flashing firmware..."
+        ${pkgs.python3Packages.universal-silabs-flasher}/bin/universal-silabs-flasher --device /dev/ttyAMA10 --bootloader-reset yellow --spinel-baudrate 460800 flash --firmware "$firmware_path"
+      else
+        echo "Firmware already correct; skipping flash."
+      fi
+    '';
+  };
+
   virtualisation.oci-containers.containers = {
     # -------------------------------------------------------------------------
     # traefik  (uses a secret file for the Cloudflare token)
