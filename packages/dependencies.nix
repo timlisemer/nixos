@@ -35,6 +35,7 @@
     jdk
     python3
     python3Packages.pip
+    python3Packages.universal-silabs-flasher
     phpPackages.composer
     go
     gtk3

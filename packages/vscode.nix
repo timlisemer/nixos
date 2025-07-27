@@ -22,33 +22,43 @@ in {
   environment.systemPackages = with unstablePkgs;
     lib.mkAfter [
       (vscode-with-extensions.override {
-        vscodeExtensions = with vscodeExtensions; [
-          anthropic.claude-code
-          ms-python.python
-          ms-python.vscode-pylance
-          ms-python.debugpy
-          ms-azuretools.vscode-docker
-          # ms-azuretools.vscode-containers
-          ms-vscode-remote.remote-ssh
-          ms-vscode-remote.remote-containers
-          ms-vscode.makefile-tools
-          github.copilot
-          github.copilot-chat
-          egirlcatnip.adwaita-github-theme
-          dbaeumer.vscode-eslint
-          bbenoist.nix
-          tauri-apps.tauri-vscode
-          rust-lang.rust-analyzer
-          njpwerner.autodocstring
-          svelte.svelte-vscode
-          tamasfe.even-better-toml
-          esbenp.prettier-vscode
-          dbaeumer.vscode-eslint
-          foxundermoon.shell-format
-          bradlc.vscode-tailwindcss
-          kamadorueda.alejandra
-          # google.geminicodeassist
-        ];
+        vscodeExtensions = with vscodeExtensions;
+          [
+          ]
+          ++ unstablePkgs.vscode-utils.extensionsFromVscodeMarketplace [
+            {
+              name = "claude-code";
+              publisher = "anthropic";
+              version = "1.0.61";
+              sha256 = "17gchnyn64adhzf7ry99k8fx9wj0knkb96r7njqn6vzaxwy8kkwa";
+            }
+          ]
+          ++ (with vscodeExtensions; [
+            ms-python.python
+            ms-python.vscode-pylance
+            ms-python.debugpy
+            ms-azuretools.vscode-docker
+            # ms-azuretools.vscode-containers
+            ms-vscode-remote.remote-ssh
+            ms-vscode-remote.remote-containers
+            ms-vscode.makefile-tools
+            github.copilot
+            github.copilot-chat
+            egirlcatnip.adwaita-github-theme
+            dbaeumer.vscode-eslint
+            bbenoist.nix
+            tauri-apps.tauri-vscode
+            rust-lang.rust-analyzer
+            njpwerner.autodocstring
+            svelte.svelte-vscode
+            tamasfe.even-better-toml
+            esbenp.prettier-vscode
+            dbaeumer.vscode-eslint
+            foxundermoon.shell-format
+            bradlc.vscode-tailwindcss
+            kamadorueda.alejandra
+            # google.geminicodeassist
+          ]);
       })
       (pkgs.writeShellScriptBin "sshcode" ''
         #! /usr/bin/env bash
