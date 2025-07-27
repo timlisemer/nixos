@@ -1,8 +1,15 @@
 {
   config,
+  inputs,
+  system,
   pkgs,
   ...
-}: {
+}: let
+  unstable = import inputs.nixpkgs-unstable {
+    config = {allowUnfree = true;};
+    inherit system;
+  };
+in {
   environment.systemPackages = with pkgs; [
     adw-gtk3
     alejandra
@@ -46,8 +53,9 @@
     distrobox
     dive
     i2c-tools
-    gemini-cli
-    codex
+    unstable.gemini-cli
+    unstable.claude-code
+    unstable.codex
     liquidctl
     glxinfo
     jq
