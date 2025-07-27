@@ -57,40 +57,6 @@
         DisablePlugins = "hostname";
       };
     };
-    deviceTree = {
-      overlays = [
-        {
-          name = "uart5-overlay";
-          dtsText = ''
-            /dts-v1/;
-            /plugin/;
-
-            / {
-              compatible = "brcm,bcm2712";
-
-              fragment@0 {
-                target = <&uart5>;
-                __overlay__ {
-                  status = "okay";
-                  pinctrl-names = "default";
-                  pinctrl-0 = <&uart5_pins>;
-                };
-              };
-
-              fragment@1 {
-                target = <&gpio>;
-                __overlay__ {
-                  uart5_pins: uart5_pins {
-                    brcm,pins = <12 13>;
-                    brcm,function = <2>;
-                  };
-                };
-              };
-            };
-          '';
-        }
-      ];
-    };
   };
 
   boot.kernelParams = ["console=tty0"];
