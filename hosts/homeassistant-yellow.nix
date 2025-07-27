@@ -59,6 +59,9 @@
     };
   };
 
+  boot.kernelParams = ["console=ttyAMA10,115200n8" "console=tty0"];
+  systemd.services."serial-getty@ttyAMA10".enable = false;
+
   networking.networkmanager.insertNameservers = [
     "127.0.0.1" # Primary: localhost - intentionally set to Pi-hole
     "1.1.1.1" # Backup: Cloudflare DNS
