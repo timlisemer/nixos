@@ -34,6 +34,8 @@ in {
     fzf
     gamemode
     gamescope
+    minicom
+    screen
     unzip
     justbuild
     pulseaudio

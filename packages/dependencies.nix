@@ -36,6 +36,7 @@
     python3
     python3Packages.pip
     python3Packages.universal-silabs-flasher
+    python3Packages.libgpiod
     phpPackages.composer
     go
     gtk3

@@ -13,8 +13,8 @@
   ];
 
   boot.initrd.availableKernelModules = ["nvme"];
-  boot.initrd.kernelModules = [];
-  boot.kernelModules = [];
+  boot.initrd.kernelModules = ["pl011"];
+  boot.kernelModules = ["pl011" "bcm2835-aux-uart"];
   boot.extraModulePackages = [];
 
   # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
