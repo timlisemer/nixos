@@ -28,6 +28,7 @@ in {
     dex
     wol
     restic
+    usbutils
     fastfetch
     fd
     ffmpeg
