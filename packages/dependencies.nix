@@ -99,6 +99,7 @@
     clippy
     cargo-edit
     cargo-tauri
+    sqlite
     at-spi2-atk
     atkmm
     cairo
