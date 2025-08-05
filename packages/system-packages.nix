@@ -69,6 +69,7 @@ in {
     screen
     spice
     # spice-gtk
+    sqlite
     virt-viewer
     libvirt
     virt-manager
