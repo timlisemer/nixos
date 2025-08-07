@@ -224,6 +224,15 @@
         inherit users;
       };
 
+      greeter = self.mkSystem {
+        hostFile = ./hosts/greeter.nix;
+        system = "x86_64-linux";
+        disks = ["/dev/sda"];
+        hostName = "greeter";
+        backupPaths = backupPaths;
+        inherit users;
+      };
+
       homeassistant-yellow = let
         hostName = "homeassistant-yellow";
       in
@@ -267,11 +276,12 @@
       installer = let
         system = "x86_64-linux";
         pkgs = import nixpkgs-stable {inherit system;};
-        hosts = ["tim-laptop" "tim-pc" "tim-server"];
+        hosts = ["tim-laptop" "tim-pc" "tim-server" "greeter"];
         hostDisks = {
           "tim-laptop" = ["/dev/nvme0n1"];
           "tim-pc" = ["/dev/nvme0n1" "/dev/nvme1n1"];
           "tim-server" = ["/dev/sda"];
+          "greeter" = ["/dev/sda"];
         };
       in
         nixpkgs-stable.lib.nixosSystem {
