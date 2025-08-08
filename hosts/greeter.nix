@@ -14,7 +14,6 @@
     ../common/after_installer.nix
     (modulesPath + "/installer/scan/not-detected.nix")
     (modulesPath + "/profiles/qemu-guest.nix")
-    (import ../common/disko.nix {inherit disks;})
     ../common/common.nix
     ../packages/vscode.nix
     ../packages/system-packages.nix
@@ -30,6 +29,9 @@
 
   # Fix shebangs in scripts # Try to bring this back to common/common.nix however currently it breaks a lot of things for example npm
   services.envfs.enable = true;
+
+  # Conditionally disable sops for image generation (when /etc/ssh keys don't exist)
+  sops.secrets = lib.mkIf (builtins.pathExists /etc/ssh/ssh_host_rsa_key) (lib.mkDefault {});
 
   # Bootloader
   boot.loader.timeout = lib.mkForce 1;

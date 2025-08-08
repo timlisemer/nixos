@@ -367,68 +367,89 @@ function git() {
 	fi
 }
 
-# --- nixos_generate_iso_image: generate a iso image for NixOS --------
-alias nixos_generate_iso_image='nixos_generate_iso_image'
-alias iso_image_create='nixos_generate_iso_image'
-alias create_iso_image='nixos_generate_iso_image'
-nixos_generate_iso_image() {
+# --- nixos_generate_image: generate iso, qcow, or sd-aarch64 image for NixOS ---
+alias iso_image_create='nixos_generate_image'
+alias img_image_create='nixos_generate_image'
+alias qcow_image_create='nixos_generate_image'
+nixos_generate_image() {
 	local HOST="$1"
+	local FORMAT="$2"
+
 	if [ -z "$HOST" ]; then
-		echo "Usage: nixos_generate_iso_image <host>"
+		echo "Error: Missing host parameter"
+		echo "Usage: nixos_generate_image <host> <format>"
+		echo "Available formats: iso, qcow, sd-aarch64"
 		return 1
 	fi
 
-	local OUT="nixos_iso_image_${HOST}_$(date +%Y%m%d_%H%M%S)"
+	if [ -z "$FORMAT" ]; then
+		echo "Error: Missing format parameter"
+		echo "Usage: nixos_generate_image <host> <format>"
+		echo "Available formats: iso, qcow, sd-aarch64"
+		return 1
+	fi
+
+	case "$FORMAT" in
+	iso | qcow | sd-aarch64) ;;
+	*)
+		echo "Error: Invalid format '$FORMAT'"
+		echo "Available formats: iso, qcow, sd-aarch64"
+		return 1
+		;;
+	esac
+
+	# Ask if user wants to clean Nix garbage to avoid hash mismatch errors
+	echo -n "Clean Nix garbage before generating image? This can fix hash mismatch errors. (y/n): "
+	read -r CLEAN_GARBAGE
+	if [ "$CLEAN_GARBAGE" = "y" ] || [ "$CLEAN_GARBAGE" = "Y" ]; then
+		echo "Cleaning Nix garbage..."
+		sudo nix-collect-garbage -d && nix-collect-garbage -d
+		echo "Garbage collection completed."
+		
+		# Also verify and repair the store
+		echo "Verifying and repairing Nix store..."
+		sudo nix-store --verify --check-contents --repair
+		echo "Store verification completed."
+	fi
+
+	local OUT="nixos_${FORMAT}_image_${HOST}_$(date +%Y%m%d_%H%M%S)"
 	local TMPDIR="/tmp/$OUT"
 	local DESTDIR=~/Coding/Other/nixos-images/
+	local SUDO_CMD=""
 
-	# Ensure destination directory exists
 	mkdir -p "$DESTDIR"
 
-	if nix run --impure github:nix-community/nixos-generators -- \
-		--format iso \
+	if [ "$FORMAT" = "sd-aarch64" ]; then
+		SUDO_CMD="sudo"
+	fi
+
+	if $SUDO_CMD nix run --impure github:nix-community/nixos-generators -- \
+		--format "$FORMAT" \
 		--flake /etc/nixos#"${HOST}" \
 		-o "$TMPDIR"; then
 
-		# Copy the generated files to destination
-		cp "$TMPDIR"/iso/*.iso "$DESTDIR/$OUT.iso"
-		echo "ISO image successfully stored at: $DESTDIR"
-		# Show the generated files
+		case "$FORMAT" in
+		iso)
+			cp "$TMPDIR"/iso/*.iso "$DESTDIR/$OUT.iso"
+			chmod 644 "$DESTDIR/$OUT.iso"
+			chown $USER:$USER "$DESTDIR/$OUT.iso"
+			;;
+		qcow)
+			cp "$TMPDIR"/nixos.qcow2 "$DESTDIR/$OUT.qcow2"
+			chmod 644 "$DESTDIR/$OUT.qcow2"
+			chown $USER:$USER "$DESTDIR/$OUT.qcow2"
+			;;
+		sd-aarch64)
+			zstd --decompress "$TMPDIR"/sd-image/*.zst -o "$DESTDIR/$OUT.img"
+			chmod 644 "$DESTDIR/$OUT.img"
+			sudo chown $USER:$USER "$DESTDIR/$OUT.img"
+			;;
+		esac
+
+		echo "$FORMAT image successfully stored at: $DESTDIR"
 		find "$DESTDIR" -name "*${OUT}*" -type f -print
 	else
-		echo "Failed to generate ISO image for host: $HOST"
-		return 1
-	fi
-}
-# -------------------------------------------------------------------------
-
-# --- nixos_generate_img_image: generate an SD image for NixOS ----------
-alias nixos_generate_img_image='nixos_generate_img_image'
-alias img_image_create='nixos_generate_img_image'
-alias create_img_image='nixos_generate_img_image'
-nixos_generate_img_image() {
-	local HOST="$1"
-	if [ -z "$HOST" ]; then
-		echo "Usage: nixos_generate_img_image <host>"
-		return 1
-	fi
-
-	local OUT="nixos_img_image_${HOST}_$(date +%Y%m%d_%H%M%S)"
-	local TMPDIR="/tmp/$OUT"
-	local DESTDIR=~/Coding/Other/nixos-images/
-
-	mkdir -p "$DESTDIR"
-
-	if sudo nix run --impure github:nix-community/nixos-generators -- \
-		--format sd-aarch64 \
-		--flake /etc/nixos#"${HOST}" \
-		-o "$TMPDIR"; then
-
-		zstd --decompress "$TMPDIR"/sd-image/*.zst -o "$DESTDIR/$OUT.img"
-		echo "IMG image successfully stored at: $DESTDIR"
-		find "$DESTDIR" -name "*${OUT}*" -type f -print
-	else
-		echo "Failed to generate IMG image for host: $HOST"
+		echo "Failed to generate $FORMAT image for host: $HOST"
 		return 1
 	fi
 }
