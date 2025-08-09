@@ -32,6 +32,11 @@ in {
     trusted-users = ["root" "@wheel"];
   };
 
+  # Add GitHub token for Nix to avoid rate limits
+  nix.extraOptions = ''
+    !include /run/secrets-rendered/nix-extra.conf
+  '';
+
   # Environment Variables
   environment.variables = {
     RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
@@ -46,6 +51,7 @@ in {
     PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig";
     BLESH_PATH = "${pkgs.blesh}/share/blesh";
     # environment.variables.GEMINI_API_KEY = "YOUR_API_KEY"; # OPTIONAL - For Gemini CLI
+    # GITHUB_TOKEN = "$(cat ${config.sops.secrets.github_token.path})";
   };
 
   # Enable experimental nix-command and flakes
@@ -107,6 +113,7 @@ in {
 
   # Container
   services.spice-vdagentd.enable = true;
+  services.qemuGuest.enable = true;
   virtualisation.spiceUSBRedirection.enable = true;
   virtualisation.containers.enable = true;
   virtualisation.containers.registries.search = ["docker.io"];

@@ -423,6 +423,12 @@ nixos_generate_image() {
 		SUDO_CMD="sudo"
 	fi
 
+	# Check for GitHub token to avoid rate limits
+	if [ -z "$GITHUB_TOKEN" ]; then
+		echo "Warning: GITHUB_TOKEN not set. You may hit GitHub API rate limits."
+		echo "To fix: export GITHUB_TOKEN=your_github_personal_access_token"
+	fi
+
 	if $SUDO_CMD nix run --impure github:nix-community/nixos-generators -- \
 		--format "$FORMAT" \
 		--flake /etc/nixos#"${HOST}" \
