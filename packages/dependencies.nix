@@ -37,8 +37,6 @@
     python3Packages.pip
     phpPackages.composer
     go
-    gtk3
-    gtk4
     gtk4.dev
     gobject-introspection
     gjs
@@ -103,13 +101,17 @@
     sqlite
     at-spi2-atk
     atkmm
-    cairo
-    gdk-pixbuf
-    glib
-    gtk3
-    harfbuzz
+    cairo.dev
+    gdk-pixbuf.dev
+    glib.dev
+    gobject-introspection.dev
+    libgee.dev
+    xorg.libX11.dev
+    atk.dev
+    graphene.dev
+    harfbuzz.dev
     libsoup_3
-    pango
+    pango.dev
     webkitgtk_4_1
     zlib
   ];
