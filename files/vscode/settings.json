@@ -14,7 +14,8 @@
   "extensions.autoCheckUpdates": true,
   "git.autofetch": true,
   "git.enableSmartCommit": true,
-  "git.openRepositoryInParentFolders": "always"
+  "git.openRepositoryInParentFolders": "always",
+  "github.copilot.nextEditSuggestions.enabled": true,
 
   // ESLint for JS/TS linting
   "eslint.enable": true,
@@ -93,7 +94,7 @@
     "editor.defaultFormatter": "foxundermoon.shell-format"
   },
   "[dockerfile]": {
-    "editor.defaultFormatter": "ms-azuretools.vscode-docker"
+    "editor.defaultFormatter": "ms-azuretools.vscode-containers"
   },
   "[nix]": {
     "editor.defaultFormatter": "kamadorueda.alejandra"

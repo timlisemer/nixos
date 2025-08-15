@@ -19,6 +19,7 @@ in {
     syncthing
     vaapiVdpau
     comfortaa
+    pciutils
     bat
     cliphist
     dejavu_fonts
