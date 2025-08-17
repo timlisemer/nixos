@@ -113,12 +113,21 @@ in {
     code = "sshcode";
   };
 
+  # VS Code expects extensions in specific directories that NixOS doesn't provide by default.
+  # This script creates symlinks from VS Code's expected locations to the Nix store,
+  # allowing both local and remote VS Code sessions to find and use NixOS-managed extensions.
   system.activationScripts.vscode-remote-extensions = ''
     # Create the VS Code cache directory for VSIX files
     mkdir -p /home/tim/.config/Code/CachedExtensionVSIXs
     
     # Create the remote extensions directory
     mkdir -p /home/tim/.vscode-server/extensions
+
+    # Clean up old symlinks in CachedExtensionVSIXs
+    find /home/tim/.config/Code/CachedExtensionVSIXs -type l -delete 2>/dev/null || true
+
+    # Clean up old symlinks in .vscode-server/extensions
+    find /home/tim/.vscode-server/extensions -type l -delete 2>/dev/null || true
 
     # Find all VSIX files in the Nix store and link them to the cache
     for vsix in $(find /nix/store -name "*.vsix" -type f 2>/dev/null | grep -E "(vscode-extension-|claude-code)" | head -50); do
