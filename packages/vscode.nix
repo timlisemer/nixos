@@ -112,4 +112,37 @@ in {
   environment.shellAliases = {
     code = "sshcode";
   };
+
+  system.activationScripts.vscode-remote-extensions = ''
+    # Create the VS Code cache directory for VSIX files
+    mkdir -p /home/tim/.config/Code/CachedExtensionVSIXs
+    
+    # Create the remote extensions directory
+    mkdir -p /home/tim/.vscode-server/extensions
+
+    # Find all VSIX files in the Nix store and link them to the cache
+    for vsix in $(find /nix/store -name "*.vsix" -type f 2>/dev/null | grep -E "(vscode-extension-|claude-code)" | head -50); do
+      if [ -f "$vsix" ]; then
+        # Generate a unique ID for each VSIX (using hash of the path)
+        cache_id=$(echo "$vsix" | sha256sum | cut -c1-40)
+        ln -sf "$vsix" "/home/tim/.config/Code/CachedExtensionVSIXs/$cache_id" 2>/dev/null || true
+      fi
+    done
+
+    # Find VS Code extensions in Nix store and link to .vscode-server
+    for ext_dir in $(find /nix/store -maxdepth 1 -name "*vscode-extension-*" -type d 2>/dev/null); do
+      if [ -d "$ext_dir" ]; then
+        # Extract the full extension name including publisher and version
+        ext_name=$(basename "$ext_dir")
+        # Use shell parameter expansion to remove hash prefix
+        # This removes everything up to and including the first dash after the hash
+        clean_name="''${ext_name#*-}"
+        ln -sf "$ext_dir" "/home/tim/.vscode-server/extensions/$clean_name" 2>/dev/null || true
+      fi
+    done
+
+    # Set proper ownership
+    chown -R tim:users /home/tim/.config/Code/CachedExtensionVSIXs 2>/dev/null || true
+    chown -R tim:users /home/tim/.vscode-server 2>/dev/null || true
+  '';
 }
