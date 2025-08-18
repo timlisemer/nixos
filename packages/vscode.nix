@@ -126,8 +126,10 @@ in {
     # Clean up old symlinks in CachedExtensionVSIXs
     find /home/tim/.config/Code/CachedExtensionVSIXs -type l -delete 2>/dev/null || true
 
-    # Clean up old symlinks in .vscode-server/extensions
+    # Clean up old extensions in .vscode-server/extensions
+    # Remove both symlinks and directories that match our naming pattern
     find /home/tim/.vscode-server/extensions -type l -delete 2>/dev/null || true
+    find /home/tim/.vscode-server/extensions -maxdepth 1 -name "*vscode-extension-*" -type d -exec rm -rf {} \; 2>/dev/null || true
 
     # Find all VSIX files in the Nix store and link them to the cache
     for vsix in $(find /nix/store -name "*.vsix" -type f 2>/dev/null | grep -E "(vscode-extension-|claude-code)" | head -50); do
@@ -138,15 +140,24 @@ in {
       fi
     done
 
-    # Find VS Code extensions in Nix store and link to .vscode-server
+    # Copy VS Code extensions from Nix store to .vscode-server
+    # We copy instead of symlink because VS Code needs to write to these files
+    # and symlinks to the read-only Nix store cause EACCES permission errors
     for ext_dir in $(find /nix/store -maxdepth 1 -name "*vscode-extension-*" -type d 2>/dev/null); do
       if [ -d "$ext_dir" ]; then
-        # Extract the full extension name including publisher and version
+        # Extract the full extension name
         ext_name=$(basename "$ext_dir")
-        # Use shell parameter expansion to remove hash prefix
-        # This removes everything up to and including the first dash after the hash
-        clean_name="''${ext_name#*-}"
-        ln -sf "$ext_dir" "/home/tim/.vscode-server/extensions/$clean_name" 2>/dev/null || true
+        # Remove the hash prefix and "vscode-extension-" to get a clean name
+        # Format: hash-vscode-extension-publisher-name-version
+        clean_name="''${ext_name#*vscode-extension-}"
+        target_dir="/home/tim/.vscode-server/extensions/$clean_name"
+        
+        # Only copy if the extension doesn't already exist
+        if [ ! -d "$target_dir" ]; then
+          cp -r "$ext_dir" "$target_dir" 2>/dev/null || true
+          # Make the copied files writable for VS Code
+          chmod -R u+w "$target_dir" 2>/dev/null || true
+        fi
       fi
     done
 
