@@ -41,6 +41,7 @@
 
     networkmanager.ensureProfiles.environmentFiles = [
       "/run/secrets/wifiENV"
+      "/run/secrets/rendered/wireguardENV"
     ];
 
     networkmanager.ensureProfiles.profiles = {
@@ -170,14 +171,14 @@
         };
 
         wireguard = {
-          private-key = "${config.sops.placeholder.wireguard_home_private_key}";
+          private-key = "$WG_HOME_PRIVATE_KEY";
         };
 
         "wireguard-peer.KurEHrUhn1j117Abf4ESMMqAwm5YO1QiGe/jeY+OcTs=" = {
           endpoint = "odalb8joqto3nnev.myfritz.net:57189";
           persistent-keepalive = "25";
           allowed-ips = "10.0.0.0/8;192.168.178.0/24;0.0.0.0/0;fdb3:10a8:8234::/64;::/0";
-          preshared-key = "${config.sops.placeholder.wireguard_home_preshared_key}";
+          preshared-key = "$WG_HOME_PRESHARED_KEY";
         };
 
         ipv4 = {

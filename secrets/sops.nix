@@ -61,4 +61,14 @@
   # WireGuard Home VPN secrets
   sops.secrets.wireguard_home_private_key = {};
   sops.secrets.wireguard_home_preshared_key = {};
+
+  # Template for WireGuard environment variables
+  sops.templates."wireguardENV" = {
+    owner = "root";
+    mode = "0400";
+    content = ''
+      WG_HOME_PRIVATE_KEY=${config.sops.placeholder.wireguard_home_private_key}
+      WG_HOME_PRESHARED_KEY=${config.sops.placeholder.wireguard_home_preshared_key}
+    '';
+  };
 }
