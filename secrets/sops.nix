@@ -57,4 +57,8 @@
   sops.secrets.openvpn_cert = {group = "nm-openvpn";};
   sops.secrets.openvpn_key = {group = "nm-openvpn";};
   sops.secrets.openvpn_ta = {group = "nm-openvpn";};
+
+  # WireGuard Home VPN secrets
+  sops.secrets.wireguard_home_private_key = {};
+  sops.secrets.wireguard_home_preshared_key = {};
 }

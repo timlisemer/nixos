@@ -161,6 +161,37 @@
           dns = "fec0:0:0:ffff::1;fec0:0:0:ffff::2;fec0:0:0:ffff::3";
         };
       };
+      "Home" = {
+        connection = {
+          id = "Home";
+          type = "wireguard";
+          interface-name = "wg-home";
+          autoconnect = false;
+        };
+
+        wireguard = {
+          private-key = "${config.sops.placeholder.wireguard_home_private_key}";
+        };
+
+        "wireguard-peer.KurEHrUhn1j117Abf4ESMMqAwm5YO1QiGe/jeY+OcTs=" = {
+          endpoint = "odalb8joqto3nnev.myfritz.net:57189";
+          persistent-keepalive = "25";
+          allowed-ips = "10.0.0.0/8;192.168.178.0/24;0.0.0.0/0;fdb3:10a8:8234::/64;::/0";
+          preshared-key = "${config.sops.placeholder.wireguard_home_preshared_key}";
+        };
+
+        ipv4 = {
+          address1 = "10.2.0.0/8";
+          method = "manual";
+          dns = "10.0.0.2;10.0.0.1;192.168.178.1";
+          dns-search = "fritz.box";
+        };
+        ipv6 = {
+          address1 = "fdb3:10a8:8234::201/64";
+          method = "manual";
+          dns = "2a02:908:df57:3f20:2459:6285:7898:12ac;fdb3:10a8:8234::2e91:abff:fe85:a0e1";
+        };
+      };
     };
   };
 

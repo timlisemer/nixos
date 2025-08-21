@@ -47,6 +47,7 @@ in {
     nmap
     ripgrep
     openvpn
+    wireguard-tools
     trash-cli
     vdpauinfo
     resources
