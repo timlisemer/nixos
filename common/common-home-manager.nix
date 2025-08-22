@@ -268,4 +268,29 @@ in {
       WantedBy = ["default.target"];
     };
   };
+
+  # Claude MCP servers setup
+  # Check status: systemctl --user status claude-mcp-setup
+  # View logs: journalctl --user -u claude-mcp-setup
+  systemd.user.services.claude-mcp-setup = {
+    Unit = {
+      Description = "Setup Claude MCP servers on startup";
+      After = ["network-online.target"];
+      Wants = ["network-online.target"];
+    };
+    Service = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.writeShellScript "claude-mcp-setup" ''
+        # Add servers with user scope for global access
+        claude mcp add nixos-search --scope user -- ssh tim-server "docker exec -i mcp-server-host sh -c 'exec 2>/dev/null; /app/servers/mcp-nixos/venv/bin/python3 -m mcp_nixos.server'"
+
+        claude mcp add tailwind-svelte --scope user -- ssh tim-server "docker exec -i mcp-server-host node /app/servers/tailwind-svelte-assistant/dist/index.js"
+
+        claude mcp add context7 --scope user -- ssh tim-server "docker exec -i mcp-server-host npx -y @upstash/context7-mcp"
+      ''}";
+    };
+    Install = {
+      WantedBy = ["default.target"];
+    };
+  };
 }
