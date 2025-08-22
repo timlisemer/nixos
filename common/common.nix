@@ -377,6 +377,42 @@ in {
     '';
   };
 
+  ##########################################################################
+  ## Home directory ownership correction service                          ##
+  ##########################################################################
+  systemd.services.fix-home-ownership = {
+    description = "Fix ownership of user home directories";
+    after = ["local-fs.target"];
+    wantedBy = ["multi-user.target"];
+
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+
+    script = ''
+      set -euo pipefail
+      
+      echo "Fixing home directory ownership for all users..."
+      
+      # Iterate over every "real" user account (UID >= 1000, has valid shell)
+      ${pkgs.getent}/bin/getent passwd | ${pkgs.gawk}/bin/awk -F: '$3 >= 1000 && $7 !~ /(false|nologin)/ {print $1}' |
+      while read -r user; do
+        home="$(${pkgs.getent}/bin/getent passwd "$user" | cut -d: -f6)"
+        group="$(${pkgs.coreutils}/bin/id -gn "$user" 2>/dev/null || echo "users")"
+        
+        if [ -d "$home" ]; then
+          echo "Fixing ownership for $user ($home)"
+          ${pkgs.coreutils}/bin/chown -R "$user:$group" "$home" 2>/dev/null || {
+            echo "Warning: Failed to fix ownership for some files in $home" >&2
+          }
+        fi
+      done
+      
+      echo "Home directory ownership correction completed"
+    '';
+  };
+
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
   # on your system were taken. It’s perfectly fine and recommended to leave

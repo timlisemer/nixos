@@ -195,28 +195,29 @@
   };
 
   # Google Drive Rclone Mount
-  environment.etc."rclone-gdrive.conf".text = lib.mkForce ''
-    [gdrive]
-    type = drive
-    client_id = /run/secrets/google_oauth_client_id
-    scope = drive
-    service_account_file = /run/secrets/google-sa
-  '';
-  fileSystems."/mnt/gdrive" = {
-    device = "gdrive:";
-    fsType = "rclone";
-    options = [
-      "nodev"
-      "nofail"
-      "allow_other"
-      "args2env"
-      "config=/etc/rclone-gdrive.conf"
-      # --- network-related bits ---
-      "_netdev" # mark as “needs the network”
-      "x-systemd.requires=network-online.target"
-      "x-systemd.after=network-online.target"
-    ];
-  };
+  #environment.
+  #etc."rclone-gdrive.conf".text = lib.mkForce ''
+  #  [gdrive]
+  #  type = drive
+  #  client_id = /run/secrets/google_oauth_client_id
+  #  scope = drive
+  #  service_account_file = /run/secrets/google-sa
+  #'';
+  #fileSystems."/mnt/gdrive" = {
+  #  device = "gdrive:";
+  #  fsType = "rclone";
+  #  options = [
+  #    "nodev"
+  #    "nofail"
+  #    "allow_other"
+  #    "args2env"
+  #    "config=/etc/rclone-gdrive.conf"
+  #    # --- network-related bits ---
+  #    "_netdev" # mark as “needs the network”
+  #    "x-systemd.requires=network-online.target"
+  #    "x-systemd.after=network-online.target"
+  #  ];
+  #};
 
   # Cloudflare R2 Rclone Mount
   fileSystems."/mnt/cloudflare" = {
