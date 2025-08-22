@@ -32,9 +32,7 @@
   # Or disable entirely:
   networking = {
     firewall.enable = false;
-
     networkmanager.enable = true;
-    networkmanager.dns = "systemd-resolved";
 
     networkmanager.plugins = with pkgs; [
       networkmanager-openvpn
@@ -134,7 +132,6 @@
           auth = "SHA256";
           remote-cert-tls = "server";
           verify-x509-name = "name:iocto OpenVPN Automation Server";
-
           ca = "/run/secrets/openvpn_ca";
           extra-certs = "/run/secrets/openvpn_extra_certs";
           cert = "/run/secrets/openvpn_cert";
@@ -196,9 +193,6 @@
       };
     };
   };
-
-  # Enable systemd-resolved for DNS
-  services.resolved.enable = true;
 
   # Google Drive Rclone Mount
   environment.etc."rclone-gdrive.conf".text = lib.mkForce ''
