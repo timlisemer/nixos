@@ -853,35 +853,66 @@ in {
           fi
         done <<< "$selected_repos"
 
-        timestamps=$(sort -u -r "$FILTERED_TIMESTAMPS")
-        if [[ -z "$timestamps" ]]; then
+        # Group timestamps into 5-minute windows
+        GROUP_TIMESTAMPS=$(mktemp)
+        GROUP_COUNTS=$(mktemp)
+        trap "rm -f $BACKUP_PATHS_FILE $BACKUP_SNAPSHOTS_FILE $FILTERED_TIMESTAMPS $GROUP_TIMESTAMPS $GROUP_COUNTS" EXIT
+        
+        # Process timestamps and group by 5-minute windows
+        while IFS= read -r timestamp; do
+          if [[ -n "$timestamp" ]]; then
+            # Convert ISO timestamp to epoch for grouping
+            epoch=$(date -d "$timestamp" +%s 2>/dev/null || echo "0")
+            if [[ "$epoch" != "0" ]]; then
+              # Round down to 5-minute boundary (300 seconds)
+              group_epoch=$((epoch - (epoch % 300)))
+              group_timestamp=$(date -d "@$group_epoch" '+%Y-%m-%d %H:%M' 2>/dev/null || echo "unknown")
+              echo "$group_timestamp|$timestamp" >> "$GROUP_TIMESTAMPS"
+            fi
+          fi
+        done < <(sort -u -r "$FILTERED_TIMESTAMPS")
+
+        if [[ ! -s "$GROUP_TIMESTAMPS" ]]; then
           echo_error "No snapshots found for selected repositories"
           exit 1
         fi
 
-        echo "Available restore points:"
-        timestamp_array=()
-        while IFS= read -r line; do
-          if [[ -n "$line" ]]; then
-            timestamp_array+=("$line")
+        # Count snapshots per group and create display array
+        declare -A group_counts
+        while IFS='|' read -r group_time individual_time; do
+          if [[ -n "$group_time" ]]; then
+            group_counts["$group_time"]=$((''${group_counts["$group_time"]:-0} + 1))
           fi
-        done <<< "$timestamps"
+        done < "$GROUP_TIMESTAMPS"
 
-        for i in "''${!timestamp_array[@]}"; do
-          echo "  $((i + 1)). ''${timestamp_array[$i]}"
+        # Create sorted array of unique groups with counts
+        group_array=()
+        for group_time in $(cut -d'|' -f1 "$GROUP_TIMESTAMPS" | sort -u -r); do
+          count=''${group_counts["$group_time"]}
+          group_array+=("$group_time|$count")
+        done
+
+        echo "Available restore time windows (5-minute groups):"
+        for i in "''${!group_array[@]}"; do
+          IFS='|' read -r group_time count <<< "''${group_array[$i]}"
+          # Format: "1. 2025-08-23 06:30-06:35 (17 snapshots)"
+          end_time=$(date -d "$group_time +5 minutes" '+%H:%M' 2>/dev/null || echo "??:??")
+          start_time=$(date -d "$group_time" '+%H:%M' 2>/dev/null || echo "??:??")
+          date_part=$(date -d "$group_time" '+%Y-%m-%d' 2>/dev/null || echo "unknown")
+          echo "  $((i + 1)). $date_part $start_time-$end_time ($count snapshots)"
         done
 
         echo
-        read -p "Select timestamp [1]: " timestamp_choice
+        read -p "Select time window [1]: " timestamp_choice
         timestamp_choice=''${timestamp_choice:-1}
 
-        if [[ ! "$timestamp_choice" =~ ^[0-9]+$ ]] || [[ "$timestamp_choice" -lt 1 ]] || [[ "$timestamp_choice" -gt ''${#timestamp_array[@]} ]]; then
-          echo_error "Invalid timestamp selection"
+        if [[ ! "$timestamp_choice" =~ ^[0-9]+$ ]] || [[ "$timestamp_choice" -lt 1 ]] || [[ "$timestamp_choice" -gt ''${#group_array[@]} ]]; then
+          echo_error "Invalid time window selection"
           exit 1
         fi
 
-        SELECTED_TIMESTAMP="''${timestamp_array[$((timestamp_choice - 1))]}"
-        echo_info "Selected timestamp: ''${BOLD}$SELECTED_TIMESTAMP''${NC}"
+        IFS='|' read -r SELECTED_GROUP count <<< "''${group_array[$((timestamp_choice - 1))]}"
+        echo_info "Selected time window: ''${BOLD}$SELECTED_GROUP (+5 minutes)''${NC}"
         echo
 
         # Phase 5: Restoration
@@ -926,7 +957,7 @@ in {
 
             echo_info "Restoring ''${BOLD}$native_path''${NC} from ''${BOLD}$repo_subpath''${NC}..."
 
-            # Find closest snapshot <= selected timestamp
+            # Get all snapshots for this repository
             snapshots=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
               restic --repo "$REPO" --password-file "$PWD_FILE" \
               snapshots --json --path "$native_path" 2>/dev/null || echo "[]")
@@ -937,17 +968,28 @@ in {
               continue
             fi
 
-            # Find best snapshot (closest to but not after selected timestamp)
-            selected_timestamp_iso="''${SELECTED_TIMESTAMP:0:10}T''${SELECTED_TIMESTAMP:11:8}"
-            best_snapshot=$(echo "$snapshots" | jq -r --arg target "$selected_timestamp_iso" '
-              [.[] | select(.time <= $target)] |
-              sort_by(.time) |
-              last // empty |
-              .short_id'
+            # Calculate time window boundaries  
+            group_start_epoch=$(date -d "$SELECTED_GROUP" +%s 2>/dev/null || echo "0")
+            group_end_epoch=$((group_start_epoch + 300))  # +5 minutes
+            
+            # Find best snapshot within the time window, or the newest before the window
+            best_snapshot=$(echo "$snapshots" | jq -r --arg group_start "$(date -d "@$group_start_epoch" '+%Y-%m-%dT%H:%M:%S')" \
+              --arg group_end "$(date -d "@$group_end_epoch" '+%Y-%m-%dT%H:%M:%S')" '
+              # Try to find snapshots within the time window first
+              ([.[] | select(.time >= $group_start and .time <= $group_end)] | sort_by(.time) | last) as $in_window |
+              # If none in window, find the newest snapshot before the window  
+              ([.[] | select(.time < $group_start)] | sort_by(.time) | last) as $before_window |
+              # Use in-window snapshot if available, otherwise use before-window snapshot
+              (($in_window // $before_window) | .short_id // empty)'
+            )
+            
+            # Get the timestamp of the selected snapshot for logging
+            selected_snapshot_time=$(echo "$snapshots" | jq -r --arg snapshot_id "$best_snapshot" '
+              .[] | select(.short_id == $snapshot_id) | .time'
             )
 
             if [[ -z "$best_snapshot" ]] || [[ "$best_snapshot" == "null" ]]; then
-              echo_warning "No snapshots found before or at $SELECTED_TIMESTAMP for $native_path, skipping"
+              echo_warning "No suitable snapshots found for $native_path, skipping"
               skipped_count=$((skipped_count + 1))
               continue
             fi
@@ -956,7 +998,9 @@ in {
             if sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
               restic --repo "$REPO" --password-file "$PWD_FILE" \
               restore "$best_snapshot" --path "$native_path" --target "$DEST" 2>/dev/null; then
-              echo_success "Restored $native_path (snapshot: $best_snapshot)"
+              # Format timestamp for display (remove microseconds and timezone for readability)
+              display_time=$(echo "$selected_snapshot_time" | sed 's/\.[0-9]*+.*$//')
+              echo_success "Restored $native_path from snapshot $best_snapshot at $display_time"
               restored_count=$((restored_count + 1))
             else
               echo_error "Failed to restore $native_path"
