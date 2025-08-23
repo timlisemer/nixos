@@ -438,4 +438,10 @@
     cp ${./../files/librechat.yaml} /mnt/docker-data/volumes/librechat-api/librechat.yaml
     chmod 644 /mnt/docker-data/volumes/librechat-api/librechat.yaml
   '';
+
+  system.activationScripts.copyMcpServerConfig = lib.stringAfter ["var"] ''
+    mkdir -p /mnt/docker-data/volumes/mcp-server-host/config
+    cp ${./../files/mcp-server-host/servers.json} /mnt/docker-data/volumes/mcp-server-host/config/servers.json
+    chmod 644 /mnt/docker-data/volumes/mcp-server-host/config/servers.json
+  '';
 }
