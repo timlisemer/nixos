@@ -497,62 +497,11 @@ in {
         fi
 
         if [[ "$RETURN_MODE" == "true" ]]; then
-          # Return structured JSON data
+          # Simple JSON output - just return the raw data files as base64 for parsing elsewhere
           echo "{"
           echo "  \"host\": \"$HOST\","
-          echo "  \"paths\": ["
-          
-          # Add paths with their repo subpaths and snapshot counts
-          first=true
-          while IFS='|' read -r path count; do
-            if [[ -n "$path" ]]; then
-              [[ "$first" == "true" ]] && first=false || echo ","
-              
-              # Determine category and repo subpath
-              if [[ "$path" =~ ^/home/ ]]; then
-                category="user_home"
-                # Extract repo subpath from path
-                user=$(echo "$path" | cut -d/ -f3)
-                subdir=$(echo "$path" | cut -d/ -f4-)
-                repo_subpath="user_home/$user/$subdir"
-              elif [[ "$path" =~ ^/mnt/docker-data/volumes/ ]]; then
-                category="docker_volume"
-                volume=$(echo "$path" | cut -d/ -f5-)
-                repo_subpath="docker_volume/$volume"
-              else
-                category="system"
-                sys_path=$(echo "$path" | cut -d/ -f2-)
-                repo_subpath="system/$sys_path"
-              fi
-              
-              echo -n "    {"
-              echo -n "\"native_path\": \"$path\", "
-              echo -n "\"repo_subpath\": \"$repo_subpath\", "
-              echo -n "\"category\": \"$category\", "
-              echo -n "\"snapshot_count\": $count"
-              echo -n "}"
-            fi
-          done < "$PATHS_FILE"
-          
-          echo ""
-          echo "  ],"
-          echo "  \"snapshots\": ["
-          
-          # Add timeline data
-          first=true
-          if [[ -s "$SNAPSHOTS_FILE" ]]; then
-            sort -r "$SNAPSHOTS_FILE" | while IFS='|' read -r timestamp path snapshot_id; do
-              [[ "$first" == "true" ]] && first=false || echo ","
-              echo -n "    {"
-              echo -n "\"timestamp\": \"$timestamp\", "
-              echo -n "\"path\": \"$path\", "
-              echo -n "\"snapshot_id\": \"$snapshot_id\""
-              echo -n "}"
-            done
-          fi
-          
-          echo ""
-          echo "  ]"
+          echo "  \"paths_data\": \"$(base64 -w 0 "$PATHS_FILE" 2>/dev/null || echo "")\","
+          echo "  \"snapshots_data\": \"$(base64 -w 0 "$SNAPSHOTS_FILE" 2>/dev/null || echo "")\""
           echo "}"
         else
           # Display formatted output (existing behavior)
@@ -711,17 +660,34 @@ in {
 
         # Phase 2: Get backup data for selected host
         echo_info "Querying backups for $SELECTED_HOST..."
-        backup_data=$(restic_list_replacement --return "$SELECTED_HOST")
+        backup_json=$(restic_list_replacement --return "$SELECTED_HOST")
         
-        if [[ -z "$backup_data" ]] || [[ "$backup_data" == "{}" ]]; then
+        if [[ -z "$backup_json" ]] || [[ "$backup_json" == "{}" ]]; then
           echo_error "No backup data found for host $SELECTED_HOST"
           exit 1
         fi
 
+        # Extract and decode the data
+        paths_data_b64=$(echo "$backup_json" | jq -r '.paths_data // ""')
+        snapshots_data_b64=$(echo "$backup_json" | jq -r '.snapshots_data // ""')
+        
+        # Create temporary files with the decoded data
+        BACKUP_PATHS_FILE=$(mktemp)
+        BACKUP_SNAPSHOTS_FILE=$(mktemp)
+        trap "rm -f $BACKUP_PATHS_FILE $BACKUP_SNAPSHOTS_FILE" EXIT
+        
+        if [[ -n "$paths_data_b64" ]] && [[ "$paths_data_b64" != "null" ]]; then
+          echo "$paths_data_b64" | base64 -d > "$BACKUP_PATHS_FILE" 2>/dev/null || true
+        fi
+        
+        if [[ -n "$snapshots_data_b64" ]] && [[ "$snapshots_data_b64" != "null" ]]; then
+          echo "$snapshots_data_b64" | base64 -d > "$BACKUP_SNAPSHOTS_FILE" 2>/dev/null || true
+        fi
+
         # Parse available categories
-        user_home_count=$(echo "$backup_data" | jq '[.paths[] | select(.category == "user_home")] | length')
-        docker_count=$(echo "$backup_data" | jq '[.paths[] | select(.category == "docker_volume")] | length')
-        system_count=$(echo "$backup_data" | jq '[.paths[] | select(.category == "system")] | length')
+        user_home_count=$(grep "^/home/" "$BACKUP_PATHS_FILE" 2>/dev/null | wc -l || echo "0")
+        docker_count=$(grep "^/mnt/docker-data/" "$BACKUP_PATHS_FILE" 2>/dev/null | wc -l || echo "0")
+        system_count=$(grep -v "^/home/" "$BACKUP_PATHS_FILE" 2>/dev/null | grep -v "^/mnt/docker-data/" 2>/dev/null | wc -l || echo "0")
         
         echo_success "Found backups: User Home ($user_home_count), Docker Volumes ($docker_count), System ($system_count)"
         echo
@@ -743,12 +709,36 @@ in {
 
         read -p "Your choice: " restore_choice
 
+        # Helper function to convert path to repo subpath
+        path_to_repo_subpath() {
+          local path="$1"
+          if [[ "$path" =~ ^/home/ ]]; then
+            # user_home/tim/.config -> user_home/tim/_config
+            user=$(echo "$path" | cut -d/ -f3)
+            subdir=$(echo "$path" | cut -d/ -f4-)
+            echo "user_home/$user/''${subdir//\//_}"
+          elif [[ "$path" =~ ^/mnt/docker-data/volumes/ ]]; then
+            # docker_volume/volume_name
+            volume=$(echo "$path" | cut -d/ -f5-)
+            echo "docker_volume/''${volume//\//_}"
+          else
+            # system paths
+            sys_path=$(echo "$path" | cut -d/ -f2-)
+            echo "system/$sys_path"
+          fi
+        }
+
         # Build selected repositories list
         selected_repos=""
         case "$restore_choice" in
           1)
             # All repositories
-            selected_repos=$(echo "$backup_data" | jq -r '.paths[] | .repo_subpath')
+            while IFS='|' read -r path count; do
+              if [[ -n "$path" ]]; then
+                repo_subpath=$(path_to_repo_subpath "$path")
+                selected_repos+="$repo_subpath"$'\n'
+              fi
+            done < "$BACKUP_PATHS_FILE"
             ;;
           2)
             # User Home only
@@ -756,7 +746,12 @@ in {
               echo_error "No user home backups available"
               exit 1
             fi
-            selected_repos=$(echo "$backup_data" | jq -r '.paths[] | select(.category == "user_home") | .repo_subpath')
+            while IFS='|' read -r path count; do
+              if [[ "$path" =~ ^/home/ ]]; then
+                repo_subpath=$(path_to_repo_subpath "$path")
+                selected_repos+="$repo_subpath"$'\n'
+              fi
+            done < "$BACKUP_PATHS_FILE"
             ;;
           3)
             # Docker Volumes only
@@ -764,7 +759,12 @@ in {
               echo_error "No docker volume backups available"
               exit 1
             fi
-            selected_repos=$(echo "$backup_data" | jq -r '.paths[] | select(.category == "docker_volume") | .repo_subpath')
+            while IFS='|' read -r path count; do
+              if [[ "$path" =~ ^/mnt/docker-data/ ]]; then
+                repo_subpath=$(path_to_repo_subpath "$path")
+                selected_repos+="$repo_subpath"$'\n'
+              fi
+            done < "$BACKUP_PATHS_FILE"
             ;;
           4)
             # System only
@@ -772,19 +772,24 @@ in {
               echo_error "No system backups available"
               exit 1
             fi
-            selected_repos=$(echo "$backup_data" | jq -r '.paths[] | select(.category == "system") | .repo_subpath')
+            while IFS='|' read -r path count; do
+              if [[ ! "$path" =~ ^/home/ ]] && [[ ! "$path" =~ ^/mnt/docker-data/ ]]; then
+                repo_subpath=$(path_to_repo_subpath "$path")
+                selected_repos+="$repo_subpath"$'\n'
+              fi
+            done < "$BACKUP_PATHS_FILE"
             ;;
           5)
             # Custom selection - interactive multi-select
             echo_info "Available repositories:"
-            repo_list=$(echo "$backup_data" | jq -r '.paths[] | "\(.native_path)|\(.repo_subpath)|\(.snapshot_count)"')
             
             repo_array=()
-            while IFS='|' read -r native_path repo_subpath snapshot_count; do
-              if [[ -n "$native_path" ]]; then
-                repo_array+=("$repo_subpath|$native_path|$snapshot_count")
+            while IFS='|' read -r path count; do
+              if [[ -n "$path" ]]; then
+                repo_subpath=$(path_to_repo_subpath "$path")
+                repo_array+=("$repo_subpath|$path|$count")
               fi
-            done <<< "$repo_list"
+            done < "$BACKUP_PATHS_FILE"
 
             if [[ ''${#repo_array[@]} -eq 0 ]]; then
               echo_error "No repositories found"
@@ -897,8 +902,17 @@ in {
           if [[ -n "$repo_subpath" ]]; then
             REPO="$REPO_BASE/$SELECTED_HOST/$repo_subpath"
             
-            # Get native path from backup data
-            native_path=$(echo "$backup_data" | jq -r --arg rsp "$repo_subpath" '.paths[] | select(.repo_subpath == $rsp) | .native_path')
+            # Get native path from backup data  
+            native_path=""
+            while IFS='|' read -r path count; do
+              if [[ -n "$path" ]]; then
+                test_repo_subpath=$(path_to_repo_subpath "$path")
+                if [[ "$test_repo_subpath" == "$repo_subpath" ]]; then
+                  native_path="$path"
+                  break
+                fi
+              fi
+            done < "$BACKUP_PATHS_FILE"
             
             echo_info "Restoring ''${BOLD}$native_path''${NC} from ''${BOLD}$repo_subpath''${NC}..."
             
