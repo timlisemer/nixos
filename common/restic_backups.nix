@@ -105,20 +105,76 @@ in {
         REPO="$REPO_BASE/$HOST/$SUBPATH"
 
         echo_info "Verifying if path exists in snapshots..."
-        if ! sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+        
+        # Check for direct snapshots first
+        if sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
              restic --repo "$REPO" --password-file "$PWD_FILE" \
              snapshots --json --path "$NATIVE_PATH" >/dev/null 2>&1; then
-          echo_error "Path '$NATIVE_PATH' is not present in any snapshot in repo '$REPO'."
-          exit 1
+          echo_success "Path found in direct snapshots."
+          
+          echo_info "Calculating size..."
+          BYTES=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+                   restic --repo "$REPO" --password-file "$PWD_FILE" \
+                   stats latest --mode raw-data --json --path "$NATIVE_PATH" 2>/dev/null \
+                   | jq '.total_size' 2>/dev/null || echo "0")
+          echo_success "$NATIVE_PATH: ''${BOLD}$(numfmt --to=iec --suffix=B "$BYTES")''${NC}"
+        else
+          echo_info "No direct snapshots found, checking for nested repositories..."
+          
+          # Extract S3 variables from REPO_BASE for nested repository detection
+          S3_ENDPOINT=$(echo "$REPO_BASE" | sed -n 's|s3:\(https://[^/]*\)/.*|\1|p')
+          S3_BUCKET=$(echo "$REPO_BASE" | sed -n 's|s3:https://[^/]*/\(.*\)|\1|p')
+          
+          # Check for nested repositories
+          nested_repos=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+            aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/''${SUBPATH}/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | \
+            grep "PRE" | awk '{print $2}' | sed 's|/$||' || echo "")
+          
+          if [[ -n "$nested_repos" ]]; then
+            echo_info "Found nested repositories: $(echo "$nested_repos" | tr '\n' ' ')"
+            
+            TOTAL_BYTES=0
+            found_any=false
+            
+            while IFS= read -r nested_repo; do
+              if [[ -n "$nested_repo" ]]; then
+                nested_repo_url="s3://''${S3_BUCKET}/''${HOST}/''${SUBPATH}/''${nested_repo}"
+                nested_native_path="''${NATIVE_PATH}/''${nested_repo}"
+                
+                echo_info "  Checking size for $nested_native_path..."
+                
+                # Check if nested repository has snapshots for this path
+                if sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+                   restic --repo "$nested_repo_url" --password-file "$PWD_FILE" \
+                   snapshots --json --path "$nested_native_path" >/dev/null 2>&1; then
+                  
+                  nested_bytes=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+                                 restic --repo "$nested_repo_url" --password-file "$PWD_FILE" \
+                                 stats latest --mode raw-data --json --path "$nested_native_path" 2>/dev/null \
+                                 | jq '.total_size' 2>/dev/null || echo "0")
+                  
+                  if [[ "$nested_bytes" != "0" ]]; then
+                    echo_success "    $nested_native_path: $(numfmt --to=iec --suffix=B "$nested_bytes")"
+                    TOTAL_BYTES=$((TOTAL_BYTES + nested_bytes))
+                    found_any=true
+                  fi
+                else
+                  echo_info "    No snapshots found for $nested_native_path"
+                fi
+              fi
+            done <<< "$nested_repos"
+            
+            if [[ "$found_any" == "true" ]]; then
+              echo_success "''${BOLD}Total size for $NATIVE_PATH (all nested repositories): $(numfmt --to=iec --suffix=B "$TOTAL_BYTES")''${NC}"
+            else
+              echo_error "No snapshots found in any nested repositories for '$NATIVE_PATH'."
+              exit 1
+            fi
+          else
+            echo_error "Path '$NATIVE_PATH' is not present in any snapshot and no nested repositories found."
+            exit 1
+          fi
         fi
-        echo_success "Path found in snapshots."
-
-        echo_info "Calculating size..."
-        BYTES=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
-                 restic --repo "$REPO" --password-file "$PWD_FILE" \
-                 stats latest --mode raw-data --json --path "$NATIVE_PATH" 2>/dev/null \
-                 | jq '.total_size' 2>/dev/null || echo "0")
-        echo_success "$NATIVE_PATH: ''${BOLD}$(numfmt --to=iec --suffix=B "$BYTES")''${NC}"
       '')
 
       # --- restic_start_backup -------------------------------------------------
@@ -244,10 +300,30 @@ in {
             for volume in $volumes; do
               echo >&2 "[INFO] Processing volume: $volume"
               local snapshots
+              
+              # Try direct repository first
               if snapshots=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
                 restic --repo "$REPO_BASE/$host/docker_volume/$volume" --password-file "$PWD_FILE" \
                 snapshots --json 2>/dev/null); then
                 echo "$snapshots" | jq -r '.[] | .time' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
+              else
+                # Check for nested repositories
+                echo >&2 "[INFO]   No direct snapshots found for $volume, checking nested repositories..."
+                nested_repos=$(aws s3 ls "s3://$S3_BUCKET/$host/docker_volume/$volume/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
+                
+                if [[ -n "$nested_repos" ]]; then
+                  echo >&2 "[INFO]   Found nested repositories in $volume: $(echo "$nested_repos" | tr '\n' ' ')"
+                  for nested_repo in $nested_repos; do
+                    echo >&2 "[INFO]     Processing nested: $volume/$nested_repo"
+                    if snapshots=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+                      restic --repo "$REPO_BASE/$host/docker_volume/$volume/$nested_repo" --password-file "$PWD_FILE" \
+                      snapshots --json 2>/dev/null); then
+                      echo "$snapshots" | jq -r '.[] | .time' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
+                    fi
+                  done
+                else
+                  echo >&2 "[INFO]   No nested repositories found for $volume"
+                fi
               fi
             done
           fi
@@ -352,6 +428,50 @@ in {
             count=$(echo "$snapshots" | jq 'length' 2>/dev/null || echo "0")
           fi
 
+          # If no direct snapshots found, check for nested repositories (for docker volumes)
+          if [[ "$count" -eq 0 ]] && [[ "$repo_path" =~ ^docker_volume/ ]]; then
+            progress_info "  No direct snapshots for $native_path, checking nested repositories..."
+            
+            # Extract volume name from repo_path (docker_volume/volume_name)
+            local volume_name=$(echo "$repo_path" | sed 's|^docker_volume/||')
+            
+            # Check for nested repositories
+            local nested_repos=$(aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/docker_volume/''${volume_name}/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
+            
+            if [[ -n "$nested_repos" ]]; then
+              progress_info "  Found nested repositories in $volume_name: $(echo "$nested_repos" | tr '\n' ' ')"
+              
+              # Collect snapshots from each nested repository
+              while IFS= read -r nested_repo; do
+                if [[ -n "$nested_repo" ]]; then
+                  local nested_repo_path="docker_volume/''${volume_name}/''${nested_repo}"
+                  local nested_native_path="''${native_path}/''${nested_repo}"
+                  
+                  progress_info "    Processing nested: $nested_repo"
+                  
+                  # Get snapshots for nested repository
+                  local nested_snapshots
+                  if nested_snapshots=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+                    restic --repo "$REPO_BASE/$HOST/$nested_repo_path" --password-file "$PWD_FILE" \
+                    snapshots --json 2>/dev/null); then
+                    
+                    local nested_count=0
+                    if [[ -n "$nested_snapshots" ]] && [[ "$nested_snapshots" != "[]" ]]; then
+                      nested_count=$(echo "$nested_snapshots" | jq 'length' 2>/dev/null || echo "0")
+                    fi
+                    
+                    if [[ "$nested_count" -gt 0 ]]; then
+                      echo "$nested_native_path|$nested_count" >> "$PATHS_FILE"
+                      echo "$nested_snapshots" | jq -r --arg path "$nested_native_path" '.[] | "\(.time)|\($path)|\(.short_id)"' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
+                      count=$((count + nested_count))
+                    fi
+                  fi
+                fi
+              done <<< "$nested_repos"
+            fi
+          fi
+
+          # Record the original path (even if count is 0 from direct snapshots)
           echo "$native_path|$count" >> "$PATHS_FILE"
 
           if [[ "$count" -gt 0 ]] && [[ "$snapshots" != "[]" ]]; then
