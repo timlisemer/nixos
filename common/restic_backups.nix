@@ -714,7 +714,6 @@ in {
         # Phase 2: Get backup data for selected host
         echo_info "Querying backups for $SELECTED_HOST..."
         backup_json=$(restic_list_replacement --return "$SELECTED_HOST")
-        echo_info "DEBUG: JSON received, length: ''${#backup_json}"
         
         if [[ -z "$backup_json" ]] || [[ "$backup_json" == "{}" ]]; then
           echo_error "No backup data found for host $SELECTED_HOST"
@@ -722,19 +721,14 @@ in {
         fi
 
         # Extract and decode the data
-        echo_info "DEBUG: Extracting base64 data from JSON..."
         paths_data_b64=$(echo "$backup_json" | jq -r '.paths_data // ""')
         snapshots_data_b64=$(echo "$backup_json" | jq -r '.snapshots_data // ""')
-        echo_info "DEBUG: paths_data_b64 length: ''${#paths_data_b64}"
-        echo_info "DEBUG: snapshots_data_b64 length: ''${#snapshots_data_b64}"
         
         # Create temporary files with the decoded data
-        echo_info "DEBUG: Creating temporary files..."
         BACKUP_PATHS_FILE=$(mktemp)
         BACKUP_SNAPSHOTS_FILE=$(mktemp)
         trap "rm -f $BACKUP_PATHS_FILE $BACKUP_SNAPSHOTS_FILE" EXIT
         
-        echo_info "DEBUG: Decoding base64 data to files..."
         if [[ -n "$paths_data_b64" ]] && [[ "$paths_data_b64" != "null" ]]; then
           echo "$paths_data_b64" | base64 -d > "$BACKUP_PATHS_FILE" 2>/dev/null || true
         fi
@@ -743,20 +737,14 @@ in {
           echo "$snapshots_data_b64" | base64 -d > "$BACKUP_SNAPSHOTS_FILE" 2>/dev/null || true
         fi
 
-        echo_info "DEBUG: Files created. PATHS_FILE size: $(wc -l < "$BACKUP_PATHS_FILE" 2>/dev/null || echo "0") lines"
-        echo_info "DEBUG: SNAPSHOTS_FILE size: $(wc -l < "$BACKUP_SNAPSHOTS_FILE" 2>/dev/null || echo "0") lines"
-
-        # Parse available categories - safe counting
-        echo_info "DEBUG: Starting category counting..."
+        # Parse available categories
         user_home_count=0
         docker_count=0  
         system_count=0
         
         if [[ -s "$BACKUP_PATHS_FILE" ]]; then
-          echo_info "DEBUG: Reading from BACKUP_PATHS_FILE..."
           while IFS='|' read -r path count; do
             if [[ -n "$path" ]]; then
-              echo_info "DEBUG: Processing path: $path"
               if [[ "$path" =~ ^/home/ ]]; then
                 user_home_count=$((user_home_count + 1))
               elif [[ "$path" =~ ^/mnt/docker-data/ ]]; then
@@ -766,11 +754,7 @@ in {
               fi
             fi
           done < "$BACKUP_PATHS_FILE"
-        else
-          echo_info "DEBUG: BACKUP_PATHS_FILE is empty or doesn't exist"
         fi
-        
-        echo_info "DEBUG: Category counting completed. Counts: user_home=$user_home_count, docker=$docker_count, system=$system_count"
         
         echo_success "Found backups: User Home ($user_home_count), Docker Volumes ($docker_count), System ($system_count)"
         echo
@@ -800,15 +784,21 @@ in {
             # user_home/tim/.config -> user_home/tim/_config
             user=$(echo "$path" | cut -d/ -f3)
             subdir=$(echo "$path" | cut -d/ -f4-)
-            echo "user_home/$user/\''${subdir//\//_}"
+            if [[ -n "$subdir" ]]; then
+              # Replace slashes with underscores in subdir
+              subdir_escaped=$(echo "$subdir" | tr '/' '_')
+              echo "user_home/$user/_$subdir_escaped"
+            else
+              echo "user_home/$user"
+            fi
           elif [[ "$path" =~ ^/mnt/docker-data/volumes/ ]]; then
-            # docker_volume/volume_name
+            # docker_volume/volume_name with slashes converted to underscores
             volume=$(echo "$path" | cut -d/ -f5-)
-            echo "docker_volume/\''${volume//\//_}"
+            volume_escaped=$(echo "$volume" | tr '/' '_')
+            echo "docker_volume/$volume_escaped"
           else
             # system paths
-            sys_path=$(echo "$path" | cut -d/ -f2-)
-            echo "system/$sys_path"
+            echo "system"
           fi
         }
 
@@ -955,7 +945,7 @@ in {
 
             # Get the selected repository
             IFS='|' read -r repo_subpath native_path snapshot_count <<< "''${repo_array[$((single_choice - 1))]}"
-            selected_repos="$repo_subpath"$'\n'
+            selected_repos="$repo_subpath"
             echo_info "Selected: $native_path"
             ;;
           *)
@@ -969,15 +959,21 @@ in {
           exit 1
         fi
 
-        # Show what will be restored
-        repo_count=$(echo "$selected_repos" | grep -c "^" || echo "0")
+        # Show what will be restored  
+        repo_count=$(echo "$selected_repos" | grep -v '^$' | wc -l)
         echo_info "Selected $repo_count repositories for restoration"
         echo
 
-        # Phase 4: Timestamp Selection
+        # Phase 4: Timestamp Selection - extract from cached data
         echo_info "Getting available timestamps..."
-        timestamps=$(restic_get_timeline "$SELECTED_HOST")
         
+        # Extract unique timestamps from cached snapshot data
+        if [[ ! -s "$BACKUP_SNAPSHOTS_FILE" ]]; then
+          echo_error "No snapshot data available"
+          exit 1
+        fi
+        
+        timestamps=$(cut -d'|' -f1 "$BACKUP_SNAPSHOTS_FILE" | sort -u -r)
         if [[ -z "$timestamps" ]]; then
           echo_error "No snapshots found for host $SELECTED_HOST"
           exit 1
