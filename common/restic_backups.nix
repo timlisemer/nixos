@@ -21,7 +21,7 @@
     in
       "user_home/" + username + subPathStr
     else if (lib.hasPrefix "/mnt/docker-data/volumes/" path) && (builtins.length cleanParts >= 4) && (builtins.elemAt cleanParts 0 == "mnt") && (builtins.elemAt cleanParts 1 == "docker-data") && (builtins.elemAt cleanParts 2 == "volumes")
-    then "docker_volume/" + (lib.concatStringsSep "_" (lib.drop 3 cleanParts))
+    then "docker_volume/" + (lib.concatStringsSep "/" (lib.drop 3 cleanParts))
     else "system";
 in {
   # ─── Restic Backup Configuration ────────────────────────────────────────────────
