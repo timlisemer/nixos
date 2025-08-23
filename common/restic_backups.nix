@@ -305,6 +305,66 @@ in {
         echo_info "You can follow the logs with: ''${BOLD}restic_logs''${NC}"
       '')
 
+      # --- restic_list_replacement ---------------------------------------------
+      (pkgs.writeShellScriptBin "restic_list_replacement" ''
+        #! /usr/bin/env bash
+        set -euo pipefail
+
+        ENV_FILE="/run/secrets/restic_environment"
+        REPO_BASE_FILE="/run/secrets/restic_repo_base"
+        REPO_BASE="$(sudo cat "$REPO_BASE_FILE")"
+        HOST="$(hostname -s)"
+        PWD_FILE="/run/secrets/restic_password"
+
+        # Export AWS credentials
+        export $(sudo grep -v '^#' "$ENV_FILE" | xargs)
+
+        # Extract S3 endpoint and bucket
+        S3_ENDPOINT=$(echo "$REPO_BASE" | sed -n 's|s3:\(https://[^/]*\)/.*|\1|p')
+        S3_BUCKET=$(echo "$REPO_BASE" | sed -n 's|s3:https://[^/]*/\(.*\)|\1|p')
+
+        echo "Listing backups for $HOST from S3 bucket..."
+        echo
+
+        # User Home
+        echo "User Home Backups:"
+        users=$(aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/user_home/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
+        if [[ -n "$users" ]]; then
+          for user in $users; do
+            subdirs=$(aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/user_home/''${user}/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
+            for subdir in $subdirs; do
+              echo "  /home/''${user}/''${subdir}"
+            done
+          done
+        else
+          echo "  None"
+        fi
+        echo
+
+        # Docker Volumes
+        echo "Docker Volume Backups:"
+        volumes=$(aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/docker_volume/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
+        if [[ -n "$volumes" ]]; then
+          for volume in $volumes; do
+            echo "  /mnt/docker-data/volumes/''${volume}"
+          done
+        else
+          echo "  None"
+        fi
+        echo
+
+        # System
+        echo "System Backups:"
+        system_paths=$(aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/system/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
+        if [[ -n "$system_paths" ]]; then
+          for path in $system_paths; do
+            echo "  /''${path}"
+          done
+        else
+          echo "  None"
+        fi
+      '')
+
       # --- restic_logs ---------------------------------------------------------
       (pkgs.writeShellScriptBin "restic_logs" ''
         #! /usr/bin/env bash
