@@ -878,17 +878,9 @@ in {
         fi
 
         # Count snapshots per group and create display array
-        declare -A group_counts
-        while IFS='|' read -r group_time individual_time; do
-          if [[ -n "$group_time" ]]; then
-            group_counts["$group_time"]=$((''${group_counts["$group_time"]:-0} + 1))
-          fi
-        done < "$GROUP_TIMESTAMPS"
-
-        # Create sorted array of unique groups with counts
         group_array=()
         for group_time in $(cut -d'|' -f1 "$GROUP_TIMESTAMPS" | sort -u -r); do
-          count=''${group_counts["$group_time"]}
+          count=$(grep -c "^$group_time|" "$GROUP_TIMESTAMPS" 2>/dev/null || echo "0")
           group_array+=("$group_time|$count")
         done
 
