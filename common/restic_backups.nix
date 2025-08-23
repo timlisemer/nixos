@@ -955,9 +955,89 @@ in {
               snapshots --json --path "$native_path" 2>/dev/null || echo "[]")
 
             if [[ "$snapshots" == "[]" ]] || [[ $(echo "$snapshots" | jq 'length') -eq 0 ]]; then
-              echo_warning "No snapshots found for $native_path, skipping"
-              skipped_count=$((skipped_count + 1))
-              continue
+              echo_info "No direct snapshots found for $native_path, checking for nested repositories..."
+              
+              # Extract S3 variables from REPO_BASE for nested repository detection
+              S3_ENDPOINT=$(echo "$REPO_BASE" | sed -n 's|s3:\(https://[^/]*\)/.*|\1|p')
+              S3_BUCKET=$(echo "$REPO_BASE" | sed -n 's|s3:https://[^/]*/\(.*\)|\1|p')
+              
+              # Check for nested repositories (e.g., docker_volume/immich/database, docker_volume/immich/model-cache)
+              nested_repos=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+                aws s3 ls "s3://''${S3_BUCKET}/''${SELECTED_HOST}/''${repo_subpath}/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | \
+                grep "PRE" | awk '{print $2}' | sed 's|/$||' || echo "")
+              
+              if [[ -n "$nested_repos" ]]; then
+                echo_info "Found nested repositories: $(echo "$nested_repos" | tr '\n' ' ')"
+                nested_restored=0
+                nested_skipped=0
+                
+                # Process each nested repository
+                while IFS= read -r nested_repo; do
+                  if [[ -n "$nested_repo" ]]; then
+                    nested_repo_subpath="''${repo_subpath}/''${nested_repo}"
+                    nested_native_path="''${native_path}/''${nested_repo}"
+                    nested_repo_url="s3://''${S3_BUCKET}/''${SELECTED_HOST}/''${nested_repo_subpath}"
+                    
+                    echo_info "  Restoring ''${BOLD}$nested_native_path''${NC} from ''${BOLD}$nested_repo_subpath''${NC}..."
+                    
+                    # Get snapshots for the nested repository
+                    nested_snapshots=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+                      restic --repo "$nested_repo_url" --password-file "$PWD_FILE" \
+                      snapshots --json --path "$nested_native_path" 2>/dev/null || echo "[]")
+                    
+                    if [[ "$nested_snapshots" == "[]" ]] || [[ $(echo "$nested_snapshots" | jq 'length') -eq 0 ]]; then
+                      echo_warning "  No snapshots found for $nested_native_path, skipping"
+                      nested_skipped=$((nested_skipped + 1))
+                      continue
+                    fi
+                    
+                    # Find best snapshot within the time window
+                    best_nested_snapshot=$(echo "$nested_snapshots" | jq -r --arg group_start "$(date -d "@$group_start_epoch" '+%Y-%m-%dT%H:%M:%S')" \
+                      --arg group_end "$(date -d "@$group_end_epoch" '+%Y-%m-%dT%H:%M:%S')" '
+                      ([.[] | select(.time >= $group_start and .time <= $group_end)] | sort_by(.time) | last) as $in_window |
+                      ([.[] | select(.time < $group_start)] | sort_by(.time) | last) as $before_window |
+                      (($in_window // $before_window) | .short_id // empty)'
+                    )
+                    
+                    if [[ -n "$best_nested_snapshot" ]] && [[ "$best_nested_snapshot" != "null" ]]; then
+                      # Get timestamp for logging
+                      nested_snapshot_time=$(echo "$nested_snapshots" | jq -r --arg snapshot_id "$best_nested_snapshot" '
+                        .[] | select(.short_id == $snapshot_id) | .time'
+                      )
+                      
+                      # Restore the nested snapshot
+                      if sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+                        restic --repo "$nested_repo_url" --password-file "$PWD_FILE" \
+                        restore "$best_nested_snapshot" --path "$nested_native_path" --target "$DEST" 2>/dev/null; then
+                        display_time=$(echo "$nested_snapshot_time" | sed 's/\.[0-9]*+.*$//')
+                        echo_success "  Restored $nested_native_path from snapshot $best_nested_snapshot at $display_time"
+                        nested_restored=$((nested_restored + 1))
+                      else
+                        echo_error "  Failed to restore $nested_native_path"
+                        nested_skipped=$((nested_skipped + 1))
+                      fi
+                    else
+                      echo_warning "  No suitable snapshots found for $nested_native_path, skipping"
+                      nested_skipped=$((nested_skipped + 1))
+                    fi
+                  fi
+                done <<< "$nested_repos"
+                
+                # Update overall counters
+                restored_count=$((restored_count + nested_restored))
+                skipped_count=$((skipped_count + nested_skipped))
+                
+                if [[ $nested_restored -gt 0 ]]; then
+                  echo_success "Successfully restored $nested_restored nested repositories from $repo_subpath"
+                else
+                  echo_warning "No nested repositories could be restored from $repo_subpath"
+                fi
+                continue
+              else
+                echo_warning "No snapshots found for $native_path and no nested repositories detected, skipping"
+                skipped_count=$((skipped_count + 1))
+                continue
+              fi
             fi
 
             # Calculate time window boundaries  

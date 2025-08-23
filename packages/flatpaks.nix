@@ -10,7 +10,6 @@
 
   services.flatpak.packages = [
     "flathub:app/com.github.tchx84.Flatseal//stable"
-    "flathub:app/org.gnome.World.PikaBackup//stable"
     "flathub:app/com.cassidyjames.butler//stable"
     "flathub:app/com.bitwarden.desktop//stable"
     "flathub:app/com.discordapp.Discord//stable"

@@ -199,30 +199,30 @@
     # ----------------------------------------------------------
     # minecraft-server (Paper 1.21.x)
     # ----------------------------------------------------------
-    minecraft-server = {
-      image = "openjdk:21-jdk-slim";
-      autoStart = true;
-      autoRemoveOnStop = false;
-      extraOptions = ["--network=docker-network" "--ip=172.18.0.6"];
+    #minecraft-server = {
+    #  image = "openjdk:21-jdk-slim";
+    #  autoStart = true;
+    #  autoRemoveOnStop = false;
+    #  extraOptions = ["--network=docker-network" "--ip=172.18.0.6"];
 
-      ports = ["25565:25565"];
+    #  ports = ["25565:25565"];
 
-      volumes = [
-        "/mnt/docker-data/volumes/minecraft:/data:rw"
-      ];
+    #  volumes = [
+    #      "/mnt/docker-data/volumes/minecraft:/data:rw"
+    #    ];
 
-      workdir = "/data"; # Where paper.jar lives
-      cmd = [
-        "java"
-        "-Xms1G" # minimum heap
-        "-Xmx3G" # maximum heap
-        "-jar"
-        "paper.jar"
-        "nogui"
-      ];
+    #  workdir = "/data"; # Where paper.jar lives
+    #  cmd = [
+    #    "java"
+    #    "-Xms1G" # minimum heap
+    #    "-Xmx3G" # maximum heap
+    #    "-jar"
+    #    "paper.jar"
+    #    "nogui"
+    #  ];
 
-      environment = {EULA = "TRUE";}; # Accept Mojang EULA
-    };
+    #  environment = {EULA = "TRUE";}; # Accept Mojang EULA
+    # };
 
     # -------------------------------------------------------------------------
     # syncthing
