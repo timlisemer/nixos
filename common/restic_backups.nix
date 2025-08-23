@@ -332,6 +332,13 @@ in {
         #! /usr/bin/env bash
         set -euo pipefail
 
+        # Color definitions
+        RED='\033[0;31m'
+        GREEN='\033[0;32m'
+        BLUE='\033[0;34m'
+        BOLD='\033[1m'
+        NC='\033[0m' # No Color
+
         if [[ $# -ne 1 ]]; then
           echo "Usage: restic_get_timeline <hostname>"
           exit 1
@@ -358,41 +365,56 @@ in {
         collect_host_snapshots() {
           local host="$1"
           
+          echo >&2 "[INFO] Scanning user home directories..."
           # User Home
           users=$(aws s3 ls "s3://$S3_BUCKET/$host/user_home/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
           if [[ -n "$users" ]]; then
             for user in $users; do
+              echo >&2 "[INFO] Processing user: $user"
               subdirs=$(aws s3 ls "s3://$S3_BUCKET/$host/user_home/$user/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
               for subdir in $subdirs; do
-                snapshots=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+                echo >&2 "[INFO]   Checking $subdir..."
+                local snapshots
+                if snapshots=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
                   restic --repo "$REPO_BASE/$host/user_home/$user/$subdir" --password-file "$PWD_FILE" \
-                  snapshots --json 2>/dev/null || echo "[]")
-                echo "$snapshots" | jq -r '.[] | .time' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
+                  snapshots --json 2>/dev/null); then
+                  echo "$snapshots" | jq -r '.[] | .time' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
+                fi
               done
             done
           fi
 
+          echo >&2 "[INFO] Scanning docker volumes..."
           # Docker Volumes
           volumes=$(aws s3 ls "s3://$S3_BUCKET/$host/docker_volume/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
           if [[ -n "$volumes" ]]; then
             for volume in $volumes; do
-              snapshots=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+              echo >&2 "[INFO] Processing volume: $volume"
+              local snapshots
+              if snapshots=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
                 restic --repo "$REPO_BASE/$host/docker_volume/$volume" --password-file "$PWD_FILE" \
-                snapshots --json 2>/dev/null || echo "[]")
-              echo "$snapshots" | jq -r '.[] | .time' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
+                snapshots --json 2>/dev/null); then
+                echo "$snapshots" | jq -r '.[] | .time' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
+              fi
             done
           fi
 
+          echo >&2 "[INFO] Scanning system paths..."
           # System
           system_paths=$(aws s3 ls "s3://$S3_BUCKET/$host/system/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
           if [[ -n "$system_paths" ]]; then
             for path in $system_paths; do
-              snapshots=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+              echo >&2 "[INFO] Processing system: $path"
+              local snapshots
+              if snapshots=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
                 restic --repo "$REPO_BASE/$host/system/$path" --password-file "$PWD_FILE" \
-                snapshots --json 2>/dev/null || echo "[]")
-              echo "$snapshots" | jq -r '.[] | .time' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
+                snapshots --json 2>/dev/null); then
+                echo "$snapshots" | jq -r '.[] | .time' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
+              fi
             done
           fi
+          
+          echo >&2 "[INFO] Scanning completed!"
         }
 
         collect_host_snapshots "$HOST"
@@ -415,6 +437,13 @@ in {
       (pkgs.writeShellScriptBin "restic_list_replacement" ''
         #! /usr/bin/env bash
         set -euo pipefail
+
+        # Color definitions
+        RED='\033[0;31m'
+        GREEN='\033[0;32m'
+        BLUE='\033[0;34m'
+        BOLD='\033[1m'
+        NC='\033[0m' # No Color
 
         # Support both display and return modes
         RETURN_MODE=false
@@ -451,50 +480,74 @@ in {
         SNAPSHOTS_FILE=$(mktemp)
         trap "rm -f $PATHS_FILE $SNAPSHOTS_FILE" EXIT
 
-        # Collect all paths and their snapshots
+        # Collect all paths and their snapshots  
         collect_snapshots() {
           local repo_path="$1"
           local native_path="$2"
           
-          # Get snapshots for this repo
-          snapshots=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+          # Get snapshots for this repo - with proper error handling
+          local snapshots
+          if ! snapshots=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
             restic --repo "$REPO_BASE/$HOST/$repo_path" --password-file "$PWD_FILE" \
-            snapshots --json 2>/dev/null || echo "[]")
+            snapshots --json 2>/dev/null); then
+            snapshots="[]"
+          fi
           
-          count=$(echo "$snapshots" | jq 'length')
+          # Safe JSON parsing  
+          local count=0
+          if [[ -n "$snapshots" ]] && [[ "$snapshots" != "[]" ]]; then
+            count=$(echo "$snapshots" | jq 'length' 2>/dev/null || echo "0")
+          fi
+          
           echo "$native_path|$count" >> "$PATHS_FILE"
           
-          if [[ "$count" -gt 0 ]]; then
-            echo "$snapshots" | jq -r --arg path "$native_path" '.[] | "\(.time)|\($path)|\(.short_id)"' >> "$SNAPSHOTS_FILE"
+          if [[ "$count" -gt 0 ]] && [[ "$snapshots" != "[]" ]]; then
+            echo "$snapshots" | jq -r --arg path "$native_path" '.[] | "\(.time)|\($path)|\(.short_id)"' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
           fi
         }
 
+        # Progress function - output to stderr in return mode, stdout in display mode
+        if [[ "$RETURN_MODE" == "false" ]]; then
+          progress_info() { echo -e "''${BLUE}''${BOLD}[INFO]''${NC} $1"; }
+        else
+          progress_info() { echo >&2 -e "''${BLUE}''${BOLD}[INFO]''${NC} $1"; }
+        fi
+
+        progress_info "Scanning user home directories..."
         # Collect User Home
         users=$(aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/user_home/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
         if [[ -n "$users" ]]; then
           for user in $users; do
+            progress_info "Processing user: $user"
             subdirs=$(aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/user_home/''${user}/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
             for subdir in $subdirs; do
+              progress_info "  Checking $subdir..."
               collect_snapshots "user_home/''${user}/''${subdir}" "/home/''${user}/''${subdir}"
             done
           done
         fi
 
+        progress_info "Scanning docker volumes..."
         # Collect Docker Volumes
         volumes=$(aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/docker_volume/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
         if [[ -n "$volumes" ]]; then
           for volume in $volumes; do
+            progress_info "Processing volume: $volume"
             collect_snapshots "docker_volume/''${volume}" "/mnt/docker-data/volumes/''${volume}"
           done
         fi
 
+        progress_info "Scanning system paths..."
         # Collect System
         system_paths=$(aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/system/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
         if [[ -n "$system_paths" ]]; then
           for path in $system_paths; do
+            progress_info "Processing system: $path"
             collect_snapshots "system/''${path}" "/''${path}"
           done
         fi
+        
+        progress_info "Scanning completed!"
 
         if [[ "$RETURN_MODE" == "true" ]]; then
           # Simple JSON output - just return the raw data files as base64 for parsing elsewhere
@@ -684,10 +737,24 @@ in {
           echo "$snapshots_data_b64" | base64 -d > "$BACKUP_SNAPSHOTS_FILE" 2>/dev/null || true
         fi
 
-        # Parse available categories
-        user_home_count=$(grep "^/home/" "$BACKUP_PATHS_FILE" 2>/dev/null | wc -l || echo "0")
-        docker_count=$(grep "^/mnt/docker-data/" "$BACKUP_PATHS_FILE" 2>/dev/null | wc -l || echo "0")
-        system_count=$(grep -v "^/home/" "$BACKUP_PATHS_FILE" 2>/dev/null | grep -v "^/mnt/docker-data/" 2>/dev/null | wc -l || echo "0")
+        # Parse available categories - safe counting
+        user_home_count=0
+        docker_count=0  
+        system_count=0
+        
+        if [[ -s "$BACKUP_PATHS_FILE" ]]; then
+          while IFS='|' read -r path count; do
+            if [[ -n "$path" ]]; then
+              if [[ "$path" =~ ^/home/ ]]; then
+                ((user_home_count++))
+              elif [[ "$path" =~ ^/mnt/docker-data/ ]]; then
+                ((docker_count++))
+              else
+                ((system_count++))
+              fi
+            fi
+          done < "$BACKUP_PATHS_FILE"
+        fi
         
         echo_success "Found backups: User Home ($user_home_count), Docker Volumes ($docker_count), System ($system_count)"
         echo
@@ -705,6 +772,7 @@ in {
           echo "  4. System (all system paths)"
         fi
         echo "  5. Custom Selection (choose specific repositories)"
+        echo "  6. Individual Repository (easy single-repo selection)"
         echo
 
         read -p "Your choice: " restore_choice
@@ -837,6 +905,42 @@ in {
               IFS='|' read -r repo_subpath native_path snapshot_count <<< "''${repo_array[$idx]}"
               selected_repos+="$repo_subpath"$'\n'
             done
+            ;;
+          6)
+            # Individual Repository - easy single selection
+            echo_info "Available repositories (select just one):"
+            
+            repo_array=()
+            while IFS='|' read -r path count; do
+              if [[ -n "$path" ]]; then
+                repo_subpath=$(path_to_repo_subpath "$path")
+                repo_array+=("$repo_subpath|$path|$count")
+              fi
+            done < "$BACKUP_PATHS_FILE"
+
+            if [[ ''${#repo_array[@]} -eq 0 ]]; then
+              echo_error "No repositories found"
+              exit 1
+            fi
+
+            # Display repositories with numbers - more compact format
+            for i in "''${!repo_array[@]}"; do
+              IFS='|' read -r repo_subpath native_path snapshot_count <<< "''${repo_array[$i]}"
+              printf "%3d. %s (%d snapshots)\n" $((i + 1)) "$native_path" "$snapshot_count"
+            done
+
+            echo
+            read -p "Select repository number: " single_choice
+
+            if [[ ! "$single_choice" =~ ^[0-9]+$ ]] || [[ "$single_choice" -lt 1 ]] || [[ "$single_choice" -gt ''${#repo_array[@]} ]]; then
+              echo_error "Invalid selection"
+              exit 1
+            fi
+
+            # Get the selected repository
+            IFS='|' read -r repo_subpath native_path snapshot_count <<< "''${repo_array[$((single_choice - 1))]}"
+            selected_repos="$repo_subpath"$'\n'
+            echo_info "Selected: $native_path"
             ;;
           *)
             echo_error "Invalid choice"
