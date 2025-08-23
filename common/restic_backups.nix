@@ -781,13 +781,13 @@ in {
         path_to_repo_subpath() {
           local path="$1"
           if [[ "$path" =~ ^/home/ ]]; then
-            # user_home/tim/.config -> user_home/tim/_config
+            # user_home/tim/.config -> user_home/tim/.config
             user=$(echo "$path" | cut -d/ -f3)
             subdir=$(echo "$path" | cut -d/ -f4-)
             if [[ -n "$subdir" ]]; then
               # Replace slashes with underscores in subdir
               subdir_escaped=$(echo "$subdir" | tr '/' '_')
-              echo "user_home/$user/_$subdir_escaped"
+              echo "user_home/$user/$subdir_escaped"
             else
               echo "user_home/$user"
             fi
