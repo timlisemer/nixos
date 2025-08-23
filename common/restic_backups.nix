@@ -964,18 +964,39 @@ in {
         echo_info "Selected $repo_count repositories for restoration"
         echo
 
-        # Phase 4: Timestamp Selection - extract from cached data
+        # Phase 4: Timestamp Selection - extract from cached data for selected repositories
         echo_info "Getting available timestamps..."
         
-        # Extract unique timestamps from cached snapshot data
+        # Extract unique timestamps from cached snapshot data, filtered by selected repositories
         if [[ ! -s "$BACKUP_SNAPSHOTS_FILE" ]]; then
           echo_error "No snapshot data available"
           exit 1
         fi
         
-        timestamps=$(cut -d'|' -f1 "$BACKUP_SNAPSHOTS_FILE" | sort -u -r)
+        # Create a temporary file with only timestamps for selected repositories
+        FILTERED_TIMESTAMPS=$(mktemp)
+        trap "rm -f $BACKUP_PATHS_FILE $BACKUP_SNAPSHOTS_FILE $FILTERED_TIMESTAMPS" EXIT
+        
+        # For each selected repository, find matching native paths and extract their timestamps
+        while IFS= read -r repo_subpath; do
+          if [[ -n "$repo_subpath" ]]; then
+            # Find the native path for this repo
+            while IFS='|' read -r path count; do
+              if [[ -n "$path" ]]; then
+                test_repo_subpath=$(path_to_repo_subpath "$path")
+                if [[ "$test_repo_subpath" == "$repo_subpath" ]]; then
+                  # Extract timestamps for this specific path
+                  grep "^[^|]*|$path|" "$BACKUP_SNAPSHOTS_FILE" | cut -d'|' -f1 >> "$FILTERED_TIMESTAMPS" || true
+                  break
+                fi
+              fi
+            done < "$BACKUP_PATHS_FILE"
+          fi
+        done <<< "$selected_repos"
+        
+        timestamps=$(sort -u -r "$FILTERED_TIMESTAMPS")
         if [[ -z "$timestamps" ]]; then
-          echo_error "No snapshots found for host $SELECTED_HOST"
+          echo_error "No snapshots found for selected repositories"
           exit 1
         fi
 
