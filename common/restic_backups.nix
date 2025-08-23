@@ -764,12 +764,18 @@ in {
         echo "  1. All (everything for $SELECTED_HOST)"
         if [[ "$user_home_count" -gt 0 ]]; then
           echo "  2. User Home (all user directories)"
+        else
+          echo -e "  \033[2m2. User Home (all user directories) - no backups available\033[0m"
         fi
         if [[ "$docker_count" -gt 0 ]]; then
           echo "  3. Docker Volumes (all docker volumes)"
+        else
+          echo -e "  \033[2m3. Docker Volumes (all docker volumes) - no backups available\033[0m"
         fi
         if [[ "$system_count" -gt 0 ]]; then
           echo "  4. System (all system paths)"
+        else
+          echo -e "  \033[2m4. System (all system paths) - no backups available\033[0m"
         fi
         echo "  5. Custom Selection (choose specific repositories)"
         echo "  6. Individual Repository (easy single-repo selection)"
@@ -1060,7 +1066,7 @@ in {
             
             if [[ "$snapshots" == "[]" ]] || [[ $(echo "$snapshots" | jq 'length') -eq 0 ]]; then
               echo_warning "No snapshots found for $native_path, skipping"
-              ((skipped_count++))
+              skipped_count=$((skipped_count + 1))
               continue
             fi
             
@@ -1075,7 +1081,7 @@ in {
             
             if [[ -z "$best_snapshot" ]] || [[ "$best_snapshot" == "null" ]]; then
               echo_warning "No snapshots found before or at $SELECTED_TIMESTAMP for $native_path, skipping"
-              ((skipped_count++))
+              skipped_count=$((skipped_count + 1))
               continue
             fi
             
@@ -1084,10 +1090,10 @@ in {
               restic --repo "$REPO" --password-file "$PWD_FILE" \
               restore "$best_snapshot" --path "$native_path" --target "$DEST" 2>/dev/null; then
               echo_success "Restored $native_path (snapshot: $best_snapshot)"
-              ((restored_count++))
+              restored_count=$((restored_count + 1))
             else
               echo_error "Failed to restore $native_path"
-              ((skipped_count++))
+              skipped_count=$((skipped_count + 1))
             fi
           fi
         done <<< "$selected_repos"
