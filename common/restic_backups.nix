@@ -887,6 +887,20 @@ in {
         # Phase 5: Restoration
         DEST="/tmp/restic/interactive"
         echo_info "Preparing destination: ''${BOLD}$DEST''${NC}"
+        
+        # Check if destination exists and is not empty
+        if [[ -d "$DEST" ]] && [[ -n "$(sudo find "$DEST" -mindepth 1 -maxdepth 1 2>/dev/null)" ]]; then
+          echo_warning "Destination directory is not empty:"
+          sudo ls -la "$DEST" 2>/dev/null | head -10
+          echo
+          echo "This will delete all existing files in $DEST"
+          read -p "Continue and clear the directory? (y/N): " clear_confirm
+          if [[ ! "$clear_confirm" =~ ^[Yy]$ ]]; then
+            echo_error "Operation cancelled by user"
+            exit 1
+          fi
+        fi
+        
         sudo rm -rf "$DEST"
         sudo mkdir -p "$DEST"
 
@@ -960,6 +974,110 @@ in {
         if [[ $restored_count -gt 0 ]]; then
           echo_success "Restoration completed successfully!"
           echo_info "You can now access your restored files at $DEST"
+          echo
+          
+          # Offer to move or copy files to original location
+          echo "What would you like to do with the restored files?"
+          echo "  1. Copy to original location (replace existing files)"
+          echo "  2. Move to original location (replace existing files)" 
+          echo "  3. Leave files in temporary location"
+          echo
+          read -p "Your choice [3]: " final_action
+          final_action=''${final_action:-3}
+          
+          case "$final_action" in
+            1)
+              echo_info "Copying files to original locations..."
+              copy_success=true
+              while IFS= read -r repo_subpath; do
+                if [[ -n "$repo_subpath" ]]; then
+                  # Find the native path for this repo
+                  native_path=""
+                  while IFS='|' read -r path count; do
+                    if [[ -n "$path" ]]; then
+                      test_repo_subpath=$(path_to_repo_subpath "$path")
+                      if [[ "$test_repo_subpath" == "$repo_subpath" ]]; then
+                        native_path="$path"
+                        break
+                      fi
+                    fi
+                  done < "$BACKUP_PATHS_FILE"
+                  
+                  if [[ -n "$native_path" ]] && [[ -d "$DEST$native_path" ]]; then
+                    echo_info "Copying $native_path..."
+                    if ! sudo cp -rf "$DEST$native_path" "$(dirname "$native_path")" 2>/dev/null; then
+                      echo_error "Failed to copy $native_path"
+                      copy_success=false
+                    else
+                      echo_success "Copied $native_path"
+                    fi
+                  fi
+                fi
+              done <<< "$selected_repos"
+              
+              if [[ "$copy_success" == "true" ]]; then
+                echo_success "All files copied successfully to their original locations"
+                echo_info "Temporary files remain at $DEST"
+              else
+                echo_warning "Some files failed to copy. Check the logs above for details."
+              fi
+              ;;
+              
+            2)
+              echo_info "Moving files to original locations..."
+              move_success=true
+              while IFS= read -r repo_subpath; do
+                if [[ -n "$repo_subpath" ]]; then
+                  # Find the native path for this repo
+                  native_path=""
+                  while IFS='|' read -r path count; do
+                    if [[ -n "$path" ]]; then
+                      test_repo_subpath=$(path_to_repo_subpath "$path")
+                      if [[ "$test_repo_subpath" == "$repo_subpath" ]]; then
+                        native_path="$path"
+                        break
+                      fi
+                    fi
+                  done < "$BACKUP_PATHS_FILE"
+                  
+                  if [[ -n "$native_path" ]] && [[ -d "$DEST$native_path" ]]; then
+                    echo_info "Moving $native_path..."
+                    # Remove original if it exists
+                    if [[ -e "$native_path" ]]; then
+                      if ! sudo rm -rf "$native_path" 2>/dev/null; then
+                        echo_error "Failed to remove existing $native_path"
+                        move_success=false
+                        continue
+                      fi
+                    fi
+                    # Create parent directory if needed
+                    sudo mkdir -p "$(dirname "$native_path")" 2>/dev/null
+                    # Move the file
+                    if ! sudo mv "$DEST$native_path" "$native_path" 2>/dev/null; then
+                      echo_error "Failed to move $native_path"
+                      move_success=false
+                    else
+                      echo_success "Moved $native_path"
+                    fi
+                  fi
+                fi
+              done <<< "$selected_repos"
+              
+              if [[ "$move_success" == "true" ]]; then
+                echo_success "All files moved successfully to their original locations"
+                echo_info "Cleaning up temporary directory..."
+                sudo rm -rf "$DEST" 2>/dev/null || true
+              else
+                echo_warning "Some files failed to move. Check the logs above for details."
+                echo_info "Temporary files remain at $DEST"
+              fi
+              ;;
+              
+            3|*)
+              echo_info "Files remain at temporary location: $DEST"
+              echo_info "You can manually copy or move them as needed"
+              ;;
+          esac
         else
           echo_warning "No files were restored. Check the logs above for details."
         fi
