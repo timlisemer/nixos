@@ -874,13 +874,25 @@ in {
 
         if [[ ! -s "$GROUP_TIMESTAMPS" ]]; then
           echo_error "No snapshots found for selected repositories"
+          echo_error "DEBUG: FILTERED_TIMESTAMPS file size: $(wc -l < "$FILTERED_TIMESTAMPS" 2>/dev/null || echo "0") lines"
+          echo_error "DEBUG: First 5 lines of FILTERED_TIMESTAMPS:"
+          head -5 "$FILTERED_TIMESTAMPS" 2>/dev/null || echo "  (empty or missing)"
           exit 1
         fi
+        
+        # Debug: Show what we found
+        echo_info "DEBUG: Created $(wc -l < "$GROUP_TIMESTAMPS" 2>/dev/null || echo "0") timestamp groupings"
+        echo_info "DEBUG: First 3 timestamp groups:"
+        head -3 "$GROUP_TIMESTAMPS" 2>/dev/null | while read line; do
+          echo "  $line"
+        done
 
         # Count snapshots per group and create display array
         group_array=()
         for group_time in $(cut -d'|' -f1 "$GROUP_TIMESTAMPS" | sort -u -r); do
-          count=$(grep -c "^$group_time|" "$GROUP_TIMESTAMPS" 2>/dev/null || echo "0")
+          # Escape special regex characters in group_time for safe grep
+          escaped_pattern=$(printf '%s' "$group_time" | sed 's/[[\.*^$(){}?+|\\]/\\&/g')
+          count=$(grep -c "^$escaped_pattern|" "$GROUP_TIMESTAMPS" 2>/dev/null || echo "0")
           group_array+=("$group_time|$count")
         done
 
@@ -888,10 +900,16 @@ in {
         for i in "''${!group_array[@]}"; do
           IFS='|' read -r group_time count <<< "''${group_array[$i]}"
           # Format: "1. 2025-08-23 06:30-06:35 (17 snapshots)"
-          end_time=$(date -d "$group_time +5 minutes" '+%H:%M' 2>/dev/null || echo "??:??")
-          start_time=$(date -d "$group_time" '+%H:%M' 2>/dev/null || echo "??:??")
-          date_part=$(date -d "$group_time" '+%Y-%m-%d' 2>/dev/null || echo "unknown")
-          echo "  $((i + 1)). $date_part $start_time-$end_time ($count snapshots)"
+          group_epoch=$(date -d "$group_time" +%s 2>/dev/null || echo "0")
+          if [[ "$group_epoch" != "0" ]]; then
+            end_epoch=$((group_epoch + 300))
+            end_time=$(date -d "@$end_epoch" '+%H:%M' 2>/dev/null || echo "??:??")
+            start_time=$(date -d "@$group_epoch" '+%H:%M' 2>/dev/null || echo "??:??")
+            date_part=$(date -d "@$group_epoch" '+%Y-%m-%d' 2>/dev/null || echo "unknown")
+            echo "  $((i + 1)). $date_part $start_time-$end_time ($count snapshots)"
+          else
+            echo "  $((i + 1)). $group_time - invalid time ($count snapshots)"
+          fi
         done
 
         echo
