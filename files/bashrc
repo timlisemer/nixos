@@ -575,7 +575,7 @@ explorer() {
 
 # --- ssh: custom SSH command to map hostnames to IP addresses -------------
 ssh() {
-	# capture the first argument (the “host” the user typed)
+	# capture the first argument (the "host" the user typed)
 	local target="$1"
 	shift
 
@@ -583,6 +583,12 @@ ssh() {
 	if [[ -z "$target" ]]; then
 		echo "Usage: ssh <host> [args...]" >&2
 		return 1
+	fi
+
+	# special handling for tim-pc: use connect_tim_pc helper with Wake-on-LAN
+	if [[ "$target" == "tim-pc" || "$target" == "pc" || "$target" == "$USER@tim-pc" || "$target" == "$USER@pc" ]]; then
+		connect_tim_pc "$@"
+		return
 	fi
 
 	# only rewrite if the user did not already include a username
