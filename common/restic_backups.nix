@@ -326,12 +326,15 @@ in {
         echo "Listing backups for $HOST from S3 bucket..."
         echo
 
-        # Function to get snapshot info for a repo
-        get_snapshot_info() {
+        # Temporary files for collecting data
+        PATHS_FILE=$(mktemp)
+        SNAPSHOTS_FILE=$(mktemp)
+        trap "rm -f $PATHS_FILE $SNAPSHOTS_FILE" EXIT
+
+        # Collect all paths and their snapshots
+        collect_snapshots() {
           local repo_path="$1"
           local native_path="$2"
-          
-          echo "  $native_path"
           
           # Get snapshots for this repo
           snapshots=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
@@ -339,61 +342,106 @@ in {
             snapshots --json 2>/dev/null || echo "[]")
           
           count=$(echo "$snapshots" | jq 'length')
+          echo "$native_path|$count" >> "$PATHS_FILE"
           
-          if [[ "$count" -eq 0 ]]; then
-            echo "    No snapshots yet"
-          else
-            latest=$(echo "$snapshots" | jq -r 'max_by(.time) | .time' | cut -d'T' -f1,2 | sed 's/T/ /')
-            oldest=$(echo "$snapshots" | jq -r 'min_by(.time) | .time' | cut -d'T' -f1,2 | sed 's/T/ /')
-            
-            echo "    Snapshots: $count"
-            echo "    Latest: $latest"
-            echo "    Oldest: $oldest"
-            echo "    All snapshots:"
-            
-            echo "$snapshots" | jq -r '.[] | "      - \(.time | split("T")[0]) \(.time | split("T")[1] | split(".")[0]) (id: \(.short_id))"' | sort -r
+          if [[ "$count" -gt 0 ]]; then
+            echo "$snapshots" | jq -r --arg path "$native_path" '.[] | "\(.time)|\($path)|\(.short_id)"' >> "$SNAPSHOTS_FILE"
           fi
-          echo
         }
 
-        # User Home
-        echo "User Home Backups:"
+        # Collect User Home
         users=$(aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/user_home/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
         if [[ -n "$users" ]]; then
           for user in $users; do
             subdirs=$(aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/user_home/''${user}/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
             for subdir in $subdirs; do
-              get_snapshot_info "user_home/''${user}/''${subdir}" "/home/''${user}/''${subdir}"
+              collect_snapshots "user_home/''${user}/''${subdir}" "/home/''${user}/''${subdir}"
             done
           done
-        else
-          echo "  None"
-          echo
         fi
 
-        # Docker Volumes
-        echo "Docker Volume Backups:"
+        # Collect Docker Volumes
         volumes=$(aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/docker_volume/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
         if [[ -n "$volumes" ]]; then
           for volume in $volumes; do
-            get_snapshot_info "docker_volume/''${volume}" "/mnt/docker-data/volumes/''${volume}"
+            collect_snapshots "docker_volume/''${volume}" "/mnt/docker-data/volumes/''${volume}"
           done
-        else
-          echo "  None"
-          echo
         fi
 
-        # System
-        echo "System Backups:"
+        # Collect System
         system_paths=$(aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/system/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
         if [[ -n "$system_paths" ]]; then
           for path in $system_paths; do
-            get_snapshot_info "system/''${path}" "/''${path}"
+            collect_snapshots "system/''${path}" "/''${path}"
           done
+        fi
+
+        # Display summary
+        echo "BACKUP PATHS SUMMARY:"
+        echo "===================="
+        
+        # User Home summary
+        user_paths=$(grep "^/home/" "$PATHS_FILE" 2>/dev/null || true)
+        user_count=$(echo "$user_paths" | grep -c "^" 2>/dev/null || echo "0")
+        echo "User Home ($user_count paths):"
+        if [[ -n "$user_paths" ]]; then
+          echo "$user_paths" | while IFS='|' read -r path count; do
+            printf "  %-40s - %s snapshots\n" "$path" "$count"
+          done | sort
         else
           echo "  None"
-          echo
         fi
+        echo
+
+        # Docker Volumes summary
+        docker_paths=$(grep "^/mnt/docker-data/" "$PATHS_FILE" 2>/dev/null || true)
+        docker_count=$(echo "$docker_paths" | grep -c "^" 2>/dev/null || echo "0")
+        echo "Docker Volumes ($docker_count paths):"
+        if [[ -n "$docker_paths" ]]; then
+          echo "$docker_paths" | while IFS='|' read -r path count; do
+            printf "  %-40s - %s snapshots\n" "$path" "$count"
+          done | sort
+        else
+          echo "  None"
+        fi
+        echo
+
+        # System summary
+        system_paths=$(grep -v "^/home/" "$PATHS_FILE" 2>/dev/null | grep -v "^/mnt/docker-data/" 2>/dev/null || true)
+        system_count=$(echo "$system_paths" | grep -c "^" 2>/dev/null || echo "0")
+        echo "System ($system_count paths):"
+        if [[ -n "$system_paths" ]]; then
+          echo "$system_paths" | while IFS='|' read -r path count; do
+            printf "  %-40s - %s snapshots\n" "$path" "$count"
+          done | sort
+        else
+          echo "  None"
+        fi
+        echo
+
+        # Display timeline
+        echo "SNAPSHOT TIMELINE:"
+        echo "=================="
+        
+        if [[ -s "$SNAPSHOTS_FILE" ]]; then
+          # Group snapshots by timestamp (within 1 minute)
+          sort -r "$SNAPSHOTS_FILE" | awk -F'|' '
+          {
+            timestamp = substr($1, 1, 16)  # Get YYYY-MM-DDTHH:MM
+            if (timestamp != last_timestamp) {
+              if (NR > 1) print ""
+              # Format the timestamp nicely
+              date_part = substr($1, 1, 10)
+              time_part = substr($1, 12, 8)
+              print date_part " " time_part ":"
+              last_timestamp = timestamp
+            }
+            printf "  - %-40s (id: %s)\n", $2, $3
+          }'
+        else
+          echo "No snapshots found"
+        fi
+        echo
       '')
 
       # --- restic_logs ---------------------------------------------------------
