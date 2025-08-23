@@ -326,6 +326,36 @@ in {
         echo "Listing backups for $HOST from S3 bucket..."
         echo
 
+        # Function to get snapshot info for a repo
+        get_snapshot_info() {
+          local repo_path="$1"
+          local native_path="$2"
+          
+          echo "  $native_path"
+          
+          # Get snapshots for this repo
+          snapshots=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+            restic --repo "$REPO_BASE/$HOST/$repo_path" --password-file "$PWD_FILE" \
+            snapshots --json 2>/dev/null || echo "[]")
+          
+          count=$(echo "$snapshots" | jq 'length')
+          
+          if [[ "$count" -eq 0 ]]; then
+            echo "    No snapshots yet"
+          else
+            latest=$(echo "$snapshots" | jq -r 'max_by(.time) | .time' | cut -d'T' -f1,2 | sed 's/T/ /')
+            oldest=$(echo "$snapshots" | jq -r 'min_by(.time) | .time' | cut -d'T' -f1,2 | sed 's/T/ /')
+            
+            echo "    Snapshots: $count"
+            echo "    Latest: $latest"
+            echo "    Oldest: $oldest"
+            echo "    All snapshots:"
+            
+            echo "$snapshots" | jq -r '.[] | "      - \(.time | split("T")[0]) \(.time | split("T")[1] | split(".")[0]) (id: \(.short_id))"' | sort -r
+          fi
+          echo
+        }
+
         # User Home
         echo "User Home Backups:"
         users=$(aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/user_home/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
@@ -333,35 +363,36 @@ in {
           for user in $users; do
             subdirs=$(aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/user_home/''${user}/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
             for subdir in $subdirs; do
-              echo "  /home/''${user}/''${subdir}"
+              get_snapshot_info "user_home/''${user}/''${subdir}" "/home/''${user}/''${subdir}"
             done
           done
         else
           echo "  None"
+          echo
         fi
-        echo
 
         # Docker Volumes
         echo "Docker Volume Backups:"
         volumes=$(aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/docker_volume/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
         if [[ -n "$volumes" ]]; then
           for volume in $volumes; do
-            echo "  /mnt/docker-data/volumes/''${volume}"
+            get_snapshot_info "docker_volume/''${volume}" "/mnt/docker-data/volumes/''${volume}"
           done
         else
           echo "  None"
+          echo
         fi
-        echo
 
         # System
         echo "System Backups:"
         system_paths=$(aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/system/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
         if [[ -n "$system_paths" ]]; then
           for path in $system_paths; do
-            echo "  /''${path}"
+            get_snapshot_info "system/''${path}" "/''${path}"
           done
         else
           echo "  None"
+          echo
         fi
       '')
 
