@@ -305,15 +305,42 @@ in {
         echo_info "You can follow the logs with: ''${BOLD}restic_logs''${NC}"
       '')
 
-      # --- restic_list_replacement ---------------------------------------------
-      (pkgs.writeShellScriptBin "restic_list_replacement" ''
+      # --- Helper Functions ---------------------------------------------------
+      
+      # Get all available hostnames from S3 bucket
+      (pkgs.writeShellScriptBin "restic_get_hosts" ''
         #! /usr/bin/env bash
         set -euo pipefail
 
         ENV_FILE="/run/secrets/restic_environment"
         REPO_BASE_FILE="/run/secrets/restic_repo_base"
         REPO_BASE="$(sudo cat "$REPO_BASE_FILE")"
-        HOST="$(hostname -s)"
+
+        # Export AWS credentials
+        export $(sudo grep -v '^#' "$ENV_FILE" | xargs)
+
+        # Extract S3 endpoint and bucket
+        S3_ENDPOINT=$(echo "$REPO_BASE" | sed -n 's|s3:\(https://[^/]*\)/.*|\1|p')
+        S3_BUCKET=$(echo "$REPO_BASE" | sed -n 's|s3:https://[^/]*/\(.*\)|\1|p')
+
+        # List all available hosts
+        aws s3 ls "s3://$S3_BUCKET/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true
+      '')
+
+      # Get snapshot timeline data for a specific host
+      (pkgs.writeShellScriptBin "restic_get_timeline" ''
+        #! /usr/bin/env bash
+        set -euo pipefail
+
+        if [[ $# -ne 1 ]]; then
+          echo "Usage: restic_get_timeline <hostname>"
+          exit 1
+        fi
+
+        HOST="$1"
+        ENV_FILE="/run/secrets/restic_environment"
+        REPO_BASE_FILE="/run/secrets/restic_repo_base"
+        REPO_BASE="$(sudo cat "$REPO_BASE_FILE")"
         PWD_FILE="/run/secrets/restic_password"
 
         # Export AWS credentials
@@ -323,8 +350,101 @@ in {
         S3_ENDPOINT=$(echo "$REPO_BASE" | sed -n 's|s3:\(https://[^/]*\)/.*|\1|p')
         S3_BUCKET=$(echo "$REPO_BASE" | sed -n 's|s3:https://[^/]*/\(.*\)|\1|p')
 
-        echo "Listing backups for $HOST from S3 bucket..."
-        echo
+        # Temporary file for snapshots
+        SNAPSHOTS_FILE=$(mktemp)
+        trap "rm -f $SNAPSHOTS_FILE" EXIT
+
+        # Collect snapshots from all repositories for this host
+        collect_host_snapshots() {
+          local host="$1"
+          
+          # User Home
+          users=$(aws s3 ls "s3://$S3_BUCKET/$host/user_home/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
+          if [[ -n "$users" ]]; then
+            for user in $users; do
+              subdirs=$(aws s3 ls "s3://$S3_BUCKET/$host/user_home/$user/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
+              for subdir in $subdirs; do
+                snapshots=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+                  restic --repo "$REPO_BASE/$host/user_home/$user/$subdir" --password-file "$PWD_FILE" \
+                  snapshots --json 2>/dev/null || echo "[]")
+                echo "$snapshots" | jq -r '.[] | .time' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
+              done
+            done
+          fi
+
+          # Docker Volumes
+          volumes=$(aws s3 ls "s3://$S3_BUCKET/$host/docker_volume/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
+          if [[ -n "$volumes" ]]; then
+            for volume in $volumes; do
+              snapshots=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+                restic --repo "$REPO_BASE/$host/docker_volume/$volume" --password-file "$PWD_FILE" \
+                snapshots --json 2>/dev/null || echo "[]")
+              echo "$snapshots" | jq -r '.[] | .time' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
+            done
+          fi
+
+          # System
+          system_paths=$(aws s3 ls "s3://$S3_BUCKET/$host/system/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
+          if [[ -n "$system_paths" ]]; then
+            for path in $system_paths; do
+              snapshots=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+                restic --repo "$REPO_BASE/$host/system/$path" --password-file "$PWD_FILE" \
+                snapshots --json 2>/dev/null || echo "[]")
+              echo "$snapshots" | jq -r '.[] | .time' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
+            done
+          fi
+        }
+
+        collect_host_snapshots "$HOST"
+
+        # Output unique timestamps sorted in reverse chronological order, grouped by minute
+        if [[ -s "$SNAPSHOTS_FILE" ]]; then
+          sort -ru "$SNAPSHOTS_FILE" | awk '{
+            timestamp = substr($1, 1, 16)  # Get YYYY-MM-DDTHH:MM
+            if (timestamp != last_timestamp) {
+              date_part = substr($1, 1, 10)
+              time_part = substr($1, 12, 8)
+              print date_part " " time_part
+              last_timestamp = timestamp
+            }
+          }'
+        fi
+      '')
+
+      # --- restic_list_replacement ---------------------------------------------
+      (pkgs.writeShellScriptBin "restic_list_replacement" ''
+        #! /usr/bin/env bash
+        set -euo pipefail
+
+        # Support both display and return modes
+        RETURN_MODE=false
+        TARGET_HOST=""
+        if [[ $# -gt 0 ]] && [[ "$1" == "--return" ]]; then
+          RETURN_MODE=true
+          if [[ $# -gt 1 ]]; then
+            TARGET_HOST="$2"
+          fi
+        elif [[ $# -gt 0 ]] && [[ "$1" != "--return" ]]; then
+          TARGET_HOST="$1"
+        fi
+
+        ENV_FILE="/run/secrets/restic_environment"
+        REPO_BASE_FILE="/run/secrets/restic_repo_base"
+        REPO_BASE="$(sudo cat "$REPO_BASE_FILE")"
+        HOST="''${TARGET_HOST:-$(hostname -s)}"
+        PWD_FILE="/run/secrets/restic_password"
+
+        # Export AWS credentials
+        export $(sudo grep -v '^#' "$ENV_FILE" | xargs)
+
+        # Extract S3 endpoint and bucket
+        S3_ENDPOINT=$(echo "$REPO_BASE" | sed -n 's|s3:\(https://[^/]*\)/.*|\1|p')
+        S3_BUCKET=$(echo "$REPO_BASE" | sed -n 's|s3:https://[^/]*/\(.*\)|\1|p')
+
+        if [[ "$RETURN_MODE" == "false" ]]; then
+          echo "Listing backups for $HOST from S3 bucket..."
+          echo
+        fi
 
         # Temporary files for collecting data
         PATHS_FILE=$(mktemp)
@@ -376,72 +496,132 @@ in {
           done
         fi
 
-        # Display summary
-        echo "BACKUP PATHS SUMMARY:"
-        echo "===================="
-        
-        # User Home summary
-        user_paths=$(grep "^/home/" "$PATHS_FILE" 2>/dev/null || true)
-        user_count=$(echo "$user_paths" | grep -c "^" 2>/dev/null || echo "0")
-        echo "User Home ($user_count paths):"
-        if [[ -n "$user_paths" ]]; then
-          echo "$user_paths" | while IFS='|' read -r path count; do
-            printf "  %-40s - %s snapshots\n" "$path" "$count"
-          done | sort
+        if [[ "$RETURN_MODE" == "true" ]]; then
+          # Return structured JSON data
+          echo "{"
+          echo "  \"host\": \"$HOST\","
+          echo "  \"paths\": ["
+          
+          # Add paths with their repo subpaths and snapshot counts
+          first=true
+          while IFS='|' read -r path count; do
+            if [[ -n "$path" ]]; then
+              [[ "$first" == "true" ]] && first=false || echo ","
+              
+              # Determine category and repo subpath
+              if [[ "$path" =~ ^/home/ ]]; then
+                category="user_home"
+                # Extract repo subpath from path
+                user=$(echo "$path" | cut -d/ -f3)
+                subdir=$(echo "$path" | cut -d/ -f4-)
+                repo_subpath="user_home/$user/$subdir"
+              elif [[ "$path" =~ ^/mnt/docker-data/volumes/ ]]; then
+                category="docker_volume"
+                volume=$(echo "$path" | cut -d/ -f5-)
+                repo_subpath="docker_volume/$volume"
+              else
+                category="system"
+                sys_path=$(echo "$path" | cut -d/ -f2-)
+                repo_subpath="system/$sys_path"
+              fi
+              
+              echo -n "    {"
+              echo -n "\"native_path\": \"$path\", "
+              echo -n "\"repo_subpath\": \"$repo_subpath\", "
+              echo -n "\"category\": \"$category\", "
+              echo -n "\"snapshot_count\": $count"
+              echo -n "}"
+            fi
+          done < "$PATHS_FILE"
+          
+          echo ""
+          echo "  ],"
+          echo "  \"snapshots\": ["
+          
+          # Add timeline data
+          first=true
+          if [[ -s "$SNAPSHOTS_FILE" ]]; then
+            sort -r "$SNAPSHOTS_FILE" | while IFS='|' read -r timestamp path snapshot_id; do
+              [[ "$first" == "true" ]] && first=false || echo ","
+              echo -n "    {"
+              echo -n "\"timestamp\": \"$timestamp\", "
+              echo -n "\"path\": \"$path\", "
+              echo -n "\"snapshot_id\": \"$snapshot_id\""
+              echo -n "}"
+            done
+          fi
+          
+          echo ""
+          echo "  ]"
+          echo "}"
         else
-          echo "  None"
-        fi
-        echo
+          # Display formatted output (existing behavior)
+          echo "BACKUP PATHS SUMMARY:"
+          echo "===================="
+          
+          # User Home summary
+          user_paths=$(grep "^/home/" "$PATHS_FILE" 2>/dev/null || true)
+          user_count=$(echo "$user_paths" | grep -c "^" 2>/dev/null || echo "0")
+          echo "User Home ($user_count paths):"
+          if [[ -n "$user_paths" ]]; then
+            echo "$user_paths" | while IFS='|' read -r path count; do
+              printf "  %-40s - %s snapshots\n" "$path" "$count"
+            done | sort
+          else
+            echo "  None"
+          fi
+          echo
 
-        # Docker Volumes summary
-        docker_paths=$(grep "^/mnt/docker-data/" "$PATHS_FILE" 2>/dev/null || true)
-        docker_count=$(echo "$docker_paths" | grep -c "^" 2>/dev/null || echo "0")
-        echo "Docker Volumes ($docker_count paths):"
-        if [[ -n "$docker_paths" ]]; then
-          echo "$docker_paths" | while IFS='|' read -r path count; do
-            printf "  %-40s - %s snapshots\n" "$path" "$count"
-          done | sort
-        else
-          echo "  None"
-        fi
-        echo
+          # Docker Volumes summary
+          docker_paths=$(grep "^/mnt/docker-data/" "$PATHS_FILE" 2>/dev/null || true)
+          docker_count=$(echo "$docker_paths" | grep -c "^" 2>/dev/null || echo "0")
+          echo "Docker Volumes ($docker_count paths):"
+          if [[ -n "$docker_paths" ]]; then
+            echo "$docker_paths" | while IFS='|' read -r path count; do
+              printf "  %-40s - %s snapshots\n" "$path" "$count"
+            done | sort
+          else
+            echo "  None"
+          fi
+          echo
 
-        # System summary
-        system_paths=$(grep -v "^/home/" "$PATHS_FILE" 2>/dev/null | grep -v "^/mnt/docker-data/" 2>/dev/null || true)
-        system_count=$(echo "$system_paths" | grep -c "^" 2>/dev/null || echo "0")
-        echo "System ($system_count paths):"
-        if [[ -n "$system_paths" ]]; then
-          echo "$system_paths" | while IFS='|' read -r path count; do
-            printf "  %-40s - %s snapshots\n" "$path" "$count"
-          done | sort
-        else
-          echo "  None"
-        fi
-        echo
+          # System summary
+          system_paths=$(grep -v "^/home/" "$PATHS_FILE" 2>/dev/null | grep -v "^/mnt/docker-data/" 2>/dev/null || true)
+          system_count=$(echo "$system_paths" | grep -c "^" 2>/dev/null || echo "0")
+          echo "System ($system_count paths):"
+          if [[ -n "$system_paths" ]]; then
+            echo "$system_paths" | while IFS='|' read -r path count; do
+              printf "  %-40s - %s snapshots\n" "$path" "$count"
+            done | sort
+          else
+            echo "  None"
+          fi
+          echo
 
-        # Display timeline
-        echo "SNAPSHOT TIMELINE:"
-        echo "=================="
-        
-        if [[ -s "$SNAPSHOTS_FILE" ]]; then
-          # Group snapshots by timestamp (within 1 minute)
-          sort -r "$SNAPSHOTS_FILE" | awk -F'|' '
-          {
-            timestamp = substr($1, 1, 16)  # Get YYYY-MM-DDTHH:MM
-            if (timestamp != last_timestamp) {
-              if (NR > 1) print ""
-              # Format the timestamp nicely
-              date_part = substr($1, 1, 10)
-              time_part = substr($1, 12, 8)
-              print date_part " " time_part ":"
-              last_timestamp = timestamp
-            }
-            printf "  - %-40s (id: %s)\n", $2, $3
-          }'
-        else
-          echo "No snapshots found"
+          # Display timeline
+          echo "SNAPSHOT TIMELINE:"
+          echo "=================="
+          
+          if [[ -s "$SNAPSHOTS_FILE" ]]; then
+            # Group snapshots by timestamp (within 1 minute)
+            sort -r "$SNAPSHOTS_FILE" | awk -F'|' '
+            {
+              timestamp = substr($1, 1, 16)  # Get YYYY-MM-DDTHH:MM
+              if (timestamp != last_timestamp) {
+                if (NR > 1) print ""
+                # Format the timestamp nicely
+                date_part = substr($1, 1, 10)
+                time_part = substr($1, 12, 8)
+                print date_part " " time_part ":"
+                last_timestamp = timestamp
+              }
+              printf "  - %-40s (id: %s)\n", $2, $3
+            }'
+          else
+            echo "No snapshots found"
+          fi
+          echo
         fi
-        echo
       '')
 
       # --- restic_logs ---------------------------------------------------------
@@ -465,6 +645,314 @@ in {
         echo_info "Showing last 100 lines and following..."
 
         sudo journalctl -u "restic-backups-backup-$host-*" -n 100 --follow
+      '')
+
+      # --- restic_restore ------------------------------------------------------
+      (pkgs.writeShellScriptBin "restic_restore" ''
+        #! /usr/bin/env bash
+        set -euo pipefail
+
+        # Color definitions
+        RED='\033[0;31m'
+        GREEN='\033[0;32m'
+        BLUE='\033[0;34m'
+        YELLOW='\033[1;33m'
+        BOLD='\033[1m'
+        NC='\033[0m' # No Color
+
+        echo_info() { echo -e "''${BLUE}''${BOLD}[INFO]''${NC} $1"; }
+        echo_success() { echo -e "''${GREEN}''${BOLD}[SUCCESS]''${NC} $1"; }
+        echo_error() { echo -e "''${RED}''${BOLD}[ERROR]''${NC} $1" >&2; }
+        echo_warning() { echo -e "''${YELLOW}''${BOLD}[WARNING]''${NC} $1"; }
+
+        ENV_FILE="/run/secrets/restic_environment"
+        REPO_BASE_FILE="/run/secrets/restic_repo_base"
+        REPO_BASE="$(sudo cat "$REPO_BASE_FILE")"
+        CURRENT_HOST="$(hostname -s)"
+        PWD_FILE="/run/secrets/restic_password"
+
+        echo_info "Restic Interactive Restore Tool"
+        echo "==============================="
+        echo
+
+        # Phase 1: Hostname Selection
+        echo_info "Getting available hostnames..."
+        available_hosts=$(restic_get_hosts)
+        if [[ -z "$available_hosts" ]]; then
+          echo_error "No hosts found in backup repository"
+          exit 1
+        fi
+
+        echo
+        echo "Available hosts:"
+        host_array=($available_hosts)
+        default_index=0
+        
+        # Find current host in list for default
+        for i in "''${!host_array[@]}"; do
+          if [[ "''${host_array[$i]}" == "$CURRENT_HOST" ]]; then
+            default_index=$((i + 1))
+          fi
+          echo "  $((i + 1)). ''${host_array[$i]}"
+        done
+
+        echo
+        read -p "Select hostname [$default_index]: " host_choice
+        host_choice=''${host_choice:-$default_index}
+
+        if [[ ! "$host_choice" =~ ^[0-9]+$ ]] || [[ "$host_choice" -lt 1 ]] || [[ "$host_choice" -gt ''${#host_array[@]} ]]; then
+          echo_error "Invalid selection"
+          exit 1
+        fi
+
+        SELECTED_HOST="''${host_array[$((host_choice - 1))]}"
+        echo_info "Selected host: ''${BOLD}$SELECTED_HOST''${NC}"
+        echo
+
+        # Phase 2: Get backup data for selected host
+        echo_info "Querying backups for $SELECTED_HOST..."
+        backup_data=$(restic_list_replacement --return "$SELECTED_HOST")
+        
+        if [[ -z "$backup_data" ]] || [[ "$backup_data" == "{}" ]]; then
+          echo_error "No backup data found for host $SELECTED_HOST"
+          exit 1
+        fi
+
+        # Parse available categories
+        user_home_count=$(echo "$backup_data" | jq '[.paths[] | select(.category == "user_home")] | length')
+        docker_count=$(echo "$backup_data" | jq '[.paths[] | select(.category == "docker_volume")] | length')
+        system_count=$(echo "$backup_data" | jq '[.paths[] | select(.category == "system")] | length')
+        
+        echo_success "Found backups: User Home ($user_home_count), Docker Volumes ($docker_count), System ($system_count)"
+        echo
+
+        # Phase 3: Repository Selection
+        echo "Select what to restore:"
+        echo "  1. All (everything for $SELECTED_HOST)"
+        if [[ "$user_home_count" -gt 0 ]]; then
+          echo "  2. User Home (all user directories)"
+        fi
+        if [[ "$docker_count" -gt 0 ]]; then
+          echo "  3. Docker Volumes (all docker volumes)"
+        fi
+        if [[ "$system_count" -gt 0 ]]; then
+          echo "  4. System (all system paths)"
+        fi
+        echo "  5. Custom Selection (choose specific repositories)"
+        echo
+
+        read -p "Your choice: " restore_choice
+
+        # Build selected repositories list
+        selected_repos=""
+        case "$restore_choice" in
+          1)
+            # All repositories
+            selected_repos=$(echo "$backup_data" | jq -r '.paths[] | .repo_subpath')
+            ;;
+          2)
+            # User Home only
+            if [[ "$user_home_count" -eq 0 ]]; then
+              echo_error "No user home backups available"
+              exit 1
+            fi
+            selected_repos=$(echo "$backup_data" | jq -r '.paths[] | select(.category == "user_home") | .repo_subpath')
+            ;;
+          3)
+            # Docker Volumes only
+            if [[ "$docker_count" -eq 0 ]]; then
+              echo_error "No docker volume backups available"
+              exit 1
+            fi
+            selected_repos=$(echo "$backup_data" | jq -r '.paths[] | select(.category == "docker_volume") | .repo_subpath')
+            ;;
+          4)
+            # System only
+            if [[ "$system_count" -eq 0 ]]; then
+              echo_error "No system backups available"
+              exit 1
+            fi
+            selected_repos=$(echo "$backup_data" | jq -r '.paths[] | select(.category == "system") | .repo_subpath')
+            ;;
+          5)
+            # Custom selection - interactive multi-select
+            echo_info "Available repositories:"
+            repo_list=$(echo "$backup_data" | jq -r '.paths[] | "\(.native_path)|\(.repo_subpath)|\(.snapshot_count)"')
+            
+            repo_array=()
+            while IFS='|' read -r native_path repo_subpath snapshot_count; do
+              if [[ -n "$native_path" ]]; then
+                repo_array+=("$repo_subpath|$native_path|$snapshot_count")
+              fi
+            done <<< "$repo_list"
+
+            if [[ ''${#repo_array[@]} -eq 0 ]]; then
+              echo_error "No repositories found"
+              exit 1
+            fi
+
+            # Display repositories with numbers
+            for i in "''${!repo_array[@]}"; do
+              IFS='|' read -r repo_subpath native_path snapshot_count <<< "''${repo_array[$i]}"
+              printf "%3d. %-40s (%d snapshots)\n" $((i + 1)) "$native_path" "$snapshot_count"
+            done
+
+            echo
+            echo "Enter repository numbers separated by spaces (e.g., 1 3 5-8):"
+            read -p "Selection: " custom_selection
+
+            # Parse selection (support ranges like 1-3)
+            selected_indices=()
+            for part in $custom_selection; do
+              if [[ "$part" =~ ^[0-9]+-[0-9]+$ ]]; then
+                # Range format
+                start=$(echo "$part" | cut -d- -f1)
+                end=$(echo "$part" | cut -d- -f2)
+                for ((i=start; i<=end; i++)); do
+                  if [[ $i -ge 1 ]] && [[ $i -le ''${#repo_array[@]} ]]; then
+                    selected_indices+=($((i - 1)))
+                  fi
+                done
+              elif [[ "$part" =~ ^[0-9]+$ ]]; then
+                # Single number
+                if [[ $part -ge 1 ]] && [[ $part -le ''${#repo_array[@]} ]]; then
+                  selected_indices+=($((part - 1)))
+                fi
+              fi
+            done
+
+            if [[ ''${#selected_indices[@]} -eq 0 ]]; then
+              echo_error "No valid selections made"
+              exit 1
+            fi
+
+            # Build selected repos list
+            selected_repos=""
+            for idx in "''${selected_indices[@]}"; do
+              IFS='|' read -r repo_subpath native_path snapshot_count <<< "''${repo_array[$idx]}"
+              selected_repos+="$repo_subpath"$'\n'
+            done
+            ;;
+          *)
+            echo_error "Invalid choice"
+            exit 1
+            ;;
+        esac
+
+        if [[ -z "$selected_repos" ]]; then
+          echo_error "No repositories selected"
+          exit 1
+        fi
+
+        # Show what will be restored
+        repo_count=$(echo "$selected_repos" | grep -c "^" || echo "0")
+        echo_info "Selected $repo_count repositories for restoration"
+        echo
+
+        # Phase 4: Timestamp Selection
+        echo_info "Getting available timestamps..."
+        timestamps=$(restic_get_timeline "$SELECTED_HOST")
+        
+        if [[ -z "$timestamps" ]]; then
+          echo_error "No snapshots found for host $SELECTED_HOST"
+          exit 1
+        fi
+
+        echo "Available restore points:"
+        timestamp_array=()
+        while IFS= read -r line; do
+          if [[ -n "$line" ]]; then
+            timestamp_array+=("$line")
+          fi
+        done <<< "$timestamps"
+
+        for i in "''${!timestamp_array[@]}"; do
+          echo "  $((i + 1)). ''${timestamp_array[$i]}"
+        done
+
+        echo
+        read -p "Select timestamp [1]: " timestamp_choice
+        timestamp_choice=''${timestamp_choice:-1}
+
+        if [[ ! "$timestamp_choice" =~ ^[0-9]+$ ]] || [[ "$timestamp_choice" -lt 1 ]] || [[ "$timestamp_choice" -gt ''${#timestamp_array[@]} ]]; then
+          echo_error "Invalid timestamp selection"
+          exit 1
+        fi
+
+        SELECTED_TIMESTAMP="''${timestamp_array[$((timestamp_choice - 1))]}"
+        echo_info "Selected timestamp: ''${BOLD}$SELECTED_TIMESTAMP''${NC}"
+        echo
+
+        # Phase 5: Restoration
+        DEST="/tmp/restic/interactive"
+        echo_info "Preparing destination: ''${BOLD}$DEST''${NC}"
+        sudo rm -rf "$DEST"
+        sudo mkdir -p "$DEST"
+
+        echo_info "Starting restoration process..."
+        restored_count=0
+        skipped_count=0
+        
+        while IFS= read -r repo_subpath; do
+          if [[ -n "$repo_subpath" ]]; then
+            REPO="$REPO_BASE/$SELECTED_HOST/$repo_subpath"
+            
+            # Get native path from backup data
+            native_path=$(echo "$backup_data" | jq -r --arg rsp "$repo_subpath" '.paths[] | select(.repo_subpath == $rsp) | .native_path')
+            
+            echo_info "Restoring ''${BOLD}$native_path''${NC} from ''${BOLD}$repo_subpath''${NC}..."
+            
+            # Find closest snapshot <= selected timestamp
+            snapshots=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+              restic --repo "$REPO" --password-file "$PWD_FILE" \
+              snapshots --json --path "$native_path" 2>/dev/null || echo "[]")
+            
+            if [[ "$snapshots" == "[]" ]] || [[ $(echo "$snapshots" | jq 'length') -eq 0 ]]; then
+              echo_warning "No snapshots found for $native_path, skipping"
+              ((skipped_count++))
+              continue
+            fi
+            
+            # Find best snapshot (closest to but not after selected timestamp)
+            selected_timestamp_iso="''${SELECTED_TIMESTAMP:0:10}T''${SELECTED_TIMESTAMP:11:8}"
+            best_snapshot=$(echo "$snapshots" | jq -r --arg target "$selected_timestamp_iso" '
+              [.[] | select(.time <= $target)] | 
+              sort_by(.time) | 
+              last // empty | 
+              .short_id'
+            )
+            
+            if [[ -z "$best_snapshot" ]] || [[ "$best_snapshot" == "null" ]]; then
+              echo_warning "No snapshots found before or at $SELECTED_TIMESTAMP for $native_path, skipping"
+              ((skipped_count++))
+              continue
+            fi
+            
+            # Restore the selected snapshot
+            if sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+              restic --repo "$REPO" --password-file "$PWD_FILE" \
+              restore "$best_snapshot" --path "$native_path" --target "$DEST" 2>/dev/null; then
+              echo_success "Restored $native_path (snapshot: $best_snapshot)"
+              ((restored_count++))
+            else
+              echo_error "Failed to restore $native_path"
+              ((skipped_count++))
+            fi
+          fi
+        done <<< "$selected_repos"
+
+        echo
+        echo_info "Restoration Summary:"
+        echo "  Successfully restored: $restored_count repositories"
+        echo "  Skipped: $skipped_count repositories"
+        echo "  Destination: ''${BOLD}$DEST''${NC}"
+        
+        if [[ $restored_count -gt 0 ]]; then
+          echo_success "Restoration completed successfully!"
+          echo_info "You can now access your restored files at $DEST"
+        else
+          echo_warning "No files were restored. Check the logs above for details."
+        fi
       '')
     ];
 }
