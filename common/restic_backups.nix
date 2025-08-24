@@ -1183,14 +1183,17 @@ in {
                       )
                       
                       # Restore the nested snapshot
-                      if sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+                      sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
                         restic --repo "$nested_repo_url" --password-file "$PWD_FILE" \
-                        restore "$best_nested_snapshot" --path "$nested_native_path" --target "$DEST" 2>/dev/null; then
+                        restore "$best_nested_snapshot" --path "$nested_native_path" --target "$DEST"
+                      
+                      # Check if restoration created files in the target directory
+                      if [[ -d "$DEST$nested_native_path" ]] && [[ -n "$(find "$DEST$nested_native_path" -mindepth 1 -maxdepth 1 2>/dev/null)" ]]; then
                         display_time=$(echo "$nested_snapshot_time" | sed 's/\.[0-9]*+.*$//')
                         echo_success "  Restored $nested_native_path from snapshot $best_nested_snapshot at $display_time"
                         nested_restored=$((nested_restored + 1))
                       else
-                        echo_error "  Failed to restore $nested_native_path"
+                        echo_error "  Failed to restore $nested_native_path - no files found in destination"
                         nested_skipped=$((nested_skipped + 1))
                       fi
                     else
@@ -1244,15 +1247,18 @@ in {
             fi
 
             # Restore the selected snapshot
-            if sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+            sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
               restic --repo "$REPO" --password-file "$PWD_FILE" \
-              restore "$best_snapshot" --path "$native_path" --target "$DEST" 2>/dev/null; then
+              restore "$best_snapshot" --path "$native_path" --target "$DEST"
+            
+            # Check if restoration created files in the target directory
+            if [[ -d "$DEST$native_path" ]] && [[ -n "$(find "$DEST$native_path" -mindepth 1 -maxdepth 1 2>/dev/null)" ]]; then
               # Format timestamp for display (remove microseconds and timezone for readability)
               display_time=$(echo "$selected_snapshot_time" | sed 's/\.[0-9]*+.*$//')
               echo_success "Restored $native_path from snapshot $best_snapshot at $display_time"
               restored_count=$((restored_count + 1))
             else
-              echo_error "Failed to restore $native_path"
+              echo_error "Failed to restore $native_path - no files found in destination"
               skipped_count=$((skipped_count + 1))
             fi
           fi
