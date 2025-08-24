@@ -25,42 +25,29 @@
     else "system";
 in {
   # ─── Restic Backup Configuration ────────────────────────────────────────────────
-  sops.templates = lib.listToAttrs (builtins.map (path: let
-      location = getLocation path;
-      name = "backup-${hostName}-${lib.replaceStrings ["/"] ["-"] (lib.removePrefix "/" path)}";
-    in {
-      name = "restic_repo_${name}";
-      value = {
-        owner = "root";
-        mode = "0400";
-        content = "${config.sops.placeholder."restic_repo_base"}/${hostName}/${location}";
-        restartUnits = ["restic-backups-${name}.service"];
-      };
-    })
-    backupPaths);
-  services.restic.backups = lib.listToAttrs (builtins.map (path: let
-      location = getLocation path;
-      name = "backup-${hostName}-${lib.replaceStrings ["/"] ["-"] (lib.removePrefix "/" path)}";
-    in {
-      name = name;
-      value = {
-        initialize = true;
-        paths = [path];
-        passwordFile = config.sops.secrets.restic_password.path;
-        environmentFile = config.sops.secrets.restic_environment.path;
-        repositoryFile = config.sops.templates."restic_repo_${name}".path;
-        pruneOpts = ["--keep-daily 7" "--keep-weekly 4" "--keep-monthly 12"];
-        timerConfig.OnCalendar = "06:30";
-        timerConfig.Persistent = false;
-      };
-    })
-    backupPaths);
-  # Generate JSON for backup paths
-  environment.etc."restic_backup_paths.json".text = builtins.toJSON (builtins.map (path: {
-      native_path = path;
-      repo_subpath = getLocation path;
-    })
-    backupPaths);
+  # Single systemd service that runs the restic_start_backup function
+  systemd.services.restic-backup = {
+    description = "Restic backup service";
+    serviceConfig = {
+      Type = "oneshot";
+      User = "root";
+      EnvironmentFile = config.sops.secrets.restic_environment.path;
+    };
+    script = "restic_start_backup";
+    path = with pkgs; [restic jq coreutils];
+  };
+
+  systemd.timers.restic-backup = {
+    description = "Timer for restic backup service";
+    wantedBy = ["timers.target"];
+    timerConfig = {
+      OnCalendar = "06:30";
+      Persistent = false;
+    };
+  };
+
+  # Make backup paths available as a file
+  environment.etc."restic_predefined_backup_paths.json".text = builtins.toJSON backupPaths;
 
   # Restic helper scripts
   environment.systemPackages = with pkgs;
@@ -211,51 +198,92 @@ in {
         echo_warning() { echo -e "''${YELLOW}''${BOLD}[WARNING]''${NC} $1"; }
 
         host="$(hostname -s)"
-        echo_info "Starting all backup units for host: ''${BOLD}$host''${NC}"
+        echo_info "Starting backup process for host: ''${BOLD}$host''${NC}"
 
-        # Get regular backup units
-        units=$(sudo systemctl list-unit-files --type=service --plain | grep "^restic-backups-backup-$host-" | awk '{print $1}')
-        
-        # Dynamically discover docker volume backup units if docker volumes exist
+        # Read secrets paths
+        ENV_FILE="/run/secrets/restic_environment"
+        REPO_BASE_FILE="/run/secrets/restic_repo_base"
+        REPO_BASE="$(sudo cat "$REPO_BASE_FILE")"
+        PWD_FILE="/run/secrets/restic_password"
+
+        # Export AWS credentials for restic
+        export $(sudo grep -v '^#' "$ENV_FILE" | xargs)
+
+        backup_count=0
+        skip_count=0
+
+        # Backup user paths from file
+        if [[ -f "/etc/restic_predefined_backup_paths.json" ]]; then
+          echo_info "Processing configured backup paths..."
+          cat /etc/restic_predefined_backup_paths.json | jq -r '.[]' | while read -r path; do
+            if [[ -e "$path" ]]; then
+              echo_info "Backing up: $path"
+
+              # Calculate repository location
+              if [[ "$path" =~ ^/home/ ]]; then
+                username=$(echo "$path" | cut -d/ -f3)
+                subdir=$(echo "$path" | cut -d/ -f4- | tr '/' '_')
+                repo_location="user_home/$username/$subdir"
+              elif [[ "$path" =~ ^/mnt/docker-data/volumes/ ]]; then
+                volume=$(echo "$path" | cut -d/ -f5- | tr '/' '_')
+                repo_location="docker_volume/$volume"
+              else
+                repo_location="system"
+              fi
+
+              repo_url="$REPO_BASE/$host/$repo_location"
+
+              # Initialize repository if needed and backup
+              if sudo restic --repo "$repo_url" --password-file "$PWD_FILE" snapshots >/dev/null 2>&1 || \
+                 sudo restic --repo "$repo_url" --password-file "$PWD_FILE" init; then
+                sudo restic --repo "$repo_url" --password-file "$PWD_FILE" backup "$path" \
+                  --host "$host" \
+                  --tag user-path || echo_warning "Failed to backup $path"
+                echo_success "Backed up: $path"
+                ((backup_count++))
+              else
+                echo_warning "Failed to initialize repository for $path"
+                ((skip_count++))
+              fi
+            else
+              ((skip_count++))
+            fi
+          done
+        fi
+
+        # Backup docker volumes
         if [[ -d "/mnt/docker-data/volumes" ]]; then
-          echo_info "Discovering docker volume backup services..."
-          for volume in /mnt/docker-data/volumes/*/; do
-            if [[ -d "$volume" ]]; then
-              volume_name=$(basename "$volume")
-              docker_service="restic-backups-backup-$host-mnt-docker-data-volumes-$volume_name.service"
-              if sudo systemctl list-unit-files --type=service --plain | grep -q "^$docker_service"; then
-                units="$units"$'\n'"$docker_service"
-                echo_info "Found docker volume service: $docker_service"
+          echo_info "Processing docker volumes..."
+          for volume_path in /mnt/docker-data/volumes/*/; do
+            if [[ -d "$volume_path" ]]; then
+              volume_name=$(basename "$volume_path")
+              # Exclude non-volume entries
+              if [[ "$volume_name" == "backingFsBlockDev" || "$volume_name" == "metadata.db" ]]; then
+                continue
+              fi
+
+              echo_info "Backing up docker volume: $volume_name"
+              repo_url="$REPO_BASE/$host/docker_volume/$volume_name"
+
+              # Initialize repository if needed and backup
+              if sudo restic --repo "$repo_url" --password-file "$PWD_FILE" snapshots >/dev/null 2>&1 || \
+                 sudo restic --repo "$repo_url" --password-file "$PWD_FILE" init; then
+                sudo restic --repo "$repo_url" --password-file "$PWD_FILE" backup "$volume_path" \
+                  --host "$host" \
+                  --tag docker-volume \
+                  --tag "$volume_name" || echo_warning "Failed to backup docker volume $volume_name"
+                echo_success "Backed up docker volume: $volume_name"
+                ((backup_count++))
+              else
+                echo_warning "Failed to initialize repository for docker volume $volume_name"
+                ((skip_count++))
               fi
             fi
           done
         fi
-        
-        if [[ -z "$units" ]]; then
-          echo_error "No backup units found."
-          exit 1
-        fi
 
-        for unit in $units; do
-          # Extract the path from the unit name to check if it exists
-          # Convert service name back to original path
-          path_part=$(echo "$unit" | sed "s/^restic-backups-backup-$host-//; s/\.service$//; s/-/\//g")
-          original_path="/$path_part"
-          
-          # Check if the backup path exists
-          if [[ -e "$original_path" ]]; then
-            echo_info "Starting ''${BOLD}$unit''${NC}"
-            if sudo systemctl start "$unit"; then
-              echo_success "$unit started successfully."
-            else
-              echo_error "Failed to start $unit."
-            fi
-          else
-            echo_warning "Skipping ''${BOLD}$unit''${NC} - path does not exist: $original_path"
-          fi
-        done
-
-        echo_info "You can follow the logs with: ''${BOLD}restic_logs''${NC}"
+        echo_info "Backup completed: $backup_count successful"
+        echo_info "You can check logs with: ''${BOLD}sudo journalctl -u restic-backup -f''${NC}"
       '')
 
       # --- Helper Functions ---------------------------------------------------
@@ -669,29 +697,6 @@ in {
           fi
           echo
         fi
-      '')
-
-      # --- restic_logs ---------------------------------------------------------
-      (pkgs.writeShellScriptBin "restic_logs" ''
-        #! /usr/bin/env bash
-        set -euo pipefail
-
-        # Color definitions
-        RED='\033[0;31m'
-        GREEN='\033[0;32m'
-        BLUE='\033[0;34m'
-        BOLD='\033[1m'
-        NC='\033[0m' # No Color
-
-        echo_info() { echo -e "''${BLUE}''${BOLD}[INFO]''${NC} $1"; }
-        echo_success() { echo -e "''${GREEN}''${BOLD}[SUCCESS]''${NC} $1"; }
-        echo_error() { echo -e "''${RED}''${BOLD}[ERROR]''${NC} $1" >&2; }
-
-        host="$(hostname -s)"
-        echo_info "Following logs for all restic backup units on ''${BOLD}$host''${NC}"
-        echo_info "Showing last 100 lines and following..."
-
-        sudo journalctl -u "restic-backups-backup-$host-*" -n 100 --follow
       '')
 
       # --- restic_restore ------------------------------------------------------
@@ -1382,7 +1387,7 @@ in {
               echo_info "DEBUG: DEST is: $DEST"
               echo_info "DEBUG: Contents of $DEST:"
               sudo find "$DEST" -maxdepth 3 -type d
-              
+
               move_success=true
               for repo_subpath in "''${selected_repos_array[@]}"; do
                 echo_info "DEBUG: Processing repo_subpath: $repo_subpath"
@@ -1398,10 +1403,10 @@ in {
                       fi
                     fi
                   done < "$BACKUP_PATHS_FILE"
-                  
+
                   echo_info "DEBUG: native_path found: $native_path"
                   echo_info "DEBUG: Checking if $DEST$native_path exists..."
-                  
+
                   if [[ -n "$native_path" ]]; then
                     echo_info "Moving $native_path..."
                     # Remove original if it exists (for replace)
