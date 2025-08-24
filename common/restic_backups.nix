@@ -444,8 +444,7 @@ in {
 
           # Get snapshots for this repo - with proper error handling
           local snapshots
-          if ! snapshots=$(env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
-            restic --repo "$REPO_BASE/$HOST/$repo_path" --password-file "$PWD_FILE" \
+          if ! snapshots=$(restic --repo "$REPO_BASE/$HOST/$repo_path" --password-file "$PWD_FILE" \
             snapshots --json 2>/dev/null); then
             snapshots="[]"
           fi
@@ -483,15 +482,14 @@ in {
               # Collect snapshots from each REAL nested repository
               for nested_repo in $nested_repos; do
                 if [[ -n "$nested_repo" ]]; then
-                  local nested_repo_path="docker_volume/''${volume_name}/''${nested_repo}"
-                  local nested_native_path="''${native_path}/''${nested_repo}"
+                  local nested_repo_path="docker_volume/$volume_name/$nested_repo"
+                  local nested_native_path="$native_path/$nested_repo"
                   
                   progress_info "    Processing nested: $nested_repo"
                   
                   # Get snapshots for nested repository
                   local nested_snapshots
-                  if nested_snapshots=$(env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
-                    restic --repo "$REPO_BASE/$HOST/$nested_repo_path" --password-file "$PWD_FILE" \
+                  if nested_snapshots=$(restic --repo "$REPO_BASE/$HOST/$nested_repo_path" --password-file "$PWD_FILE" \
                     snapshots --json 2>/dev/null); then
                     
                     local nested_count=0
@@ -538,7 +536,7 @@ in {
             subdirs=$(aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/user_home/''${user}/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
             for subdir in $subdirs; do
               progress_info "  Checking $subdir..."
-              collect_snapshots "user_home/''${user}/''${subdir}" "/home/''${user}/''${subdir}"
+              collect_snapshots "user_home/$user/$subdir" "/home/$user/$subdir"
             done
           done
         fi
@@ -549,7 +547,7 @@ in {
         if [[ -n "$volumes" ]]; then
           for volume in $volumes; do
             progress_info "Processing volume: $volume"
-            collect_snapshots "docker_volume/''${volume}" "/mnt/docker-data/volumes/''${volume}"
+            collect_snapshots "docker_volume/$volume" "/mnt/docker-data/volumes/$volume"
           done
         fi
 
@@ -559,7 +557,7 @@ in {
         if [[ -n "$system_paths" ]]; then
           for path in $system_paths; do
             progress_info "Processing system: $path"
-            collect_snapshots "system/''${path}" "/''${path}"
+            collect_snapshots "system/$path" "/$path"
           done
         fi
 
@@ -1151,8 +1149,8 @@ in {
                 # Process each REAL nested repository
                 for nested_repo in $nested_repos; do
                   if [[ -n "$nested_repo" ]]; then
-                    nested_repo_subpath="''${repo_subpath}/''${nested_repo}"
-                    nested_native_path="''${native_path}/''${nested_repo}"
+                    nested_repo_subpath="$repo_subpath/$nested_repo"
+                    nested_native_path="$native_path/$nested_repo"
                     nested_repo_url="s3://''${S3_BUCKET}/''${SELECTED_HOST}/''${nested_repo_subpath}"
                     
                     echo_info "  Restoring ''${BOLD}$nested_native_path''${NC} from ''${BOLD}$nested_repo_subpath''${NC}..."
