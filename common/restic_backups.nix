@@ -210,12 +210,11 @@ in {
         export $(sudo grep -v '^#' "$ENV_FILE" | xargs)
 
         backup_count=0
-        skip_count=0
 
         # Backup user paths from file
         if [[ -f "/etc/restic_predefined_backup_paths.json" ]]; then
           echo_info "Processing configured backup paths..."
-          cat /etc/restic_predefined_backup_paths.json | jq -r '.[]' | while read -r path; do
+          while read -r path; do
             if [[ -e "$path" ]]; then
               echo_info "Backing up: $path"
 
@@ -234,21 +233,21 @@ in {
               repo_url="$REPO_BASE/$host/$repo_location"
 
               # Initialize repository if needed and backup
-              if sudo restic --repo "$repo_url" --password-file "$PWD_FILE" snapshots >/dev/null 2>&1 || \
-                 sudo restic --repo "$repo_url" --password-file "$PWD_FILE" init; then
-                sudo restic --repo "$repo_url" --password-file "$PWD_FILE" backup "$path" \
+              if sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+                   restic --repo "$repo_url" --password-file "$PWD_FILE" snapshots || \
+                 sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+                   restic --repo "$repo_url" --password-file "$PWD_FILE" init; then
+                sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+                  restic --repo "$repo_url" --password-file "$PWD_FILE" backup "$path" \
                   --host "$host" \
-                  --tag user-path || echo_warning "Failed to backup $path"
+                  --tag user-path
                 echo_success "Backed up: $path"
                 ((backup_count++))
               else
                 echo_warning "Failed to initialize repository for $path"
-                ((skip_count++))
               fi
-            else
-              ((skip_count++))
             fi
-          done
+          done < <(sudo cat /etc/restic_predefined_backup_paths.json | jq -r '.[]')
         fi
 
         # Backup docker volumes
@@ -266,17 +265,19 @@ in {
               repo_url="$REPO_BASE/$host/docker_volume/$volume_name"
 
               # Initialize repository if needed and backup
-              if sudo restic --repo "$repo_url" --password-file "$PWD_FILE" snapshots >/dev/null 2>&1 || \
-                 sudo restic --repo "$repo_url" --password-file "$PWD_FILE" init; then
-                sudo restic --repo "$repo_url" --password-file "$PWD_FILE" backup "$volume_path" \
+              if sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+                   restic --repo "$repo_url" --password-file "$PWD_FILE" snapshots || \
+                 sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+                   restic --repo "$repo_url" --password-file "$PWD_FILE" init; then
+                sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+                  restic --repo "$repo_url" --password-file "$PWD_FILE" backup "$volume_path" \
                   --host "$host" \
                   --tag docker-volume \
-                  --tag "$volume_name" || echo_warning "Failed to backup docker volume $volume_name"
+                  --tag "$volume_name"
                 echo_success "Backed up docker volume: $volume_name"
                 ((backup_count++))
               else
                 echo_warning "Failed to initialize repository for docker volume $volume_name"
-                ((skip_count++))
               fi
             fi
           done
@@ -284,6 +285,9 @@ in {
 
         echo_info "Backup completed: $backup_count successful"
         echo_info "You can check logs with: ''${BOLD}sudo journalctl -u restic-backup -f''${NC}"
+        
+        # Ensure successful exit
+        exit 0
       '')
 
       # --- Helper Functions ---------------------------------------------------
