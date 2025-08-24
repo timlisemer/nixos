@@ -1320,6 +1320,8 @@ in {
                   
                   if [[ -n "$native_path" ]] && [[ -d "$DEST$native_path" ]]; then
                     echo_info "Copying $native_path..."
+                    # Create parent directory if needed
+                    sudo mkdir -p "$(dirname "$native_path")" 2>/dev/null
                     if ! sudo cp -rf "$DEST$native_path" "$(dirname "$native_path")" 2>/dev/null; then
                       echo_error "Failed to copy $native_path"
                       copy_success=false
@@ -1365,8 +1367,8 @@ in {
                         continue
                       fi
                     fi
-                    # Create parent directory if needed
-                    sudo mkdir -p "$(dirname "$native_path")" 2>/dev/null
+                    # Create target directory if needed
+                    sudo mkdir -p "$native_path" 2>/dev/null
                     # Move the file
                     if ! sudo mv "$DEST$native_path" "$native_path" 2>/dev/null; then
                       echo_error "Failed to move $native_path"
