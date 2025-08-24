@@ -998,7 +998,7 @@ in {
         trap "rm -f $BACKUP_PATHS_FILE $BACKUP_SNAPSHOTS_FILE $FILTERED_TIMESTAMPS" EXIT
 
         # For each selected repository, find matching native paths and extract their timestamps
-        for repo_subpath in ''${selected_repos_array[*]}; do
+        for repo_subpath in "''${selected_repos_array[@]}"; do
           if [[ -n "$repo_subpath" ]]; then
             # Find the native path for this repo
             while IFS='|' read -r path count; do
@@ -1092,7 +1092,7 @@ in {
         restored_count=0
         skipped_count=0
 
-        for repo_subpath in ''${selected_repos_array[*]}; do
+        for repo_subpath in "''${selected_repos_array[@]}"; do
           if [[ -n "$repo_subpath" ]]; then
             REPO="$REPO_BASE/$SELECTED_HOST/$repo_subpath"
 
@@ -1304,7 +1304,7 @@ in {
             1)
               echo_info "Copying files to original locations..."
               copy_success=true
-              for repo_subpath in ''${selected_repos_array[*]}; do
+              for repo_subpath in "''${selected_repos_array[@]}"; do
                 if [[ -n "$repo_subpath" ]]; then
                   # Find the native path for this repo
                   native_path=""
@@ -1348,8 +1348,14 @@ in {
 
             2)
               echo_info "Moving files to original locations...."
+              echo_info "DEBUG: selected_repos_array contains: ''${selected_repos_array[*]}"
+              echo_info "DEBUG: DEST is: $DEST"
+              echo_info "DEBUG: Contents of $DEST:"
+              sudo find "$DEST" -maxdepth 3 -type d
+              
               move_success=true
-              for repo_subpath in ''${selected_repos_array[*]}; do
+              for repo_subpath in "''${selected_repos_array[@]}"; do
+                echo_info "DEBUG: Processing repo_subpath: $repo_subpath"
                 if [[ -n "$repo_subpath" ]]; then
                   # Find the native path for this repo
                   native_path=""
@@ -1362,6 +1368,9 @@ in {
                       fi
                     fi
                   done < "$BACKUP_PATHS_FILE"
+                  
+                  echo_info "DEBUG: native_path found: $native_path"
+                  echo_info "DEBUG: Checking if $DEST$native_path exists..."
                   
                   if [[ -n "$native_path" ]] && [[ -d "$DEST$native_path" ]]; then
                     echo_info "Moving $native_path to $native_path..."
@@ -1388,7 +1397,11 @@ in {
                     else
                       echo_success "Moved $native_path"
                     fi
+                  else
+                    echo_warning "DEBUG: Directory $DEST$native_path does NOT exist, skipping"
                   fi
+                else
+                  echo_warning "DEBUG: repo_subpath was empty, skipping"
                 fi
               done
 
