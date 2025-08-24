@@ -107,13 +107,13 @@ in {
         echo_info "Verifying if path exists in snapshots..."
         
         # Check for direct snapshots first
-        if env $(grep -v '^#' "$ENV_FILE" | xargs) \
+        if env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
              restic --repo "$REPO" --password-file "$PWD_FILE" \
              snapshots --json --path "$NATIVE_PATH" >/dev/null 2>&1; then
           echo_success "Path found in direct snapshots."
           
           echo_info "Calculating size..."
-          BYTES=$(env $(grep -v '^#' "$ENV_FILE" | xargs) \
+          BYTES=$(env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
                    restic --repo "$REPO" --password-file "$PWD_FILE" \
                    stats latest --mode raw-data --json --path "$NATIVE_PATH" 2>/dev/null \
                    | jq '.total_size' 2>/dev/null || echo "0")
@@ -159,7 +159,7 @@ in {
                    restic --repo "$nested_repo_url" --password-file "$PWD_FILE" \
                    snapshots --json --path "$nested_native_path" >/dev/null 2>&1; then
                   
-                  nested_bytes=$(env $(grep -v '^#' "$ENV_FILE" | xargs) \
+                  nested_bytes=$(env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
                                  restic --repo "$nested_repo_url" --password-file "$PWD_FILE" \
                                  stats latest --mode raw-data --json --path "$nested_native_path" 2>/dev/null \
                                  | jq '.total_size' 2>/dev/null || echo "0")
@@ -174,14 +174,6 @@ in {
                 fi
               fi
             done
-          elif [[ -n "$nested_dirs" ]]; then
-            echo_info "Found restic internal structure (data/index/keys/snapshots) - not nested repos"
-            echo_error "Path '$NATIVE_PATH' is not present in any snapshot and no real nested repositories found."
-            exit 1
-          else
-            echo_error "Path '$NATIVE_PATH' is not present in any snapshot and no nested repositories found."
-            exit 1
-          fi
             
             if [[ "$found_any" == "true" ]]; then
               echo_success "''${BOLD}Total size for $NATIVE_PATH (all nested repositories): $(numfmt --to=iec --suffix=B "$TOTAL_BYTES")''${NC}"
@@ -189,6 +181,10 @@ in {
               echo_error "No snapshots found in any nested repositories for '$NATIVE_PATH'."
               exit 1
             fi
+          elif [[ -n "$nested_dirs" ]]; then
+            echo_info "Found restic internal structure (data/index/keys/snapshots) - not nested repos"
+            echo_error "Path '$NATIVE_PATH' is not present in any snapshot and no real nested repositories found."
+            exit 1
           else
             echo_error "Path '$NATIVE_PATH' is not present in any snapshot and no nested repositories found."
             exit 1
@@ -303,7 +299,7 @@ in {
               for subdir in $subdirs; do
                 echo >&2 "[INFO]   Checking $subdir..."
                 local snapshots
-                if snapshots=$(env $(grep -v '^#' "$ENV_FILE" | xargs) \
+                if snapshots=$(env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
                   restic --repo "$REPO_BASE/$host/user_home/$user/$subdir" --password-file "$PWD_FILE" \
                   snapshots --json 2>/dev/null); then
                   echo "$snapshots" | jq -r '.[] | .time' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
@@ -321,7 +317,7 @@ in {
               local snapshots
               
               # Try direct repository first
-              if snapshots=$(env $(grep -v '^#' "$ENV_FILE" | xargs) \
+              if snapshots=$(env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
                 restic --repo "$REPO_BASE/$host/docker_volume/$volume" --password-file "$PWD_FILE" \
                 snapshots --json 2>/dev/null); then
                 echo "$snapshots" | jq -r '.[] | .time' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
@@ -345,7 +341,7 @@ in {
                   echo >&2 "[INFO]   Found REAL nested repositories in $volume: $nested_repos"
                   for nested_repo in $nested_repos; do
                     echo >&2 "[INFO]     Processing nested: $volume/$nested_repo"
-                    if snapshots=$(env $(grep -v '^#' "$ENV_FILE" | xargs) \
+                    if snapshots=$(env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
                       restic --repo "$REPO_BASE/$host/docker_volume/$volume/$nested_repo" --password-file "$PWD_FILE" \
                       snapshots --json 2>/dev/null); then
                       echo "$snapshots" | jq -r '.[] | .time' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
@@ -367,7 +363,7 @@ in {
             for path in $system_paths; do
               echo >&2 "[INFO] Processing system: $path"
               local snapshots
-              if snapshots=$(env $(grep -v '^#' "$ENV_FILE" | xargs) \
+              if snapshots=$(env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
                 restic --repo "$REPO_BASE/$host/system/$path" --password-file "$PWD_FILE" \
                 snapshots --json 2>/dev/null); then
                 echo "$snapshots" | jq -r '.[] | .time' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
@@ -448,7 +444,7 @@ in {
 
           # Get snapshots for this repo - with proper error handling
           local snapshots
-          if ! snapshots=$(env $(grep -v '^#' "$ENV_FILE" | xargs) \
+          if ! snapshots=$(env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
             restic --repo "$REPO_BASE/$HOST/$repo_path" --password-file "$PWD_FILE" \
             snapshots --json 2>/dev/null); then
             snapshots="[]"
@@ -494,7 +490,7 @@ in {
                   
                   # Get snapshots for nested repository
                   local nested_snapshots
-                  if nested_snapshots=$(env $(grep -v '^#' "$ENV_FILE" | xargs) \
+                  if nested_snapshots=$(env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
                     restic --repo "$REPO_BASE/$HOST/$nested_repo_path" --password-file "$PWD_FILE" \
                     snapshots --json 2>/dev/null); then
                     
@@ -827,19 +823,15 @@ in {
           fi
         }
 
-        # Build selected repositories list
-        selected_repos=""
+        # Build selected repositories array
+        selected_repos_array=()
         case "$restore_choice" in
           1)
             # All repositories
             while IFS='|' read -r path count; do
               if [[ -n "$path" ]]; then
                 repo_subpath=$(path_to_repo_subpath "$path")
-                if [[ -n "$selected_repos" ]]; then
-                  selected_repos+="
-"
-                fi
-                selected_repos+="$repo_subpath"
+                selected_repos_array+=("$repo_subpath")
               fi
             done < "$BACKUP_PATHS_FILE"
             ;;
@@ -852,11 +844,7 @@ in {
             while IFS='|' read -r path count; do
               if [[ "$path" =~ ^/home/ ]]; then
                 repo_subpath=$(path_to_repo_subpath "$path")
-                if [[ -n "$selected_repos" ]]; then
-                  selected_repos+="
-"
-                fi
-                selected_repos+="$repo_subpath"
+                selected_repos_array+=("$repo_subpath")
               fi
             done < "$BACKUP_PATHS_FILE"
             ;;
@@ -869,11 +857,7 @@ in {
             while IFS='|' read -r path count; do
               if [[ "$path" =~ ^/mnt/docker-data/ ]]; then
                 repo_subpath=$(path_to_repo_subpath "$path")
-                if [[ -n "$selected_repos" ]]; then
-                  selected_repos+="
-"
-                fi
-                selected_repos+="$repo_subpath"
+                selected_repos_array+=("$repo_subpath")
               fi
             done < "$BACKUP_PATHS_FILE"
             ;;
@@ -886,11 +870,7 @@ in {
             while IFS='|' read -r path count; do
               if [[ ! "$path" =~ ^/home/ ]] && [[ ! "$path" =~ ^/mnt/docker-data/ ]]; then
                 repo_subpath=$(path_to_repo_subpath "$path")
-                if [[ -n "$selected_repos" ]]; then
-                  selected_repos+="
-"
-                fi
-                selected_repos+="$repo_subpath"
+                selected_repos_array+=("$repo_subpath")
               fi
             done < "$BACKUP_PATHS_FILE"
             ;;
@@ -946,15 +926,10 @@ in {
               exit 1
             fi
 
-            # Build selected repos list
-            selected_repos=""
+            # Build selected repos array
             for idx in "''${selected_indices[@]}"; do
               IFS='|' read -r repo_subpath native_path snapshot_count <<< "''${repo_array[$idx]}"
-              if [[ -n "$selected_repos" ]]; then
-                selected_repos+="
-"
-              fi
-              selected_repos+="$repo_subpath"
+              selected_repos_array+=("$repo_subpath")
             done
             ;;
           6)
@@ -990,7 +965,7 @@ in {
 
             # Get the selected repository
             IFS='|' read -r repo_subpath native_path snapshot_count <<< "''${repo_array[$((single_choice - 1))]}"
-            selected_repos="$repo_subpath"
+            selected_repos_array=("$repo_subpath")
             echo_info "Selected: $native_path"
             ;;
           *)
@@ -999,13 +974,13 @@ in {
             ;;
         esac
 
-        if [[ -z "$selected_repos" ]]; then
+        if [[ ''${#selected_repos_array[*]} -eq 0 ]]; then
           echo_error "No repositories selected"
           exit 1
         fi
 
         # Show what will be restored
-        repo_count=$(echo "$selected_repos" | grep -v '^$' | wc -l)
+        repo_count=''${#selected_repos_array[*]}
         echo_info "Selected $repo_count repositories for restoration"
         echo
 
@@ -1023,7 +998,7 @@ in {
         trap "rm -f $BACKUP_PATHS_FILE $BACKUP_SNAPSHOTS_FILE $FILTERED_TIMESTAMPS" EXIT
 
         # For each selected repository, find matching native paths and extract their timestamps
-        while IFS= read -r repo_subpath; do
+        for repo_subpath in ''${selected_repos_array[*]}; do
           if [[ -n "$repo_subpath" ]]; then
             # Find the native path for this repo
             while IFS='|' read -r path count; do
@@ -1037,7 +1012,7 @@ in {
               fi
             done < "$BACKUP_PATHS_FILE"
           fi
-        done <<< "$selected_repos"
+        done
 
         # Group timestamps into 5-minute windows
         GROUP_TIMESTAMPS=$(mktemp)
@@ -1117,7 +1092,7 @@ in {
         restored_count=0
         skipped_count=0
 
-        while IFS= read -r repo_subpath; do
+        for repo_subpath in ''${selected_repos_array[*]}; do
           if [[ -n "$repo_subpath" ]]; then
             REPO="$REPO_BASE/$SELECTED_HOST/$repo_subpath"
 
@@ -1167,6 +1142,7 @@ in {
                 echo_info "Found REAL nested repositories: $nested_repos"
               elif [[ -n "$nested_dirs" ]]; then
                 echo_info "Found restic internal structure (data/index/keys/snapshots) - not nested repos"
+              fi
               
               if [[ -n "$nested_repos" ]]; then
                 nested_restored=0
@@ -1280,7 +1256,7 @@ in {
               skipped_count=$((skipped_count + 1))
             fi
           fi
-        done <<< "$selected_repos"
+        done
 
         echo
         echo_info "Restoration Summary:"
@@ -1306,7 +1282,7 @@ in {
             1)
               echo_info "Copying files to original locations..."
               copy_success=true
-              while IFS= read -r repo_subpath; do
+              for repo_subpath in ''${selected_repos_array[*]}; do
                 if [[ -n "$repo_subpath" ]]; then
                   # Find the native path for this repo
                   native_path=""
@@ -1330,7 +1306,7 @@ in {
                     fi
                   fi
                 fi
-              done <<< "$selected_repos"
+              done
               
               if [[ "$copy_success" == "true" ]]; then
                 echo_success "All files copied successfully to their original locations"
@@ -1343,7 +1319,7 @@ in {
             2)
               echo_info "Moving files to original locations..."
               move_success=true
-              while IFS= read -r repo_subpath; do
+              for repo_subpath in ''${selected_repos_array[*]}; do
                 if [[ -n "$repo_subpath" ]]; then
                   # Find the native path for this repo
                   native_path=""
@@ -1378,7 +1354,7 @@ in {
                     fi
                   fi
                 fi
-              done <<< "$selected_repos"
+              done
               
               if [[ "$move_success" == "true" ]]; then
                 echo_success "All files moved successfully to their original locations"
