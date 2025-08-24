@@ -224,41 +224,6 @@
     #  environment = {EULA = "TRUE";}; # Accept Mojang EULA
     # };
 
-    # -------------------------------------------------------------------------
-    # syncthing
-    # -------------------------------------------------------------------------
-    syncthing = {
-      image = "syncthing/syncthing:latest";
-      autoStart = true;
-
-      autoRemoveOnStop = false; # prevent implicit --rm
-      extraOptions = ["--network=docker-network" "--ip=172.18.0.7"];
-
-      # TCP and UDP ports – duplicates from the original command removed
-      ports = [
-        "21027:21027/tcp"
-        "21027:21027/udp"
-        "22000:22000/tcp"
-        "22000:22000/udp"
-        "22067:22067/tcp"
-        "22067:22067/udp"
-        "8384:8384" # Syncthing UI
-      ];
-
-      volumes = [
-        "/mnt/docker-data/volumes/syncthing:/var/syncthing:rw"
-      ];
-
-      environment = {
-        PUID = "99";
-        PGID = "100";
-        UMASK = "022";
-        HOME = "/var/syncthing";
-        STGUIADDRESS = "0.0.0.0:8384";
-        STHOMEDIR = "/var/syncthing/config";
-      };
-    };
-
     immich-server = {
       image = "ghcr.io/immich-app/immich-server:release";
       autoStart = true;
