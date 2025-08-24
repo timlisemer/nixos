@@ -444,7 +444,8 @@ in {
 
           # Get snapshots for this repo - with proper error handling
           local snapshots
-          if ! snapshots=$(restic --repo "$REPO_BASE/$HOST/$repo_path" --password-file "$PWD_FILE" \
+          if ! snapshots=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+            restic --repo "$REPO_BASE/$HOST/$repo_path" --password-file "$PWD_FILE" \
             snapshots --json 2>/dev/null); then
             snapshots="[]"
           fi
@@ -489,7 +490,8 @@ in {
                   
                   # Get snapshots for nested repository
                   local nested_snapshots
-                  if nested_snapshots=$(restic --repo "$REPO_BASE/$HOST/$nested_repo_path" --password-file "$PWD_FILE" \
+                  if nested_snapshots=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+                    restic --repo "$REPO_BASE/$HOST/$nested_repo_path" --password-file "$PWD_FILE" \
                     snapshots --json 2>/dev/null); then
                     
                     local nested_count=0
