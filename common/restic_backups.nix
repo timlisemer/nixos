@@ -1187,14 +1187,21 @@ in {
                         restic --repo "$nested_repo_url" --password-file "$PWD_FILE" \
                         restore "$best_nested_snapshot" --path "$nested_native_path" --target "$DEST"
                       
-                      # Check if restoration created files in the target directory
+                      # Check if restoration created files or directories in the target directory
                       nested_restored_files=$(sudo find "$DEST" -path "*$nested_native_path*" -type f 2>/dev/null | wc -l)
-                      if [[ $nested_restored_files -gt 0 ]]; then
+                      nested_restored_dirs=$(sudo find "$DEST" -path "*$nested_native_path*" -type d 2>/dev/null | wc -l)
+                      nested_restored_items=$((nested_restored_files + nested_restored_dirs))
+                      
+                      if [[ $nested_restored_items -gt 0 ]]; then
                         display_time=$(echo "$nested_snapshot_time" | sed 's/\.[0-9]*+.*$//')
-                        echo_success "  Restored $nested_native_path from snapshot $best_nested_snapshot at $display_time ($nested_restored_files files)"
+                        if [[ $nested_restored_files -gt 0 ]]; then
+                          echo_success "  Restored $nested_native_path from snapshot $best_nested_snapshot at $display_time ($nested_restored_files files, $nested_restored_dirs dirs)"
+                        else
+                          echo_success "  Restored $nested_native_path from snapshot $best_nested_snapshot at $display_time (empty volume - $nested_restored_dirs dirs only)"
+                        fi
                         nested_restored=$((nested_restored + 1))
                       else
-                        echo_error "  Failed to restore $nested_native_path - no files found in destination"
+                        echo_error "  Failed to restore $nested_native_path - no files or directories found in destination"
                         nested_skipped=$((nested_skipped + 1))
                       fi
                     else
@@ -1252,15 +1259,22 @@ in {
               restic --repo "$REPO" --password-file "$PWD_FILE" \
               restore "$best_snapshot" --path "$native_path" --target "$DEST"
             
-            # Check if restoration created files in the target directory
+            # Check if restoration created files or directories in the target directory
             restored_files=$(sudo find "$DEST" -path "*$native_path*" -type f 2>/dev/null | wc -l)
-            if [[ $restored_files -gt 0 ]]; then
+            restored_dirs=$(sudo find "$DEST" -path "*$native_path*" -type d 2>/dev/null | wc -l)
+            restored_items=$((restored_files + restored_dirs))
+            
+            if [[ $restored_items -gt 0 ]]; then
               # Format timestamp for display (remove microseconds and timezone for readability)
               display_time=$(echo "$selected_snapshot_time" | sed 's/\.[0-9]*+.*$//')
-              echo_success "Restored $native_path from snapshot $best_snapshot at $display_time ($restored_files files)"
+              if [[ $restored_files -gt 0 ]]; then
+                echo_success "Restored $native_path from snapshot $best_snapshot at $display_time ($restored_files files, $restored_dirs dirs)"
+              else
+                echo_success "Restored $native_path from snapshot $best_snapshot at $display_time (empty volume - $restored_dirs dirs only)"
+              fi
               restored_count=$((restored_count + 1))
             else
-              echo_error "Failed to restore $native_path - no files found in destination"
+              echo_error "Failed to restore $native_path - no files or directories found in destination"
               skipped_count=$((skipped_count + 1))
             fi
           fi
