@@ -302,7 +302,7 @@ in {
                 if snapshots=$(env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
                   restic --repo "$REPO_BASE/$host/user_home/$user/$subdir" --password-file "$PWD_FILE" \
                   snapshots --json 2>/dev/null); then
-                  echo "$snapshots" | jq -r '.[] | .time' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
+                  echo "$snapshots" | jq -r --arg path "/home/$user/$subdir" '.[] | "\(.time)|\($path)|\(.short_id)"' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
                 fi
               done
             done
@@ -320,7 +320,7 @@ in {
               if snapshots=$(env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
                 restic --repo "$REPO_BASE/$host/docker_volume/$volume" --password-file "$PWD_FILE" \
                 snapshots --json 2>/dev/null); then
-                echo "$snapshots" | jq -r '.[] | .time' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
+                echo "$snapshots" | jq -r --arg path "/mnt/docker-data/volumes/$volume" '.[] | "\(.time)|\($path)|\(.short_id)"' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
               else
                 # Check for nested repositories (filter out restic internal structure)
                 echo >&2 "[INFO]   No direct snapshots found for $volume, checking nested repositories..."
@@ -344,7 +344,7 @@ in {
                     if snapshots=$(env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
                       restic --repo "$REPO_BASE/$host/docker_volume/$volume/$nested_repo" --password-file "$PWD_FILE" \
                       snapshots --json 2>/dev/null); then
-                      echo "$snapshots" | jq -r '.[] | .time' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
+                      echo "$snapshots" | jq -r --arg path "/mnt/docker-data/volumes/$volume/$nested_repo" '.[] | "\(.time)|\($path)|\(.short_id)"' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
                     fi
                   done
                 elif [[ -n "$nested_dirs" ]]; then
@@ -366,7 +366,7 @@ in {
               if snapshots=$(env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
                 restic --repo "$REPO_BASE/$host/system/$path" --password-file "$PWD_FILE" \
                 snapshots --json 2>/dev/null); then
-                echo "$snapshots" | jq -r '.[] | .time' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
+                echo "$snapshots" | jq -r --arg path "/$path" '.[] | "\(.time)|\($path)|\(.short_id)"' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
               fi
             done
           fi
