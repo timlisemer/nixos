@@ -1188,9 +1188,10 @@ in {
                         restore "$best_nested_snapshot" --path "$nested_native_path" --target "$DEST"
                       
                       # Check if restoration created files in the target directory
-                      if [[ -d "$DEST$nested_native_path" ]] && [[ -n "$(find "$DEST$nested_native_path" -mindepth 1 -maxdepth 1 2>/dev/null)" ]]; then
+                      nested_restored_files=$(sudo find "$DEST" -path "*$nested_native_path*" -type f 2>/dev/null | wc -l)
+                      if [[ $nested_restored_files -gt 0 ]]; then
                         display_time=$(echo "$nested_snapshot_time" | sed 's/\.[0-9]*+.*$//')
-                        echo_success "  Restored $nested_native_path from snapshot $best_nested_snapshot at $display_time"
+                        echo_success "  Restored $nested_native_path from snapshot $best_nested_snapshot at $display_time ($nested_restored_files files)"
                         nested_restored=$((nested_restored + 1))
                       else
                         echo_error "  Failed to restore $nested_native_path - no files found in destination"
@@ -1252,10 +1253,11 @@ in {
               restore "$best_snapshot" --path "$native_path" --target "$DEST"
             
             # Check if restoration created files in the target directory
-            if [[ -d "$DEST$native_path" ]] && [[ -n "$(find "$DEST$native_path" -mindepth 1 -maxdepth 1 2>/dev/null)" ]]; then
+            restored_files=$(sudo find "$DEST" -path "*$native_path*" -type f 2>/dev/null | wc -l)
+            if [[ $restored_files -gt 0 ]]; then
               # Format timestamp for display (remove microseconds and timezone for readability)
               display_time=$(echo "$selected_snapshot_time" | sed 's/\.[0-9]*+.*$//')
-              echo_success "Restored $native_path from snapshot $best_snapshot at $display_time"
+              echo_success "Restored $native_path from snapshot $best_snapshot at $display_time ($restored_files files)"
               restored_count=$((restored_count + 1))
             else
               echo_error "Failed to restore $native_path - no files found in destination"
