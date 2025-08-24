@@ -107,13 +107,13 @@ in {
         echo_info "Verifying if path exists in snapshots..."
         
         # Check for direct snapshots first
-        if sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+        if env $(grep -v '^#' "$ENV_FILE" | xargs) \
              restic --repo "$REPO" --password-file "$PWD_FILE" \
              snapshots --json --path "$NATIVE_PATH" >/dev/null 2>&1; then
           echo_success "Path found in direct snapshots."
           
           echo_info "Calculating size..."
-          BYTES=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+          BYTES=$(env $(grep -v '^#' "$ENV_FILE" | xargs) \
                    restic --repo "$REPO" --password-file "$PWD_FILE" \
                    stats latest --mode raw-data --json --path "$NATIVE_PATH" 2>/dev/null \
                    | jq '.total_size' 2>/dev/null || echo "0")
@@ -125,18 +125,29 @@ in {
           S3_ENDPOINT=$(echo "$REPO_BASE" | sed -n 's|s3:\(https://[^/]*\)/.*|\1|p')
           S3_BUCKET=$(echo "$REPO_BASE" | sed -n 's|s3:https://[^/]*/\(.*\)|\1|p')
           
-          # Check for nested repositories
-          nested_repos=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+          # Check for nested repositories (filter out restic internal structure)
+          nested_dirs=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
             aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/''${SUBPATH}/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | \
             grep "PRE" | awk '{print $2}' | sed 's|/$||' || echo "")
           
+          # Filter out restic internal structure (data, index, keys, snapshots)
+          nested_repos=""
+          if [[ -n "$nested_dirs" ]]; then
+            for dir in $nested_dirs; do
+              if [[ "$dir" != "data" && "$dir" != "index" && "$dir" != "keys" && "$dir" != "snapshots" ]]; then
+                nested_repos+="$dir "
+              fi
+            done
+            nested_repos=$(echo "$nested_repos" | sed 's/[[:space:]]*$//')  # trim trailing spaces
+          fi
+          
           if [[ -n "$nested_repos" ]]; then
-            echo_info "Found nested repositories: $(echo "$nested_repos" | tr '\n' ' ')"
+            echo_info "Found REAL nested repositories: $nested_repos"
             
             TOTAL_BYTES=0
             found_any=false
             
-            while IFS= read -r nested_repo; do
+            for nested_repo in $nested_repos; do
               if [[ -n "$nested_repo" ]]; then
                 nested_repo_url="s3://''${S3_BUCKET}/''${HOST}/''${SUBPATH}/''${nested_repo}"
                 nested_native_path="''${NATIVE_PATH}/''${nested_repo}"
@@ -148,7 +159,7 @@ in {
                    restic --repo "$nested_repo_url" --password-file "$PWD_FILE" \
                    snapshots --json --path "$nested_native_path" >/dev/null 2>&1; then
                   
-                  nested_bytes=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+                  nested_bytes=$(env $(grep -v '^#' "$ENV_FILE" | xargs) \
                                  restic --repo "$nested_repo_url" --password-file "$PWD_FILE" \
                                  stats latest --mode raw-data --json --path "$nested_native_path" 2>/dev/null \
                                  | jq '.total_size' 2>/dev/null || echo "0")
@@ -162,7 +173,15 @@ in {
                   echo_info "    No snapshots found for $nested_native_path"
                 fi
               fi
-            done <<< "$nested_repos"
+            done
+          elif [[ -n "$nested_dirs" ]]; then
+            echo_info "Found restic internal structure (data/index/keys/snapshots) - not nested repos"
+            echo_error "Path '$NATIVE_PATH' is not present in any snapshot and no real nested repositories found."
+            exit 1
+          else
+            echo_error "Path '$NATIVE_PATH' is not present in any snapshot and no nested repositories found."
+            exit 1
+          fi
             
             if [[ "$found_any" == "true" ]]; then
               echo_success "''${BOLD}Total size for $NATIVE_PATH (all nested repositories): $(numfmt --to=iec --suffix=B "$TOTAL_BYTES")''${NC}"
@@ -284,7 +303,7 @@ in {
               for subdir in $subdirs; do
                 echo >&2 "[INFO]   Checking $subdir..."
                 local snapshots
-                if snapshots=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+                if snapshots=$(env $(grep -v '^#' "$ENV_FILE" | xargs) \
                   restic --repo "$REPO_BASE/$host/user_home/$user/$subdir" --password-file "$PWD_FILE" \
                   snapshots --json 2>/dev/null); then
                   echo "$snapshots" | jq -r '.[] | .time' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
@@ -302,25 +321,38 @@ in {
               local snapshots
               
               # Try direct repository first
-              if snapshots=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+              if snapshots=$(env $(grep -v '^#' "$ENV_FILE" | xargs) \
                 restic --repo "$REPO_BASE/$host/docker_volume/$volume" --password-file "$PWD_FILE" \
                 snapshots --json 2>/dev/null); then
                 echo "$snapshots" | jq -r '.[] | .time' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
               else
-                # Check for nested repositories
+                # Check for nested repositories (filter out restic internal structure)
                 echo >&2 "[INFO]   No direct snapshots found for $volume, checking nested repositories..."
-                nested_repos=$(aws s3 ls "s3://$S3_BUCKET/$host/docker_volume/$volume/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
+                nested_dirs=$(aws s3 ls "s3://$S3_BUCKET/$host/docker_volume/$volume/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
+                
+                # Filter out restic internal structure (data, index, keys, snapshots)
+                nested_repos=""
+                if [[ -n "$nested_dirs" ]]; then
+                  for dir in $nested_dirs; do
+                    if [[ "$dir" != "data" && "$dir" != "index" && "$dir" != "keys" && "$dir" != "snapshots" ]]; then
+                      nested_repos+="$dir "
+                    fi
+                  done
+                  nested_repos=$(echo "$nested_repos" | sed 's/[[:space:]]*$//')  # trim trailing spaces
+                fi
                 
                 if [[ -n "$nested_repos" ]]; then
-                  echo >&2 "[INFO]   Found nested repositories in $volume: $(echo "$nested_repos" | tr '\n' ' ')"
+                  echo >&2 "[INFO]   Found REAL nested repositories in $volume: $nested_repos"
                   for nested_repo in $nested_repos; do
                     echo >&2 "[INFO]     Processing nested: $volume/$nested_repo"
-                    if snapshots=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+                    if snapshots=$(env $(grep -v '^#' "$ENV_FILE" | xargs) \
                       restic --repo "$REPO_BASE/$host/docker_volume/$volume/$nested_repo" --password-file "$PWD_FILE" \
                       snapshots --json 2>/dev/null); then
                       echo "$snapshots" | jq -r '.[] | .time' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
                     fi
                   done
+                elif [[ -n "$nested_dirs" ]]; then
+                  echo >&2 "[INFO]   Found restic internal structure in $volume (data/index/keys/snapshots) - not nested repos"
                 else
                   echo >&2 "[INFO]   No nested repositories found for $volume"
                 fi
@@ -335,7 +367,7 @@ in {
             for path in $system_paths; do
               echo >&2 "[INFO] Processing system: $path"
               local snapshots
-              if snapshots=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+              if snapshots=$(env $(grep -v '^#' "$ENV_FILE" | xargs) \
                 restic --repo "$REPO_BASE/$host/system/$path" --password-file "$PWD_FILE" \
                 snapshots --json 2>/dev/null); then
                 echo "$snapshots" | jq -r '.[] | .time' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
@@ -416,7 +448,7 @@ in {
 
           # Get snapshots for this repo - with proper error handling
           local snapshots
-          if ! snapshots=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+          if ! snapshots=$(env $(grep -v '^#' "$ENV_FILE" | xargs) \
             restic --repo "$REPO_BASE/$HOST/$repo_path" --password-file "$PWD_FILE" \
             snapshots --json 2>/dev/null); then
             snapshots="[]"
@@ -435,14 +467,25 @@ in {
             # Extract volume name from repo_path (docker_volume/volume_name)
             local volume_name=$(echo "$repo_path" | sed 's|^docker_volume/||')
             
-            # Check for nested repositories
-            local nested_repos=$(aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/docker_volume/''${volume_name}/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
+            # Check for nested repositories (filter out restic internal structure)
+            local nested_dirs=$(aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/docker_volume/''${volume_name}/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
+            
+            # Filter out restic internal structure (data, index, keys, snapshots)
+            local nested_repos=""
+            if [[ -n "$nested_dirs" ]]; then
+              for dir in $nested_dirs; do
+                if [[ "$dir" != "data" && "$dir" != "index" && "$dir" != "keys" && "$dir" != "snapshots" ]]; then
+                  nested_repos+="$dir "
+                fi
+              done
+              nested_repos=$(echo "$nested_repos" | sed 's/[[:space:]]*$//')  # trim trailing spaces
+            fi
             
             if [[ -n "$nested_repos" ]]; then
-              progress_info "  Found nested repositories in $volume_name: $(echo "$nested_repos" | tr '\n' ' ')"
+              progress_info "  Found REAL nested repositories in $volume_name: $nested_repos"
               
-              # Collect snapshots from each nested repository
-              while IFS= read -r nested_repo; do
+              # Collect snapshots from each REAL nested repository
+              for nested_repo in $nested_repos; do
                 if [[ -n "$nested_repo" ]]; then
                   local nested_repo_path="docker_volume/''${volume_name}/''${nested_repo}"
                   local nested_native_path="''${native_path}/''${nested_repo}"
@@ -451,7 +494,7 @@ in {
                   
                   # Get snapshots for nested repository
                   local nested_snapshots
-                  if nested_snapshots=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+                  if nested_snapshots=$(env $(grep -v '^#' "$ENV_FILE" | xargs) \
                     restic --repo "$REPO_BASE/$HOST/$nested_repo_path" --password-file "$PWD_FILE" \
                     snapshots --json 2>/dev/null); then
                     
@@ -467,11 +510,15 @@ in {
                     fi
                   fi
                 fi
-              done <<< "$nested_repos"
+              done
+              # Don't record the parent path if we found REAL nested repositories
+              return
+            elif [[ -n "$nested_dirs" ]]; then
+              progress_info "  Found restic internal structure in $volume_name (data/index/keys/snapshots) - not nested repos"
             fi
           fi
 
-          # Record the original path (even if count is 0 from direct snapshots)
+          # Only record the path if it has direct snapshots or no nested repos were found
           echo "$native_path|$count" >> "$PATHS_FILE"
 
           if [[ "$count" -gt 0 ]] && [[ "$snapshots" != "[]" ]]; then
@@ -771,10 +818,9 @@ in {
               echo "user_home/$user"
             fi
           elif [[ "$path" =~ ^/mnt/docker-data/volumes/ ]]; then
-            # docker_volume/volume_name with slashes converted to underscores
+            # Keep the nested structure for docker volumes (don't convert slashes to underscores)
             volume=$(echo "$path" | cut -d/ -f5-)
-            volume_escaped=$(echo "$volume" | tr '/' '_')
-            echo "docker_volume/$volume_escaped"
+            echo "docker_volume/$volume"
           else
             # system paths
             echo "system"
@@ -789,7 +835,11 @@ in {
             while IFS='|' read -r path count; do
               if [[ -n "$path" ]]; then
                 repo_subpath=$(path_to_repo_subpath "$path")
-                selected_repos+="$repo_subpath"$'\n'
+                if [[ -n "$selected_repos" ]]; then
+                  selected_repos+="
+"
+                fi
+                selected_repos+="$repo_subpath"
               fi
             done < "$BACKUP_PATHS_FILE"
             ;;
@@ -802,7 +852,11 @@ in {
             while IFS='|' read -r path count; do
               if [[ "$path" =~ ^/home/ ]]; then
                 repo_subpath=$(path_to_repo_subpath "$path")
-                selected_repos+="$repo_subpath"$'\n'
+                if [[ -n "$selected_repos" ]]; then
+                  selected_repos+="
+"
+                fi
+                selected_repos+="$repo_subpath"
               fi
             done < "$BACKUP_PATHS_FILE"
             ;;
@@ -815,7 +869,11 @@ in {
             while IFS='|' read -r path count; do
               if [[ "$path" =~ ^/mnt/docker-data/ ]]; then
                 repo_subpath=$(path_to_repo_subpath "$path")
-                selected_repos+="$repo_subpath"$'\n'
+                if [[ -n "$selected_repos" ]]; then
+                  selected_repos+="
+"
+                fi
+                selected_repos+="$repo_subpath"
               fi
             done < "$BACKUP_PATHS_FILE"
             ;;
@@ -828,7 +886,11 @@ in {
             while IFS='|' read -r path count; do
               if [[ ! "$path" =~ ^/home/ ]] && [[ ! "$path" =~ ^/mnt/docker-data/ ]]; then
                 repo_subpath=$(path_to_repo_subpath "$path")
-                selected_repos+="$repo_subpath"$'\n'
+                if [[ -n "$selected_repos" ]]; then
+                  selected_repos+="
+"
+                fi
+                selected_repos+="$repo_subpath"
               fi
             done < "$BACKUP_PATHS_FILE"
             ;;
@@ -888,7 +950,11 @@ in {
             selected_repos=""
             for idx in "''${selected_indices[@]}"; do
               IFS='|' read -r repo_subpath native_path snapshot_count <<< "''${repo_array[$idx]}"
-              selected_repos+="$repo_subpath"$'\n'
+              if [[ -n "$selected_repos" ]]; then
+                selected_repos+="
+"
+              fi
+              selected_repos+="$repo_subpath"
             done
             ;;
           6)
@@ -1081,18 +1147,33 @@ in {
               S3_ENDPOINT=$(echo "$REPO_BASE" | sed -n 's|s3:\(https://[^/]*\)/.*|\1|p')
               S3_BUCKET=$(echo "$REPO_BASE" | sed -n 's|s3:https://[^/]*/\(.*\)|\1|p')
               
-              # Check for nested repositories (e.g., docker_volume/immich/database, docker_volume/immich/model-cache)
-              nested_repos=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+              # Check for nested repositories (filter out restic internal structure)
+              nested_dirs=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
                 aws s3 ls "s3://''${S3_BUCKET}/''${SELECTED_HOST}/''${repo_subpath}/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | \
                 grep "PRE" | awk '{print $2}' | sed 's|/$||' || echo "")
               
+              # Filter out restic internal structure (data, index, keys, snapshots)
+              nested_repos=""
+              if [[ -n "$nested_dirs" ]]; then
+                for dir in $nested_dirs; do
+                  if [[ "$dir" != "data" && "$dir" != "index" && "$dir" != "keys" && "$dir" != "snapshots" ]]; then
+                    nested_repos+="$dir "
+                  fi
+                done
+                nested_repos=$(echo "$nested_repos" | sed 's/[[:space:]]*$//')  # trim trailing spaces
+              fi
+              
               if [[ -n "$nested_repos" ]]; then
-                echo_info "Found nested repositories: $(echo "$nested_repos" | tr '\n' ' ')"
+                echo_info "Found REAL nested repositories: $nested_repos"
+              elif [[ -n "$nested_dirs" ]]; then
+                echo_info "Found restic internal structure (data/index/keys/snapshots) - not nested repos"
+              
+              if [[ -n "$nested_repos" ]]; then
                 nested_restored=0
                 nested_skipped=0
                 
-                # Process each nested repository
-                while IFS= read -r nested_repo; do
+                # Process each REAL nested repository
+                for nested_repo in $nested_repos; do
                   if [[ -n "$nested_repo" ]]; then
                     nested_repo_subpath="''${repo_subpath}/''${nested_repo}"
                     nested_native_path="''${native_path}/''${nested_repo}"
@@ -1141,7 +1222,7 @@ in {
                       nested_skipped=$((nested_skipped + 1))
                     fi
                   fi
-                done <<< "$nested_repos"
+                done
                 
                 # Update overall counters
                 restored_count=$((restored_count + nested_restored))
@@ -1154,7 +1235,7 @@ in {
                 fi
                 continue
               else
-                echo_warning "No snapshots found for $native_path and no nested repositories detected, skipping"
+                echo_warning "No snapshots found for $native_path and no REAL nested repositories detected, skipping"
                 skipped_count=$((skipped_count + 1))
                 continue
               fi
