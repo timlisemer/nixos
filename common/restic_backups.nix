@@ -1318,14 +1318,15 @@ in {
                     fi
                   done < "$BACKUP_PATHS_FILE"
 
-                  if [[ -n "$native_path" ]] && [[ -d "$DEST$native_path" ]]; then
-                    echo_info "Copying $native_path to $(dirname "$native_path")..."
-                    # Create parent directory if needed
+                  if [[ -n "$native_path" ]]; then
+                    echo_info "Copying $native_path..."
+                    # Create parent directory
                     if ! sudo mkdir -p "$(dirname "$native_path")"; then
                       echo_error "Failed to create parent directory $(dirname "$native_path")"
                       copy_success=false
                       continue
                     fi
+                    # Just copy it (cp -rf will overwrite)
                     if ! sudo cp -rf "$DEST$native_path" "$(dirname "$native_path")"; then
                       echo_error "Failed to copy $native_path"
                       echo_error "Source: $DEST$native_path"
@@ -1372,23 +1373,23 @@ in {
                   echo_info "DEBUG: native_path found: $native_path"
                   echo_info "DEBUG: Checking if $DEST$native_path exists..."
                   
-                  if [[ -n "$native_path" ]] && [[ -d "$DEST$native_path" ]]; then
-                    echo_info "Moving $native_path to $native_path..."
-                    # Remove original if it exists
+                  if [[ -n "$native_path" ]]; then
+                    echo_info "Moving $native_path..."
+                    # Remove original if it exists (for replace)
                     if [[ -e "$native_path" ]]; then
-                      if ! sudo rm -rf "$native_path" 2>/dev/null; then
+                      if ! sudo rm -rf "$native_path"; then
                         echo_error "Failed to remove existing $native_path"
                         move_success=false
                         continue
                       fi
                     fi
-                    # Create parent directory if needed
+                    # Create parent directory
                     if ! sudo mkdir -p "$(dirname "$native_path")"; then
                       echo_error "Failed to create parent directory $(dirname "$native_path")"
                       move_success=false
                       continue
                     fi
-                    # Move the restored directory to the target location
+                    # Just fucking move it
                     if ! sudo mv "$DEST$native_path" "$native_path"; then
                       echo_error "Failed to move $native_path"
                       echo_error "Source: $DEST$native_path"
@@ -1397,8 +1398,6 @@ in {
                     else
                       echo_success "Moved $native_path"
                     fi
-                  else
-                    echo_warning "DEBUG: Directory $DEST$native_path does NOT exist, skipping"
                   fi
                 else
                   echo_warning "DEBUG: repo_subpath was empty, skipping"

@@ -33,6 +33,27 @@ stop_all_docker_containers &&
 	bash
 '
 
+# Function to clean trash for all users using trash-cli
+clean_all_trash() {
+	echo "Cleaning trash for all users..."
+
+	# Loop through all user home directories
+	for user_home in /home/*; do
+		if [ -d "$user_home" ]; then
+			username=$(basename "$user_home")
+			echo "Cleaning trash for: $username"
+			# Use sudo to run trash-empty as each user
+			sudo -u "$username" trash-empty || true
+		fi
+	done
+
+	# Also clean root's trash
+	echo "Cleaning trash for: root"
+	sudo trash-empty || true
+
+	echo "Trash cleaning completed!"
+}
+
 #######################################################
 # SOURCED ALIAS'S AND SCRIPTS BY zachbrowne.me
 #######################################################
@@ -405,7 +426,7 @@ nixos_generate_image() {
 		echo "Cleaning Nix garbage..."
 		sudo nix-collect-garbage -d && nix-collect-garbage -d
 		echo "Garbage collection completed."
-		
+
 		# Also verify and repair the store
 		echo "Verifying and repairing Nix store..."
 		sudo nix-store --verify --check-contents --repair
