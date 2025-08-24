@@ -201,28 +201,57 @@ in {
         RED='\033[0;31m'
         GREEN='\033[0;32m'
         BLUE='\033[0;34m'
+        YELLOW='\033[1;33m'
         BOLD='\033[1m'
         NC='\033[0m' # No Color
 
         echo_info() { echo -e "''${BLUE}''${BOLD}[INFO]''${NC} $1"; }
         echo_success() { echo -e "''${GREEN}''${BOLD}[SUCCESS]''${NC} $1"; }
         echo_error() { echo -e "''${RED}''${BOLD}[ERROR]''${NC} $1" >&2; }
+        echo_warning() { echo -e "''${YELLOW}''${BOLD}[WARNING]''${NC} $1"; }
 
         host="$(hostname -s)"
         echo_info "Starting all backup units for host: ''${BOLD}$host''${NC}"
 
+        # Get regular backup units
         units=$(sudo systemctl list-unit-files --type=service --plain | grep "^restic-backups-backup-$host-" | awk '{print $1}')
+        
+        # Dynamically discover docker volume backup units if docker volumes exist
+        if [[ -d "/mnt/docker-data/volumes" ]]; then
+          echo_info "Discovering docker volume backup services..."
+          for volume in /mnt/docker-data/volumes/*/; do
+            if [[ -d "$volume" ]]; then
+              volume_name=$(basename "$volume")
+              docker_service="restic-backups-backup-$host-mnt-docker-data-volumes-$volume_name.service"
+              if sudo systemctl list-unit-files --type=service --plain | grep -q "^$docker_service"; then
+                units="$units"$'\n'"$docker_service"
+                echo_info "Found docker volume service: $docker_service"
+              fi
+            fi
+          done
+        fi
+        
         if [[ -z "$units" ]]; then
           echo_error "No backup units found."
           exit 1
         fi
 
         for unit in $units; do
-          echo_info "Starting ''${BOLD}$unit''${NC}"
-          if sudo systemctl start "$unit"; then
-            echo_success "$unit started successfully."
+          # Extract the path from the unit name to check if it exists
+          # Convert service name back to original path
+          path_part=$(echo "$unit" | sed "s/^restic-backups-backup-$host-//; s/\.service$//; s/-/\//g")
+          original_path="/$path_part"
+          
+          # Check if the backup path exists
+          if [[ -e "$original_path" ]]; then
+            echo_info "Starting ''${BOLD}$unit''${NC}"
+            if sudo systemctl start "$unit"; then
+              echo_success "$unit started successfully."
+            else
+              echo_error "Failed to start $unit."
+            fi
           else
-            echo_error "Failed to start $unit."
+            echo_warning "Skipping ''${BOLD}$unit''${NC} - path does not exist: $original_path"
           fi
         done
 
