@@ -392,15 +392,15 @@ in {
 
     script = ''
       set -euo pipefail
-      
+
       echo "Fixing home directory ownership for all users..."
-      
+
       # Iterate over every "real" user account (UID >= 1000, has valid shell)
       ${pkgs.getent}/bin/getent passwd | ${pkgs.gawk}/bin/awk -F: '$3 >= 1000 && $7 !~ /(false|nologin)/ {print $1}' |
       while read -r user; do
         home="$(${pkgs.getent}/bin/getent passwd "$user" | cut -d: -f6)"
         group="$(${pkgs.coreutils}/bin/id -gn "$user" 2>/dev/null || echo "users")"
-        
+
         if [ -d "$home" ]; then
           echo "Fixing ownership for $user ($home)"
           ${pkgs.coreutils}/bin/chown -R "$user:$group" "$home" 2>/dev/null || {
@@ -408,8 +408,15 @@ in {
           }
         fi
       done
-      
+
       echo "Home directory ownership correction completed"
+    '';
+  };
+
+  programs.ssh = {
+    extraConfig = ''
+      ServerAliveInterval 60
+      ServerAliveCountMax 3
     '';
   };
 

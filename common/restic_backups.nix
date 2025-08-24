@@ -105,13 +105,13 @@ in {
         REPO="$REPO_BASE/$HOST/$SUBPATH"
 
         echo_info "Verifying if path exists in snapshots..."
-        
+
         # Check for direct snapshots first
         if env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
              restic --repo "$REPO" --password-file "$PWD_FILE" \
              snapshots --json --path "$NATIVE_PATH" >/dev/null 2>&1; then
           echo_success "Path found in direct snapshots."
-          
+
           echo_info "Calculating size..."
           BYTES=$(env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
                    restic --repo "$REPO" --password-file "$PWD_FILE" \
@@ -120,16 +120,16 @@ in {
           echo_success "$NATIVE_PATH: ''${BOLD}$(numfmt --to=iec --suffix=B "$BYTES")''${NC}"
         else
           echo_info "No direct snapshots found, checking for nested repositories..."
-          
+
           # Extract S3 variables from REPO_BASE for nested repository detection
           S3_ENDPOINT=$(echo "$REPO_BASE" | sed -n 's|s3:\(https://[^/]*\)/.*|\1|p')
           S3_BUCKET=$(echo "$REPO_BASE" | sed -n 's|s3:https://[^/]*/\(.*\)|\1|p')
-          
+
           # Check for nested repositories (filter out restic internal structure)
           nested_dirs=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
             aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/''${SUBPATH}/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | \
             grep "PRE" | awk '{print $2}' | sed 's|/$||' || echo "")
-          
+
           # Filter out restic internal structure (data, index, keys, snapshots)
           nested_repos=""
           if [[ -n "$nested_dirs" ]]; then
@@ -140,30 +140,30 @@ in {
             done
             nested_repos=$(echo "$nested_repos" | sed 's/[[:space:]]*$//')  # trim trailing spaces
           fi
-          
+
           if [[ -n "$nested_repos" ]]; then
             echo_info "Found REAL nested repositories: $nested_repos"
-            
+
             TOTAL_BYTES=0
             found_any=false
-            
+
             for nested_repo in $nested_repos; do
               if [[ -n "$nested_repo" ]]; then
                 nested_repo_url="s3://''${S3_BUCKET}/''${HOST}/''${SUBPATH}/''${nested_repo}"
                 nested_native_path="''${NATIVE_PATH}/''${nested_repo}"
-                
+
                 echo_info "  Checking size for $nested_native_path..."
-                
+
                 # Check if nested repository has snapshots for this path
                 if sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
                    restic --repo "$nested_repo_url" --password-file "$PWD_FILE" \
                    snapshots --json --path "$nested_native_path" >/dev/null 2>&1; then
-                  
+
                   nested_bytes=$(env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
                                  restic --repo "$nested_repo_url" --password-file "$PWD_FILE" \
                                  stats latest --mode raw-data --json --path "$nested_native_path" 2>/dev/null \
                                  | jq '.total_size' 2>/dev/null || echo "0")
-                  
+
                   if [[ "$nested_bytes" != "0" ]]; then
                     echo_success "    $nested_native_path: $(numfmt --to=iec --suffix=B "$nested_bytes")"
                     TOTAL_BYTES=$((TOTAL_BYTES + nested_bytes))
@@ -174,7 +174,7 @@ in {
                 fi
               fi
             done
-            
+
             if [[ "$found_any" == "true" ]]; then
               echo_success "''${BOLD}Total size for $NATIVE_PATH (all nested repositories): $(numfmt --to=iec --suffix=B "$TOTAL_BYTES")''${NC}"
             else
@@ -315,7 +315,7 @@ in {
             for volume in $volumes; do
               echo >&2 "[INFO] Processing volume: $volume"
               local snapshots
-              
+
               # Try direct repository first
               if snapshots=$(env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
                 restic --repo "$REPO_BASE/$host/docker_volume/$volume" --password-file "$PWD_FILE" \
@@ -325,7 +325,7 @@ in {
                 # Check for nested repositories (filter out restic internal structure)
                 echo >&2 "[INFO]   No direct snapshots found for $volume, checking nested repositories..."
                 nested_dirs=$(aws s3 ls "s3://$S3_BUCKET/$host/docker_volume/$volume/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
-                
+
                 # Filter out restic internal structure (data, index, keys, snapshots)
                 nested_repos=""
                 if [[ -n "$nested_dirs" ]]; then
@@ -336,7 +336,7 @@ in {
                   done
                   nested_repos=$(echo "$nested_repos" | sed 's/[[:space:]]*$//')  # trim trailing spaces
                 fi
-                
+
                 if [[ -n "$nested_repos" ]]; then
                   echo >&2 "[INFO]   Found REAL nested repositories in $volume: $nested_repos"
                   for nested_repo in $nested_repos; do
@@ -459,13 +459,13 @@ in {
           # If no direct snapshots found, check for nested repositories (for docker volumes)
           if [[ "$count" -eq 0 ]] && [[ "$repo_path" =~ ^docker_volume/ ]]; then
             progress_info "  No direct snapshots for $native_path, checking nested repositories..."
-            
+
             # Extract volume name from repo_path (docker_volume/volume_name)
             local volume_name=$(echo "$repo_path" | sed 's|^docker_volume/||')
-            
+
             # Check for nested repositories (filter out restic internal structure)
             local nested_dirs=$(aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/docker_volume/''${volume_name}/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
-            
+
             # Filter out restic internal structure (data, index, keys, snapshots)
             local nested_repos=""
             if [[ -n "$nested_dirs" ]]; then
@@ -476,29 +476,29 @@ in {
               done
               nested_repos=$(echo "$nested_repos" | sed 's/[[:space:]]*$//')  # trim trailing spaces
             fi
-            
+
             if [[ -n "$nested_repos" ]]; then
               progress_info "  Found REAL nested repositories in $volume_name: $nested_repos"
-              
+
               # Collect snapshots from each REAL nested repository
               for nested_repo in $nested_repos; do
                 if [[ -n "$nested_repo" ]]; then
                   local nested_repo_path="docker_volume/$volume_name/$nested_repo"
                   local nested_native_path="$native_path/$nested_repo"
-                  
+
                   progress_info "    Processing nested: $nested_repo"
-                  
+
                   # Get snapshots for nested repository
                   local nested_snapshots
                   if nested_snapshots=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
                     restic --repo "$REPO_BASE/$HOST/$nested_repo_path" --password-file "$PWD_FILE" \
                     snapshots --json 2>/dev/null); then
-                    
+
                     local nested_count=0
                     if [[ -n "$nested_snapshots" ]] && [[ "$nested_snapshots" != "[]" ]]; then
                       nested_count=$(echo "$nested_snapshots" | jq 'length' 2>/dev/null || echo "0")
                     fi
-                    
+
                     if [[ "$nested_count" -gt 0 ]]; then
                       echo "$nested_native_path|$nested_count" >> "$PATHS_FILE"
                       echo "$nested_snapshots" | jq -r --arg path "$nested_native_path" '.[] | "\(.time)|\($path)|\(.short_id)"' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
@@ -1018,7 +1018,7 @@ in {
         GROUP_TIMESTAMPS=$(mktemp)
         GROUP_COUNTS=$(mktemp)
         trap "rm -f $BACKUP_PATHS_FILE $BACKUP_SNAPSHOTS_FILE $FILTERED_TIMESTAMPS $GROUP_TIMESTAMPS $GROUP_COUNTS" EXIT
-        
+
         # Process timestamps and group by 5-minute windows
         while IFS= read -r timestamp; do
           if [[ -n "$timestamp" ]]; then
@@ -1071,7 +1071,7 @@ in {
         # Phase 5: Restoration
         DEST="/tmp/restic/interactive"
         echo_info "Preparing destination: ''${BOLD}$DEST''${NC}"
-        
+
         # Check if destination exists and is not empty
         if [[ -d "$DEST" ]] && [[ -n "$(sudo find "$DEST" -mindepth 1 -maxdepth 1 2>/dev/null)" ]]; then
           echo_warning "Destination directory is not empty:"
@@ -1084,7 +1084,7 @@ in {
             exit 1
           fi
         fi
-        
+
         sudo rm -rf "$DEST"
         sudo mkdir -p "$DEST"
 
@@ -1117,16 +1117,16 @@ in {
 
             if [[ "$snapshots" == "[]" ]] || [[ $(echo "$snapshots" | jq 'length') -eq 0 ]]; then
               echo_info "No direct snapshots found for $native_path, checking for nested repositories..."
-              
+
               # Extract S3 variables from REPO_BASE for nested repository detection
               S3_ENDPOINT=$(echo "$REPO_BASE" | sed -n 's|s3:\(https://[^/]*\)/.*|\1|p')
               S3_BUCKET=$(echo "$REPO_BASE" | sed -n 's|s3:https://[^/]*/\(.*\)|\1|p')
-              
+
               # Check for nested repositories (filter out restic internal structure)
               nested_dirs=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
                 aws s3 ls "s3://''${S3_BUCKET}/''${SELECTED_HOST}/''${repo_subpath}/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | \
                 grep "PRE" | awk '{print $2}' | sed 's|/$||' || echo "")
-              
+
               # Filter out restic internal structure (data, index, keys, snapshots)
               nested_repos=""
               if [[ -n "$nested_dirs" ]]; then
@@ -1137,37 +1137,37 @@ in {
                 done
                 nested_repos=$(echo "$nested_repos" | sed 's/[[:space:]]*$//')  # trim trailing spaces
               fi
-              
+
               if [[ -n "$nested_repos" ]]; then
                 echo_info "Found REAL nested repositories: $nested_repos"
               elif [[ -n "$nested_dirs" ]]; then
                 echo_info "Found restic internal structure (data/index/keys/snapshots) - not nested repos"
               fi
-              
+
               if [[ -n "$nested_repos" ]]; then
                 nested_restored=0
                 nested_skipped=0
-                
+
                 # Process each REAL nested repository
                 for nested_repo in $nested_repos; do
                   if [[ -n "$nested_repo" ]]; then
                     nested_repo_subpath="$repo_subpath/$nested_repo"
                     nested_native_path="$native_path/$nested_repo"
                     nested_repo_url="s3://''${S3_BUCKET}/''${SELECTED_HOST}/''${nested_repo_subpath}"
-                    
+
                     echo_info "  Restoring ''${BOLD}$nested_native_path''${NC} from ''${BOLD}$nested_repo_subpath''${NC}..."
-                    
+
                     # Get snapshots for the nested repository
                     nested_snapshots=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
                       restic --repo "$nested_repo_url" --password-file "$PWD_FILE" \
                       snapshots --json --path "$nested_native_path" 2>/dev/null || echo "[]")
-                    
+
                     if [[ "$nested_snapshots" == "[]" ]] || [[ $(echo "$nested_snapshots" | jq 'length') -eq 0 ]]; then
                       echo_warning "  No snapshots found for $nested_native_path, skipping"
                       nested_skipped=$((nested_skipped + 1))
                       continue
                     fi
-                    
+
                     # Find best snapshot within the time window
                     best_nested_snapshot=$(echo "$nested_snapshots" | jq -r --arg group_start "$(date -d "@$group_start_epoch" '+%Y-%m-%dT%H:%M:%S')" \
                       --arg group_end "$(date -d "@$group_end_epoch" '+%Y-%m-%dT%H:%M:%S')" '
@@ -1175,23 +1175,23 @@ in {
                       ([.[] | select(.time < $group_start)] | sort_by(.time) | last) as $before_window |
                       (($in_window // $before_window) | .short_id // empty)'
                     )
-                    
+
                     if [[ -n "$best_nested_snapshot" ]] && [[ "$best_nested_snapshot" != "null" ]]; then
                       # Get timestamp for logging
                       nested_snapshot_time=$(echo "$nested_snapshots" | jq -r --arg snapshot_id "$best_nested_snapshot" '
                         .[] | select(.short_id == $snapshot_id) | .time'
                       )
-                      
+
                       # Restore the nested snapshot
                       sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
                         restic --repo "$nested_repo_url" --password-file "$PWD_FILE" \
                         restore "$best_nested_snapshot" --path "$nested_native_path" --target "$DEST"
-                      
+
                       # Check if restoration created files or directories in the target directory
                       nested_restored_files=$(sudo find "$DEST" -path "*$nested_native_path*" -type f 2>/dev/null | wc -l)
                       nested_restored_dirs=$(sudo find "$DEST" -path "*$nested_native_path*" -type d 2>/dev/null | wc -l)
                       nested_restored_items=$((nested_restored_files + nested_restored_dirs))
-                      
+
                       if [[ $nested_restored_items -gt 0 ]]; then
                         display_time=$(echo "$nested_snapshot_time" | sed 's/\.[0-9]*+.*$//')
                         if [[ $nested_restored_files -gt 0 ]]; then
@@ -1210,11 +1210,11 @@ in {
                     fi
                   fi
                 done
-                
+
                 # Update overall counters
                 restored_count=$((restored_count + nested_restored))
                 skipped_count=$((skipped_count + nested_skipped))
-                
+
                 if [[ $nested_restored -gt 0 ]]; then
                   echo_success "Successfully restored $nested_restored nested repositories from $repo_subpath"
                 else
@@ -1228,21 +1228,21 @@ in {
               fi
             fi
 
-            # Calculate time window boundaries  
+            # Calculate time window boundaries
             group_start_epoch=$(date -d "$SELECTED_GROUP" +%s 2>/dev/null || echo "0")
             group_end_epoch=$((group_start_epoch + 300))  # +5 minutes
-            
+
             # Find best snapshot within the time window, or the newest before the window
             best_snapshot=$(echo "$snapshots" | jq -r --arg group_start "$(date -d "@$group_start_epoch" '+%Y-%m-%dT%H:%M:%S')" \
               --arg group_end "$(date -d "@$group_end_epoch" '+%Y-%m-%dT%H:%M:%S')" '
               # Try to find snapshots within the time window first
               ([.[] | select(.time >= $group_start and .time <= $group_end)] | sort_by(.time) | last) as $in_window |
-              # If none in window, find the newest snapshot before the window  
+              # If none in window, find the newest snapshot before the window
               ([.[] | select(.time < $group_start)] | sort_by(.time) | last) as $before_window |
               # Use in-window snapshot if available, otherwise use before-window snapshot
               (($in_window // $before_window) | .short_id // empty)'
             )
-            
+
             # Get the timestamp of the selected snapshot for logging
             selected_snapshot_time=$(echo "$snapshots" | jq -r --arg snapshot_id "$best_snapshot" '
               .[] | select(.short_id == $snapshot_id) | .time'
@@ -1258,12 +1258,12 @@ in {
             sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
               restic --repo "$REPO" --password-file "$PWD_FILE" \
               restore "$best_snapshot" --path "$native_path" --target "$DEST"
-            
+
             # Check if restoration created files or directories in the target directory
             restored_files=$(sudo find "$DEST" -path "*$native_path*" -type f 2>/dev/null | wc -l)
             restored_dirs=$(sudo find "$DEST" -path "*$native_path*" -type d 2>/dev/null | wc -l)
             restored_items=$((restored_files + restored_dirs))
-            
+
             if [[ $restored_items -gt 0 ]]; then
               # Format timestamp for display (remove microseconds and timezone for readability)
               display_time=$(echo "$selected_snapshot_time" | sed 's/\.[0-9]*+.*$//')
@@ -1290,16 +1290,16 @@ in {
           echo_success "Restoration completed successfully!"
           echo_info "You can now access your restored files at $DEST"
           echo
-          
+
           # Offer to move or copy files to original location
           echo "What would you like to do with the restored files?"
           echo "  1. Copy to original location (replace existing files)"
-          echo "  2. Move to original location (replace existing files)" 
+          echo "  2. Move to original location (replace existing files)"
           echo "  3. Leave files in temporary location"
           echo
           read -p "Your choice [3]: " final_action
           final_action=''${final_action:-3}
-          
+
           case "$final_action" in
             1)
               echo_info "Copying files to original locations..."
@@ -1317,13 +1317,19 @@ in {
                       fi
                     fi
                   done < "$BACKUP_PATHS_FILE"
-                  
+
                   if [[ -n "$native_path" ]] && [[ -d "$DEST$native_path" ]]; then
-                    echo_info "Copying $native_path..."
+                    echo_info "Copying $native_path to $(dirname "$native_path")..."
                     # Create parent directory if needed
-                    sudo mkdir -p "$(dirname "$native_path")" 2>/dev/null
-                    if ! sudo cp -rf "$DEST$native_path" "$(dirname "$native_path")" 2>/dev/null; then
+                    if ! sudo mkdir -p "$(dirname "$native_path")"; then
+                      echo_error "Failed to create parent directory $(dirname "$native_path")"
+                      copy_success=false
+                      continue
+                    fi
+                    if ! sudo cp -rf "$DEST$native_path" "$(dirname "$native_path")"; then
                       echo_error "Failed to copy $native_path"
+                      echo_error "Source: $DEST$native_path"
+                      echo_error "Target: $(dirname "$native_path")"
                       copy_success=false
                     else
                       echo_success "Copied $native_path"
@@ -1331,7 +1337,7 @@ in {
                   fi
                 fi
               done
-              
+
               if [[ "$copy_success" == "true" ]]; then
                 echo_success "All files copied successfully to their original locations"
                 echo_info "Temporary files remain at $DEST"
@@ -1339,9 +1345,9 @@ in {
                 echo_warning "Some files failed to copy. Check the logs above for details."
               fi
               ;;
-              
+
             2)
-              echo_info "Moving files to original locations..."
+              echo_info "Moving files to original locations...."
               move_success=true
               for repo_subpath in ''${selected_repos_array[*]}; do
                 if [[ -n "$repo_subpath" ]]; then
@@ -1358,7 +1364,7 @@ in {
                   done < "$BACKUP_PATHS_FILE"
                   
                   if [[ -n "$native_path" ]] && [[ -d "$DEST$native_path" ]]; then
-                    echo_info "Moving $native_path..."
+                    echo_info "Moving $native_path to $native_path..."
                     # Remove original if it exists
                     if [[ -e "$native_path" ]]; then
                       if ! sudo rm -rf "$native_path" 2>/dev/null; then
@@ -1367,11 +1373,17 @@ in {
                         continue
                       fi
                     fi
-                    # Create target directory if needed
-                    sudo mkdir -p "$native_path" 2>/dev/null
-                    # Move the file
-                    if ! sudo mv "$DEST$native_path" "$native_path" 2>/dev/null; then
+                    # Create parent directory if needed
+                    if ! sudo mkdir -p "$(dirname "$native_path")"; then
+                      echo_error "Failed to create parent directory $(dirname "$native_path")"
+                      move_success=false
+                      continue
+                    fi
+                    # Move the restored directory to the target location
+                    if ! sudo mv "$DEST$native_path" "$native_path"; then
                       echo_error "Failed to move $native_path"
+                      echo_error "Source: $DEST$native_path"
+                      echo_error "Target: $native_path"
                       move_success=false
                     else
                       echo_success "Moved $native_path"
@@ -1379,7 +1391,7 @@ in {
                   fi
                 fi
               done
-              
+
               if [[ "$move_success" == "true" ]]; then
                 echo_success "All files moved successfully to their original locations"
                 echo_info "Cleaning up temporary directory..."
@@ -1389,7 +1401,7 @@ in {
                 echo_info "Temporary files remain at $DEST"
               fi
               ;;
-              
+
             3|*)
               echo_info "Files remain at temporary location: $DEST"
               echo_info "You can manually copy or move them as needed"
