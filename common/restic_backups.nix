@@ -34,7 +34,7 @@ in {
       EnvironmentFile = config.sops.secrets.restic_environment.path;
     };
     script = "restic_start_backup";
-    path = with pkgs; [restic jq coreutils];
+    path = with pkgs; [restic jq coreutils] ++ config.environment.systemPackages;
   };
 
   systemd.timers.restic-backup = {
@@ -182,7 +182,7 @@ in {
       # --- restic_start_backup -------------------------------------------------
       (pkgs.writeShellScriptBin "restic_start_backup" ''
         #! /usr/bin/env bash
-        set -euo pipefail
+        set -uo pipefail
 
         # Color definitions
         RED='\033[0;31m'
@@ -215,14 +215,25 @@ in {
         if [[ -f "/etc/restic_predefined_backup_paths.json" ]]; then
           echo_info "Processing configured backup paths..."
           while read -r path; do
-            if [[ -e "$path" ]]; then
+            if [[ -n "$path" ]]; then
+              # Check if path exists, skip if not but don't fail
+              if [[ ! -e "$path" ]]; then
+                echo_warning "Path does not exist, skipping: $path"
+                continue
+              fi
+
               echo_info "Backing up: $path"
 
-              # Calculate repository location
+              # Calculate repository location - with error handling
+              repo_location=""
               if [[ "$path" =~ ^/home/ ]]; then
                 username=$(echo "$path" | cut -d/ -f3)
                 subdir=$(echo "$path" | cut -d/ -f4- | tr '/' '_')
-                repo_location="user_home/$username/$subdir"
+                if [[ -n "$subdir" ]]; then
+                  repo_location="user_home/$username/$subdir"
+                else
+                  repo_location="user_home/$username"
+                fi
               elif [[ "$path" =~ ^/mnt/docker-data/volumes/ ]]; then
                 volume=$(echo "$path" | cut -d/ -f5- | tr '/' '_')
                 repo_location="docker_volume/$volume"
@@ -230,21 +241,36 @@ in {
                 repo_location="system"
               fi
 
+              if [[ -z "$repo_location" ]]; then
+                echo_warning "Could not determine repository location for: $path"
+                continue
+              fi
+
               repo_url="$REPO_BASE/$host/$repo_location"
 
-              # Initialize repository if needed and backup
+              # Initialize repository if needed - with proper error handling
+              init_success=false
               if sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
-                   restic --repo "$repo_url" --password-file "$PWD_FILE" snapshots || \
-                 sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
-                   restic --repo "$repo_url" --password-file "$PWD_FILE" init; then
-                sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
-                  restic --repo "$repo_url" --password-file "$PWD_FILE" backup "$path" \
-                  --host "$host" \
-                  --tag user-path
-                echo_success "Backed up: $path"
-                ((backup_count++))
+                   restic --repo "$repo_url" --password-file "$PWD_FILE" snapshots >/dev/null 2>&1; then
+                init_success=true
+              elif sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+                   restic --repo "$repo_url" --password-file "$PWD_FILE" init >/dev/null 2>&1; then
+                init_success=true
+              fi
+
+              # Only proceed with backup if repository is ready
+              if [[ "$init_success" == "true" ]]; then
+                if sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+                    restic --repo "$repo_url" --password-file "$PWD_FILE" backup "$path" \
+                    --host "$host" \
+                    --tag user-path >/dev/null 2>&1; then
+                  echo_success "Backed up: $path"
+                  ((backup_count++))
+                else
+                  echo_warning "Failed to backup: $path"
+                fi
               else
-                echo_warning "Failed to initialize repository for $path"
+                echo_warning "Failed to initialize repository for: $path"
               fi
             fi
           done < <(sudo cat /etc/restic_predefined_backup_paths.json | jq -r '.[]')
@@ -264,20 +290,30 @@ in {
               echo_info "Backing up docker volume: $volume_name"
               repo_url="$REPO_BASE/$host/docker_volume/$volume_name"
 
-              # Initialize repository if needed and backup
+              # Initialize repository if needed - with proper error handling
+              init_success=false
               if sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
-                   restic --repo "$repo_url" --password-file "$PWD_FILE" snapshots || \
-                 sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
-                   restic --repo "$repo_url" --password-file "$PWD_FILE" init; then
-                sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
-                  restic --repo "$repo_url" --password-file "$PWD_FILE" backup "$volume_path" \
-                  --host "$host" \
-                  --tag docker-volume \
-                  --tag "$volume_name"
-                echo_success "Backed up docker volume: $volume_name"
-                ((backup_count++))
+                   restic --repo "$repo_url" --password-file "$PWD_FILE" snapshots >/dev/null 2>&1; then
+                init_success=true
+              elif sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+                   restic --repo "$repo_url" --password-file "$PWD_FILE" init >/dev/null 2>&1; then
+                init_success=true
+              fi
+
+              # Only proceed with backup if repository is ready
+              if [[ "$init_success" == "true" ]]; then
+                if sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+                    restic --repo "$repo_url" --password-file "$PWD_FILE" backup "$volume_path" \
+                    --host "$host" \
+                    --tag docker-volume \
+                    --tag "$volume_name" >/dev/null 2>&1; then
+                  echo_success "Backed up docker volume: $volume_name"
+                  ((backup_count++))
+                else
+                  echo_warning "Failed to backup docker volume: $volume_name"
+                fi
               else
-                echo_warning "Failed to initialize repository for docker volume $volume_name"
+                echo_warning "Failed to initialize repository for docker volume: $volume_name"
               fi
             fi
           done
