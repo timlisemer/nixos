@@ -1427,14 +1427,19 @@ in {
                       move_success=false
                       continue
                     fi
-                    # Just fucking move it
-                    if ! sudo mv "$DEST$native_path" "$native_path"; then
-                      echo_error "Failed to move $native_path"
-                      echo_error "Source: $DEST$native_path"
-                      echo_error "Target: $native_path"
-                      move_success=false
+                    # Move contents, not the directory itself
+                    if [[ -d "$DEST$native_path" ]] && sudo mv "$DEST$native_path"/* "$native_path" 2>/dev/null; then
+                      echo_success "Moved $native_path contents"
                     else
-                      echo_success "Moved $native_path"
+                      # Fallback: move the whole directory
+                      if ! sudo mv "$DEST$native_path" "$(dirname "$native_path")/"; then
+                        echo_error "Failed to move $native_path"
+                        echo_error "Source: $DEST$native_path"
+                        echo_error "Target: $native_path"
+                        move_success=false
+                      else
+                        echo_success "Moved $native_path"
+                      fi
                     fi
                   fi
                 else
