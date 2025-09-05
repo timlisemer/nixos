@@ -61,6 +61,7 @@
       2283 # Immich server
       3080 # LibreChat
       4743 # Vaultwarden
+      8085 # Traefik dashboard
       8123 # Home Assistant
       9001 # Portainer agent
       25565 # Minecraft server
@@ -238,6 +239,7 @@
       volumes = [
         "/mnt/docker-data/volumes/immich/upload_location:/usr/src/app/upload:rw"
         "/etc/localtime:/etc/localtime:ro"
+        "/mnt/docker-data/volumes/immich/data:/data:rw"
       ];
 
       environmentFiles = [
@@ -301,79 +303,6 @@
     };
 
     # -------------------------------------------------------------------------
-    # librechat-mongodb
-    # -------------------------------------------------------------------------
-    librechat-mongodb = {
-      image = "mongo:6";
-      autoStart = true;
-
-      autoRemoveOnStop = false; # prevent implicit --rm
-      extraOptions = ["--network=docker-network" "--ip=172.18.0.12"];
-
-      volumes = [
-        "/mnt/docker-data/volumes/librechat-mongodb:/data/db:rw"
-      ];
-
-      cmd = ["--quiet"];
-    };
-
-    # -------------------------------------------------------------------------
-    # librechat-meilisearch
-    # -------------------------------------------------------------------------
-    librechat-meilisearch = {
-      image = "getmeili/meilisearch:v1.9";
-      autoStart = true;
-
-      autoRemoveOnStop = false; # prevent implicit --rm
-      extraOptions = ["--network=docker-network" "--ip=172.18.0.13"];
-
-      volumes = [
-        "/mnt/docker-data/volumes/librechat-meilisearch:/meili_data:rw"
-      ];
-
-      environmentFiles = [
-        "/run/secrets/librechatENV"
-      ];
-
-      environment = {
-        MEILI_ENV = "production";
-      };
-    };
-
-    # -------------------------------------------------------------------------
-    # librechat-api
-    # -------------------------------------------------------------------------
-    librechat-api = {
-      image = "ghcr.io/danny-avila/librechat:latest";
-      autoStart = true;
-
-      autoRemoveOnStop = false; # prevent implicit --rm
-      extraOptions = ["--network=docker-network" "--ip=172.18.0.14"];
-
-      ports = [
-        "3080:3080"
-      ];
-
-      environmentFiles = [
-        "/run/secrets/librechatENV"
-      ];
-
-      volumes = [
-        "/mnt/docker-data/volumes/librechat-api/librechat.yaml:/app/librechat.yaml:rw"
-      ];
-
-      environment = {
-        PORT = "3080";
-        MONGO_URI = "mongodb://librechat-mongodb:27017/LibreChat";
-        MEILI_HOST = "http://librechat-meilisearch:7700";
-        ALLOW_REGISTRATION = "false";
-        # Basic Model Configuration
-        OPENAI_MODELS = "o4-mini,o3,gpt-4.1-nano";
-        GOOGLE_MODELS = "gemini-2.5-pro,gemini-2.5-flash,gemini-2.5-flash-lite";
-      };
-    };
-
-    # -------------------------------------------------------------------------
     # mcp-server-host
     # -------------------------------------------------------------------------
     mcp-server-host = {
@@ -398,11 +327,11 @@
     };
   };
 
-  system.activationScripts.copyLibrechatYaml = lib.stringAfter ["var"] ''
-    mkdir -p /mnt/docker-data/volumes/librechat-api
-    cp ${./../files/librechat.yaml} /mnt/docker-data/volumes/librechat-api/librechat.yaml
-    chmod 644 /mnt/docker-data/volumes/librechat-api/librechat.yaml
-  '';
+  #system.activationScripts.copyLibrechatYaml = lib.stringAfter ["var"] ''
+  #  mkdir -p /mnt/docker-data/volumes/librechat-api
+  #  cp ${./../files/librechat.yaml} /mnt/docker-data/volumes/librechat-api/librechat.yaml
+  #  chmod 644 /mnt/docker-data/volumes/librechat-api/librechat.yaml
+  #'';
 
   system.activationScripts.copyMcpServerConfig = lib.stringAfter ["var"] ''
     mkdir -p /mnt/docker-data/volumes/mcp-server-host/config

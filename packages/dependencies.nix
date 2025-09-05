@@ -40,7 +40,7 @@
     gtk4.dev
     gobject-introspection
     gjs
-    julia
+    # julia
     libadwaita
     libinput
     lld

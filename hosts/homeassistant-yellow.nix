@@ -80,6 +80,7 @@
       443 # HTTPS / Traefik
       8000 # Portainer API
       8080 # Traefik dashboard
+      8085 # Server Traefik dashboard
       8081 # Pi-hole web UI
       8082 # Filebrowser UI
       8123 # HomeAssistant
