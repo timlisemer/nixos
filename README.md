@@ -78,13 +78,13 @@ sudo cp -a /tmp/nixos/* /mnt/etc/nixos/
 - **For `tim-laptop`:**
 
 ```bash
-sudo nixos-install --flake '/mnt/etc/nixos/flake.nix#tim-laptop'
+sudo nixos-install --flake '/mnt/etc/nixos#tim-laptop'
 ```
 
 - **For `tim-pc`:**
 
 ```bash
-sudo nixos-install --flake '/mnt/etc/nixos/flake.nix#tim-pc'
+sudo nixos-install --flake '/mnt/etc/nixos#tim-pc'
 ```
 
 ### 6. Finalize Installation:
