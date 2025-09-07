@@ -38,7 +38,7 @@ in {
   '';
 
   # Environment Variables
-  environment.variables = {
+  environment.sessionVariables = {
     RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
     MOZ_DISABLE_RDD_SANDBOX = "1";
     MUTTER_DEBUG_KMS_THREAD_TYPE = "user";
@@ -48,7 +48,7 @@ in {
     QT_QPA_PLATFORM = "wayland";
     NIXPKGS_ALLOW_UNFREE = "1"; # duplication with nixpkgs.config.allowUnfree
     WEBKIT_DISABLE_DMABUF_RENDERER = "1"; # Tauri Apps couldn’t run on NixOS NVIDIA
-    PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig";
+    PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig:${pkgs.glib.dev}/lib/pkgconfig";
     BLESH_PATH = "${pkgs.blesh}/share/blesh";
     # environment.variables.GEMINI_API_KEY = "YOUR_API_KEY"; # OPTIONAL - For Gemini CLI
     # GITHUB_TOKEN = "$(cat ${config.sops.secrets.github_token.path})";
