@@ -89,6 +89,31 @@ nix flake check
 nix flake show
 ```
 
+## IMPORTANT: System Modification Restrictions
+
+**Claude Code must NEVER run permanent system-changing commands.** Only testing and validation commands are allowed:
+
+### Allowed Commands
+```bash
+# Test configuration without making permanent changes
+sudo nixos-rebuild test
+sudo nixos-rebuild dry-run
+
+# Validation commands
+nix flake check
+alejandra --check .
+```
+
+### FORBIDDEN Commands
+```bash
+# NEVER run these - they make permanent system changes
+sudo nixos-rebuild switch
+sudo nixos-rebuild boot
+sudo nixos-install
+```
+
+**The user must manually run any permanent system changes after reviewing and approving the configuration.**
+
 ## Configuration Patterns
 
 ### Adding a New Host
@@ -141,19 +166,45 @@ Development dependencies are managed in two locations:
    - Add packages with their `.dev` outputs when needed (e.g., `glib.dev`, `openssl.dev`)
    - This file is imported by all host configurations
 
-2. **`common/common.nix`**: Configure environment variables for build tools
-   - **PKG_CONFIG_PATH** (line 51): Add pkgconfig directories for libraries that need to be found by build systems
-   - Format: `"${pkgs.lib1.dev}/lib/pkgconfig:${pkgs.lib2.dev}/lib/pkgconfig"`
-   - Currently configured: openssl, glib
+2. **`common/common.nix`**: PKG_CONFIG_PATH is automatically configured
+   - **PKG_CONFIG_PATH**: Dynamically built at login from all installed packages
+   - Uses `environment.loginShellInit` to scan `/run/current-system/sw` for pkgconfig directories
+   - No manual configuration needed - automatically finds all `.dev` packages from `dependencies.nix`
+   - Configured with `environment.pathsToLink` and `environment.extraOutputsToInstall = ["dev"]`
 
 ### Example: Adding a New C Library Dependency for Rust
 
 If you encounter build errors like "The system library `xyz` required by crate `xyz-sys` was not found":
 
 1. Search for the package: `mcp__nixos-search__nixos_search` with query "xyz"
-2. Add to `packages/dependencies.nix`: `xyz` and/or `xyz.dev`
-3. If it needs pkg-config, add to PKG_CONFIG_PATH in `common/common.nix`:
-   ```nix
-   PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig:${pkgs.glib.dev}/lib/pkgconfig:${pkgs.xyz.dev}/lib/pkgconfig";
-   ```
-4. Run `rebuild` or `sudo nixos-rebuild switch` to apply changes
+2. Add to `packages/dependencies.nix`: `xyz` and `xyz.dev` (both runtime and development packages)
+3. Run `sudo nixos-rebuild switch` to apply changes
+4. PKG_CONFIG_PATH will automatically include the new library's pkgconfig files
+
+**No manual PKG_CONFIG_PATH configuration needed** - the system automatically detects all `.dev` packages.
+
+## Code Formatting with Alejandra
+
+**IMPORTANT: Always run alejandra to check and format Nix files before presenting any solution to the user.**
+
+Alejandra is the Nix code formatter used in this project. It ensures consistent formatting across all Nix files.
+
+### Usage
+
+```bash
+# Format all Nix files in the current directory and subdirectories
+alejandra .
+
+# Check formatting without modifying files (use this before presenting solutions)
+alejandra --check .
+
+# Format a specific file
+alejandra <file>
+```
+
+### When working with Nix files:
+
+1. Make your changes to the Nix configuration
+2. **ALWAYS** run `alejandra --check .` to verify syntax and formatting
+3. If formatting issues are found, run `alejandra .` to fix them
+4. Only present the solution to the user after alejandra passes without errors

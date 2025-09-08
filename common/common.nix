@@ -48,11 +48,28 @@ in {
     QT_QPA_PLATFORM = "wayland";
     NIXPKGS_ALLOW_UNFREE = "1"; # duplication with nixpkgs.config.allowUnfree
     WEBKIT_DISABLE_DMABUF_RENDERER = "1"; # Tauri Apps couldn’t run on NixOS NVIDIA
-    PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig:${pkgs.glib.dev}/lib/pkgconfig";
+    # PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig:${pkgs.glib.dev}/lib/pkgconfig:${pkgs.gtk3.dev}/lib/pkgconfig:${pkgs.gtk4.dev}/lib/pkgconfig";
     BLESH_PATH = "${pkgs.blesh}/share/blesh";
+    LIBRARY_PATH = "/run/current-system/sw/lib";
     # environment.variables.GEMINI_API_KEY = "YOUR_API_KEY"; # OPTIONAL - For Gemini CLI
     # GITHUB_TOKEN = "$(cat ${config.sops.secrets.github_token.path})";
   };
+  environment.pathsToLink = ["/lib/pkgconfig" "/share/pkgconfig" "/include" "/lib"];
+
+  # Ensure dev outputs are available so .pc files exist
+  environment.extraOutputsToInstall = ["dev"];
+
+  # Build PKG_CONFIG_PATH dynamically at login
+  environment.loginShellInit = ''
+    pc_path=""
+    # Scan only the system profile (not the whole store)
+    while IFS= read -r d; do
+      [ -d "$d" ] && pc_path="''${pc_path:+$pc_path:}$d"
+    done <<EOF
+    $(find -L /run/current-system/sw -type d \( -path '*/lib/pkgconfig' -o -path '*/share/pkgconfig' \) 2>/dev/null | sort -u)
+    EOF
+    export PKG_CONFIG_PATH="''${pc_path}''${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
+  '';
 
   # Enable experimental nix-command and flakes
   nix.settings.experimental-features = ["nix-command" "flakes"];

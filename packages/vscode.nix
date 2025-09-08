@@ -119,7 +119,7 @@ in {
   system.activationScripts.vscode-remote-extensions = ''
     # Create the VS Code cache directory for VSIX files
     mkdir -p /home/tim/.config/Code/CachedExtensionVSIXs
-    
+
     # Create the remote extensions directory
     mkdir -p /home/tim/.vscode-server/extensions
 
@@ -151,7 +151,7 @@ in {
         # Format: hash-vscode-extension-publisher-name-version
         clean_name="''${ext_name#*vscode-extension-}"
         target_dir="/home/tim/.vscode-server/extensions/$clean_name"
-        
+
         # Only copy if the extension doesn't already exist
         if [ ! -d "$target_dir" ]; then
           cp -r "$ext_dir" "$target_dir" 2>/dev/null || true
