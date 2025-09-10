@@ -43,8 +43,8 @@ The repository follows a modular structure:
   - `desktop-only.nix`: Desktop environment packages and settings
 - **`services/`**: Shared service modules imported by hosts:
   - `restic_backups.nix`: Automated backup configuration
-  - `qemu.nix`: Work In Progess vm manager intended to seemlessly integrate windows into linux
-  - `homeassistant.nix`: Main homeassistant nix file, intended for the homeassistant-yellow host.
+  - `qemu.nix`: Work In Progress vm manager intended to seamlessly integrate windows into linux
+  - `homeassistant.nix`: Native NixOS Home Assistant service (imperative mode using Docker volume at `/mnt/docker-data/volumes/homeassistant/config`)
 - **`desktop-environments/`**: Modular desktop environment configurations (GNOME, Hyprland, COSMIC)
 - **`packages/`**: Custom package definitions
 - **`secrets/`**: SOPS-encrypted secrets (uses age keys)
@@ -211,3 +211,41 @@ alejandra <file>
 2. **ALWAYS** run `alejandra --check .` to verify syntax and formatting
 3. If formatting issues are found, run `alejandra .` to fix them
 4. Only present the solution to the user after alejandra passes without errors
+
+## Service Module Pattern
+
+Services in `/services/` follow this pattern:
+- Accept standard NixOS module arguments (`config`, `pkgs`, `lib`, `inputs`, etc.)
+- Can use unstable packages via `inputs.nixpkgs-unstable`
+- Are imported directly in host configurations
+- Can define systemd services, users, and system configuration
+
+### Home Assistant Migration
+
+Home Assistant is configured in two modes:
+1. **Imperative mode** (current): Uses existing Docker volume at `/mnt/docker-data/volumes/homeassistant/config`
+2. **Declarative mode** (future): Will migrate configuration into Nix expressions
+
+Key directories:
+- Config: `/mnt/docker-data/volumes/homeassistant/config`
+- Media: `/mnt/docker-data/volumes/homeassistant/media`
+- Service: `systemd service home-assistant.service`
+- Logs: `journalctl -u home-assistant`
+
+## Host-Specific Configuration
+
+### homeassistant-yellow
+- Raspberry Pi-based system with NVMe storage
+- Runs multiple services via Docker (Traefik, Pi-hole, Portainer, etc.)
+- Home Assistant runs as native NixOS service
+- Uses host networking for device discovery
+- Hardware access: `/dev/ttyAMA10` (Zigbee), `/dev/dri` (GPU)
+
+## Docker to Native Service Migration Pattern
+
+When migrating from Docker to native NixOS services:
+1. Create service module in `/services/`
+2. Use imperative configuration pointing to existing Docker volumes
+3. Import service module in host configuration
+4. Comment out (don't delete) Docker container configuration
+5. Test thoroughly before considering declarative migration

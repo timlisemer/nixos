@@ -17,6 +17,7 @@
     ../common/common.nix
     ../packages/system-packages.nix
     ../packages/dependencies.nix
+    ../services/homeassistant.nix
     (import ../common/home-manager.nix {
       inherit config pkgs inputs home-manager lib users;
       isDesktop = false;
@@ -188,36 +189,43 @@
     };
 
     # -------------------------------------------------------------------------
-    # homeassistant
+    # homeassistant - MIGRATED TO NATIVE NIXOS SERVICE
     # -------------------------------------------------------------------------
-    homeassistant = {
-      image = "ghcr.io/home-assistant/home-assistant:stable";
-      autoStart = true;
-
-      autoRemoveOnStop = false; # prevent implicit --rm
-      extraOptions = [
-        "--network=host"
-        "--device=/dev/dri:/dev/dri" # GPU access
-        "--device=/dev/ttyAMA10:/dev/ttyAMA10"
-        "--privileged"
-      ];
-
-      ports = [
-        "8123:8123" # Home Assistant
-      ];
-
-      volumes = [
-        "/mnt/docker-data/volumes/homeassistant/config:/config:rw"
-        "/mnt/docker-data/volumes/homeassistant/media:/media:rw"
-        "/run/dbus:/run/dbus:ro" # DBus access, needed for some integrations for example Bluetooth
-      ];
-
-      #environmentFiles = [
-      #  "/run/secrets/homeassistantENV"
-      #];
-
-      environment.TZ = "Europe/Berlin";
-    };
+    # Home Assistant is now running as a native NixOS service
+    # Configuration: ../services/homeassistant.nix
+    # Config directory: /mnt/docker-data/volumes/homeassistant/config
+    # Service: systemd service home-assistant.service
+    # Logs: journalctl -u home-assistant
+    #
+    # Original Docker configuration (kept for reference):
+    # homeassistant = {
+    #   image = "ghcr.io/home-assistant/home-assistant:stable";
+    #   autoStart = true;
+    #
+    #   autoRemoveOnStop = false; # prevent implicit --rm
+    #   extraOptions = [
+    #     "--network=host"
+    #     "--device=/dev/dri:/dev/dri" # GPU access
+    #     "--device=/dev/ttyAMA10:/dev/ttyAMA10"
+    #     "--privileged"
+    #   ];
+    #
+    #   ports = [
+    #     "8123:8123" # Home Assistant
+    #   ];
+    #
+    #   volumes = [
+    #     "/mnt/docker-data/volumes/homeassistant/config:/config:rw"
+    #     "/mnt/docker-data/volumes/homeassistant/media:/media:rw"
+    #     "/run/dbus:/run/dbus:ro" # DBus access, needed for some integrations for example Bluetooth
+    #   ];
+    #
+    #   #environmentFiles = [
+    #   #  "/run/secrets/homeassistantENV"
+    #   #];
+    #
+    #   environment.TZ = "Europe/Berlin";
+    # };
 
     # -------------------------------------------------------------------------
     # portainer
