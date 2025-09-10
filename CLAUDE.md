@@ -40,8 +40,11 @@ The repository follows a modular structure:
   - `common.nix`: Base system configuration
   - `disko.nix`: Declarative disk partitioning (supports multi-disk setups)
   - `home-manager.nix`: User environment configuration
-  - `restic_backups.nix`: Automated backup configuration
   - `desktop-only.nix`: Desktop environment packages and settings
+- **`services/`**: Shared service modules imported by hosts:
+  - `restic_backups.nix`: Automated backup configuration
+  - `qemu.nix`: Work In Progess vm manager intended to seemlessly integrate windows into linux
+  - `homeassistant.nix`: Main homeassistant nix file, intended for the homeassistant-yellow host.
 - **`desktop-environments/`**: Modular desktop environment configurations (GNOME, Hyprland, COSMIC)
 - **`packages/`**: Custom package definitions
 - **`secrets/`**: SOPS-encrypted secrets (uses age keys)
@@ -141,7 +144,7 @@ Uses SOPS with age keys derived from SSH keys:
 
 ### Backup Configuration
 
-Automated backups via Restic are configured in `common/restic_backups.nix`. Paths are defined in `flake.nix`:
+Automated backups via Restic are configured in `services/restic_backups.nix`. Paths are defined in `flake.nix`, additonally all docker volumes in /mnt/docker/volumes are automatically and dynamically added:
 
 - `userBackupDirs`: Standard user directories
 - `userDotFiles`: Configuration directories

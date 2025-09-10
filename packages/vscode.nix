@@ -13,19 +13,15 @@
     config = {allowUnfree = true;};
     inherit system;
   };
-  unstablePkgs = import inputs.nixpkgs-unstable {
-    config = {allowUnfree = true;};
-    inherit system;
-  };
-  vscodeExtensions = unstablePkgs.vscode-extensions;
+  vscodeExtensions = unstable.vscode-extensions;
 in {
-  environment.systemPackages = with unstablePkgs;
+  environment.systemPackages = with unstable;
     lib.mkAfter [
       (vscode-with-extensions.override {
         vscodeExtensions = with vscodeExtensions;
           [
           ]
-          ++ unstablePkgs.vscode-utils.extensionsFromVscodeMarketplace [
+          ++ unstable.vscode-utils.extensionsFromVscodeMarketplace [
             {
               name = "claude-code";
               publisher = "anthropic";

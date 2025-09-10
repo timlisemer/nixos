@@ -30,7 +30,7 @@ in {
     lib.optionals isDesktop [./dconf.nix]
     ++ [
       inputs.ags.homeManagerModules.default
-      ./qemu.nix
+      ../services/qemu.nix
     ];
 
   # Firefox Theme
