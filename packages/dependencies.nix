@@ -114,5 +114,6 @@
     pango.dev
     webkitgtk_4_1
     zlib
+    # zlib.dev
   ];
 }

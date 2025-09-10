@@ -321,7 +321,7 @@ in {
 
         echo_info "Backup completed: $backup_count successful"
         echo_info "You can check logs with: ''${BOLD}sudo journalctl -u restic-backup -f''${NC}"
-        
+
         # Ensure successful exit
         exit 0
       '')

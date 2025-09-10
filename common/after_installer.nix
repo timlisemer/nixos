@@ -23,7 +23,7 @@
     })
     inputs.sops-nix.nixosModules.sops
     ../secrets/sops.nix
-    ./restic_backups.nix
+    ../services/restic_backups.nix
   ];
 
   # Open ports in the firewall
