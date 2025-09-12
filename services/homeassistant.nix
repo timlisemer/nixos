@@ -11,12 +11,6 @@
     inherit system;
   };
 in {
-  # Home Assistant native NixOS service configuration
-  # Step 2: Declarative configuration - migrated from configuration.yaml
-
-  # Load environment variables from SOPS secret
-  systemd.services.home-assistant.serviceConfig.EnvironmentFile = config.sops.secrets.homeassistantENV.path;
-
   services.home-assistant = {
     enable = true;
 
@@ -156,8 +150,8 @@ in {
         smart_home = {
           locale = "en-US";
           endpoint = "https://api.eu.amazonalexa.com/v3/events";
-          client_id = "!env_var AMAZON_CLIENT_ID";
-          client_secret = "!env_var AMAZON_CLIENT_SECRET";
+          client_id = "${config.sops.placeholder.amazon_client_id}";
+          client_secret = "${config.sops.placeholder.amazon_client_secret}";
           filter = {
             include_entities = [
               "switch.monitor"
