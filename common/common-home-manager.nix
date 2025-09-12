@@ -241,6 +241,16 @@ in {
       source = builtins.toPath ../files/icons/ghostty/com.mitchellh.ghostty_1024.png;
       force = true;
     };
+
+    # Claude
+    ".claude/CLAUDE.md" = {
+      source = builtins.toPath ../files/.claude/CLAUDE.md;
+      force = true;
+    };
+    ".claude/settings.json" = {
+      source = builtins.toPath ../files/.claude/settings.json;
+      force = true;
+    };
   };
 
   # Steam adwaita theme

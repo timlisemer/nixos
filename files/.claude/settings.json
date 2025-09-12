@@ -10,10 +10,32 @@
       "Bash(sqlite3 * PRAGMA *)",
       "Bash(sqlite3 * EXPLAIN *)",
       "Bash(sqlite3 * .dump)",
+      "Bash(make check)",
       "Bash(cargo check:*)",
-      "Bash(cargo test)"
+      "Bash(cargo test)",
+      "Bash(aws s3 ls:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(alejandra:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:docs.rs)",
+      "WebFetch(domain:nixos.org)",
+      "WebFetch(domain:tailwindcss.com)",
+      "WebFetch(domain:svelte.dev)",
+      "WebFetch(domain:tauri.app)",
+      "mcp__ide__getDiagnostics",
+      "mcp__nixos-search__nixos_info",
+      "mcp__nixos-search__nixos_search",
+      "mcp__tailwind-svelte__get_sveltekit_doc",
+      "mcp__tailwind-svelte__get_tailwind_info",
+      "mcp__tailwind-svelte__list_tailwind_info_topics",
+      "mcp__tailwind-svelte__list_snippet_categories",
+      "mcp__tailwind-svelte__list_snippets_in_category",
+      "mcp__tailwind-svelte__get_component_snippet"
     ],
     "deny": [
+      "Bash(cd *)",
+      "Bash(cat *)",
       "Bash(sqlite3 * INSERT *)",
       "Bash(sqlite3 * UPDATE *)",
       "Bash(sqlite3 * DELETE *)",
@@ -23,7 +45,6 @@
       "Bash(sqlite3 * REPLACE *)",
       "Bash(sqlite3 * ATTACH *)",
       "Bash(sqlite3 * DETACH *)"
-    ],
-    "ask": []
+    ]
   }
 }
