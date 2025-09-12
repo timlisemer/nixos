@@ -129,7 +129,7 @@
       # add more people here …
     };
 
-    userBackupDirs = ["Coding" "Downloads" "Desktop" "Documents" "Pictures" "Videos" "Music" "Public" "Templates"];
+    userBackupDirs = ["Coding" "Desktop" "Documents" "Pictures" "Videos" "Music" "Public" "Templates"];
     userDotFiles = [".config" ".mozilla" ".bash_history" ".steam" ".vscode-server" ".arduinoIDE" ".npm" ".vscode"];
     backupPaths = builtins.concatLists (builtins.map (
       username: let
