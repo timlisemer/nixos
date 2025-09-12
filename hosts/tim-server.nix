@@ -50,6 +50,12 @@
     "2001:4860:4860::8888" # Google DNS IPv6
   ];
 
+  # SSH server configuration
+  # Enable GatewayPorts to allow reverse SSH tunnels to bind to all interfaces (0.0.0.0)
+  # This is required for the Home Assistant tunnel from homeassistant-yellow
+  # See: common/home-manager.nix tim-server-tunnel service with "-R 0.0.0.0:8123:localhost:8123"
+  services.openssh.settings.GatewayPorts = "yes";
+
   networking.firewall = lib.mkForce {
     enable = true;
 
@@ -62,7 +68,7 @@
       3080 # LibreChat
       4743 # Vaultwarden
       8085 # Traefik dashboard
-      8123 # Home Assistant
+      8123 # Home Assistant (tunneled from homeassistant-yellow)
       9001 # Portainer agent
       25565 # Minecraft server
     ];

@@ -343,7 +343,7 @@ with lib.hm.gvariant; {
     "org/gnome/shell/extensions/phi" = {
       hideui = false;
       interval = mkUint32 10;
-      url1 = "https://pihole.local.yakweide.de/admin/api.php";
+      url1 = "https://pihole.local.yakweide.de/api.php";
     };
 
     "org/gnome/shell/extensions/gtk4-ding" = {

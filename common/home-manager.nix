@@ -59,7 +59,7 @@ in {
           ExecStartPre = "${pkgs.coreutils}/bin/chmod 600 %h/.ssh/id_ed25519";
           ExecStart = lib.concatStringsSep " " [
             "${pkgs.openssh}/bin/ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -N -i %h/.ssh/id_ed25519"
-            "-R *:8123:localhost:8123"
+            "-R 0.0.0.0:8123:localhost:8123"
             "-L 0.0.0.0:9001:tim-server:9001"
             "-L 0.0.0.0:8085:tim-server:8085"
             "-L 0.0.0.0:4743:tim-server:4743"

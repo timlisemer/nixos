@@ -46,13 +46,12 @@ in {
     SGX_ENCLAVE_SIZE = "4G";
     RUST_MIN_STACK = "268435456";
     QT_QPA_PLATFORM = "wayland";
-    NIXPKGS_ALLOW_UNFREE = "1"; # duplication with nixpkgs.config.allowUnfree
-    WEBKIT_DISABLE_DMABUF_RENDERER = "1"; # Tauri Apps couldn’t run on NixOS NVIDIA
+    # WEBKIT_DISABLE_DMABUF_RENDERER = "1"; # Tauri Apps couldn’t run on NixOS NVIDIA
     # PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig:${pkgs.glib.dev}/lib/pkgconfig:${pkgs.gtk3.dev}/lib/pkgconfig:${pkgs.gtk4.dev}/lib/pkgconfig";
     BLESH_PATH = "${pkgs.blesh}/share/blesh";
     LIBRARY_PATH = "/run/current-system/sw/lib";
     # environment.variables.GEMINI_API_KEY = "YOUR_API_KEY"; # OPTIONAL - For Gemini CLI
-    # GITHUB_TOKEN = "$(cat ${config.sops.secrets.github_token.path})";
+    GITHUB_TOKEN = "${config.sops.placeholder.github_token}";
   };
   environment.pathsToLink = ["/lib/pkgconfig" "/share/pkgconfig" "/include" "/lib"];
 
