@@ -23,6 +23,7 @@
   sops.secrets.immichENV = {};
   sops.secrets.librechatENV = {};
   sops.secrets.wifiENV = {};
+  sops.secrets.homeassistantENV = {};
   sops.secrets.cloudflare_rclone = {};
   sops.secrets.google-sa = {
     sopsFile = ./secrets.yaml;

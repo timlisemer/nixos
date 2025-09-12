@@ -12,8 +12,10 @@
   };
 in {
   # Home Assistant native NixOS service configuration
-  # Step 1: Imperative configuration using existing Docker volume
-  # Step 2 (future): Migrate to declarative configuration
+  # Step 2: Declarative configuration - migrated from configuration.yaml
+
+  # Load environment variables from SOPS secret
+  systemd.services.home-assistant.serviceConfig.EnvironmentFile = config.sops.secrets.homeassistantENV.path;
 
   services.home-assistant = {
     enable = true;
@@ -21,8 +23,211 @@ in {
     # Use unstable package for latest features
     package = unstable.home-assistant;
 
-    # Imperative configuration mode - uses existing config directory
-    config = null;
+    # Declarative configuration mode - managed by NixOS
+    config = {
+      # Loads default set of integrations. Do not remove.
+      default_config = {};
+
+      # My custom section
+      my = {};
+
+      # Networking configuration
+      homeassistant = {
+        external_url = "https://homeassistant.yakweide.de";
+        internal_url = "http://10.0.0.2:8123";
+        media_dirs = {
+          media = "/var/lib/homeassistant/media";
+        };
+        auth_providers = [
+          {
+            type = "homeassistant";
+          }
+          {
+            type = "trusted_networks";
+            trusted_networks = [
+              # Home Network Range
+              "10.0.0.0/8"
+              # Docker Network Range
+              "172.18.0.0/16"
+            ];
+          }
+        ];
+      };
+
+      # HTTP configuration for external access and reverse proxy support
+      http = {
+        server_port = 8123;
+        server_host = "0.0.0.0";
+        cors_allowed_origins = [
+          "https://google.com"
+          "https://www.home-assistant.io"
+        ];
+        login_attempts_threshold = 5;
+        # Allow Reverse Proxies
+        use_x_forwarded_for = true;
+        trusted_proxies = [
+          "172.18.0.2"
+          "127.0.0.1"
+          # Cloudflare IPv4 ranges
+          "103.21.244.0/22"
+          "103.22.200.0/22"
+          "103.31.4.0/22"
+          "104.16.0.0/13"
+          "104.24.0.0/14"
+          "108.162.192.0/18"
+          "131.0.72.0/22"
+          "141.101.64.0/18"
+          "162.158.0.0/15"
+          "172.64.0.0/13"
+          "173.245.48.0/20"
+          "188.114.96.0/20"
+          "190.93.240.0/20"
+          "197.234.240.0/22"
+          "198.41.128.0/17"
+          # Cloudflare IPv6 ranges
+          "2400:cb00::/32"
+          "2606:4700::/32"
+          "2803:f800::/32"
+          "2405:b500::/32"
+          "2405:8100::/32"
+          "2a06:98c0::/29"
+          "2c0f:f248::/32"
+        ];
+        # Disable IP bans - pfSense will handle this
+        ip_ban_enabled = false;
+      };
+
+      # Wake on LAN integration
+      wake_on_lan = {};
+
+      # Switch configuration
+      switch = [
+        {
+          platform = "wake_on_lan";
+          mac = "40:B0:76:DC:79:AA";
+          name = "Tim-PC";
+        }
+      ];
+
+      # Text to speech
+      tts = [
+        {
+          platform = "google_translate";
+        }
+      ];
+
+      # MQTT configuration
+      mqtt = {
+        # Doorbell Chime Status Binary Sensor
+        binary_sensor = [
+          {
+            unique_id = "doorbell_chime_status";
+            name = "Doorbell Chime Status";
+            state_topic = "home/doorbell/button";
+            qos = 0;
+            value_template = "{{ 'ON' if value == 'ON' else 'OFF' }}";
+          }
+        ];
+      };
+
+      # Input boolean helper entities
+      input_boolean = {
+        tim_open_window = {
+          name = "Tim Open Window";
+          icon = "mdi:window-open";
+        };
+        tim_heating_boost = {
+          name = "Tim Heating Boost";
+          icon = "mdi:fire";
+        };
+        wohnzimmer_open_window = {
+          name = "Wohnzimmer Open Window";
+          icon = "mdi:window-open";
+        };
+        wohnzimmer_heating_boost = {
+          name = "Wohnzimmer Heating Boost";
+          icon = "mdi:fire";
+        };
+      };
+
+      # Alexa integration
+      # Credentials loaded from SOPS secrets via environment variables
+      alexa = {
+        smart_home = {
+          locale = "en-US";
+          endpoint = "https://api.eu.amazonalexa.com/v3/events";
+          client_id = "!env_var AMAZON_CLIENT_ID";
+          client_secret = "!env_var AMAZON_CLIENT_SECRET";
+          filter = {
+            include_entities = [
+              "switch.monitor"
+              "switch.pool_pumpe_steckdose"
+              "switch.tim_pc_steckdose"
+              "switch.tim_server_steckdose"
+              "binary_sensor.doorbell_besucher"
+              "camera.doorbell_fliessend"
+              "binary_sensor.doorbell_chime_status"
+              "switch.audio_receiver"
+              "switch.subwoofer"
+              "script.boxen"
+            ];
+            include_entity_globs = [
+              "climate.*"
+            ];
+          };
+          entity_config = {
+            "binary_sensor.doorbell_besucher" = {
+              name = "Haustür";
+              description = "Doorbell Press";
+              display_categories = "DOORBELL";
+            };
+            "camera.doorbell_fliessend" = {
+              name = "Haustür Kamera";
+              description = "Doorbell Camera";
+              display_categories = "CAMERA";
+            };
+            "binary_sensor.doorbell_chime_status" = {
+              name = "Hoftor";
+              description = "Hoftor Doorbell Press";
+              display_categories = "DOORBELL";
+            };
+          };
+        };
+      };
+
+      # Load frontend themes from the themes folder
+      frontend = {
+        themes = "!include_dir_merge_named themes";
+      };
+
+      # Lovelace configuration
+      lovelace = {
+        mode = "yaml";
+        dashboards = {
+          camera-dashboard = {
+            mode = "yaml";
+            filename = "/var/lib/homeassistant/dashboards/camera.yaml";
+            title = "Kameras";
+            icon = "mdi:camera";
+            show_in_sidebar = true;
+          };
+          heizung-dashboard = {
+            mode = "yaml";
+            filename = "/var/lib/homeassistant/dashboards/heizung.yaml";
+            title = "Heizung";
+            icon = "mdi:heat-wave";
+            show_in_sidebar = true;
+          };
+        };
+      };
+
+      # External file includes
+      automation = "!include automations.yaml";
+      script = "!include scripts.yaml";
+      scene = "!include scenes.yaml";
+    };
+
+    # Lovelace configuration will be added later
     lovelaceConfig = null;
 
     # Point to Home Assistant configuration directory
