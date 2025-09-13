@@ -344,4 +344,16 @@
       };
     };
   };
+
+  # Override SSH settings to enable root login for homeassistant-yellow only
+  services.openssh = {
+    settings.PermitRootLogin = lib.mkForce "yes"; # Override global "no" setting for this host only
+  };
+
+  # Configure root user with authorized keys
+  users.users.root = {
+    openssh.authorizedKeys.keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEae4h0Uk6x/lrmw0PZv/7GfWyLuEAVoc70AC4ykyFtX TimLisemer"
+    ];
+  };
 }
