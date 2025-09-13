@@ -58,10 +58,50 @@
         DisablePlugins = "hostname";
       };
     };
+    # Raspberry Pi hardware configuration for OpenThread RCP
+    raspberry-pi.config = {
+      all = {
+        options = {
+          enable_uart = {
+            enable = true;
+            value = true;
+          };
+          core_freq = {
+            enable = true;
+            value = 250;
+          }; # Fixed frequency for stable UART
+        };
+      };
+    };
   };
 
-  boot.kernelParams = ["console=tty0"];
-  systemd.services."serial-getty@ttyAMA10".enable = false;
+  # Force override to prevent nixos-raspberrypi flake from adding console=ttyAMA10
+  boot.kernelParams = lib.mkForce ["console=tty0"];
+
+  # Completely disable serial console services
+  systemd.services = {
+    "serial-getty@ttyAMA10" = lib.mkForce {
+      enable = false;
+      wantedBy = [];
+    };
+    "getty@ttyAMA10" = lib.mkForce {
+      enable = false;
+      wantedBy = [];
+    };
+  };
+
+  # GPIO reset control and UART device permissions for Silicon Labs OpenThread RCP
+  services.udev.extraRules = ''
+    # Silicon Labs UART device permissions
+    KERNEL=="ttyAMA10", GROUP="dialout", MODE="0664"
+
+    # GPIO access for Silicon Labs reset control (GPIO 24/25)
+    SUBSYSTEM=="gpio", KERNEL=="gpiochip*", GROUP="gpio", MODE="0660"
+    SUBSYSTEM=="bcm2835-gpiomem", KERNEL=="gpiomem", GROUP="gpio", MODE="0660"
+  '';
+
+  # Create GPIO group for Silicon Labs reset control
+  users.groups.gpio = {};
 
   networking.networkmanager.insertNameservers = [
     "127.0.0.1" # Primary: localhost - intentionally set to Pi-hole
