@@ -28,12 +28,6 @@ in {
               version = "1.0.61";
               sha256 = "17gchnyn64adhzf7ry99k8fx9wj0knkb96r7njqn6vzaxwy8kkwa";
             }
-            {
-              name = "sqlite-viewer";
-              publisher = "qwtel";
-              version = "0.10.6";
-              sha256 = "dN8uW1VMlaDZn2RGxerlpCil/l4FNKE3ZOp2PSV4pY0=";
-            }
           ]
           ++ (with vscodeExtensions; [
             ms-python.python
@@ -58,6 +52,7 @@ in {
             foxundermoon.shell-format
             bradlc.vscode-tailwindcss
             kamadorueda.alejandra
+            unstable.vscode-extensions.Google.gemini-cli-vscode-ide-companion
             # unstable.google.geminicodeassist
           ]);
       })
