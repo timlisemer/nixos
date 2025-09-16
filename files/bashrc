@@ -339,7 +339,7 @@ git_update_fork() {
 }
 
 function git() {
-	# Custom 'git clone': always clone with submodules
+	# Custom 'git clone': always clone with submodules.
 	if [ "$1" = "clone" ]; then
 		shift
 		command git clone --recurse-submodules --remote-submodules "$@"
@@ -374,6 +374,39 @@ function git() {
 		else
 			echo "Remote branch '$branch_name' does not exist, skipping remote delete."
 		fi
+
+	# Custom 'git squash <X>': squash last X commits into one
+	elif [ "$1" = "squash" ]; then
+		if [ -z "$2" ]; then
+			echo "Usage: git squash <number>"
+			echo ""
+			echo "Squashes the last <number> commits into a single commit."
+			echo "The number represents how many commits to include (counting starts at 1)."
+			echo ""
+			echo "Examples:"
+			echo "  git squash 2    # Squashes the last 2 commits"
+			echo "  git squash 5    # Squashes the last 5 commits"
+			return 1
+		fi
+		
+		local num_commits="$2"
+		if ! [[ "$num_commits" =~ ^[0-9]+$ ]] || [ "$num_commits" -lt 2 ]; then
+			echo "Error: Please provide a number >= 2 (need at least 2 commits to squash)"
+			return 1
+		fi
+
+		if ! command git diff-index --quiet HEAD --; then
+			echo "Error: Uncommitted changes detected. Please commit or stash changes first."
+			return 1
+		fi
+
+		echo "Squashing last $num_commits commits into one..."
+
+		# Reset to target commit and merge --squash to get exact message generation
+		command git reset --hard HEAD~"$num_commits" &&
+			command git merge --squash HEAD@{1} &&
+			command git commit
+		echo "Successfully squashed $num_commits commits."
 
 	# Custom 'git branch <name>': only if exactly two arguments (create, switch, set upstream, and push new branch)
 	elif [ "$1" = "branch" ] && [ $# -eq 2 ] && [[ "$2" != -* ]]; then
