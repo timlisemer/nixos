@@ -9,36 +9,40 @@
     config = {allowUnfree = true;};
     inherit system;
   };
-  pkgs = import inputs.nixpkgs-stable {
+  stable = import inputs.nixpkgs-stable {
     config = {allowUnfree = true;};
     inherit system;
   };
-  vscodeExtensions = unstable.vscode-extensions;
+  vscodeExtensions = stable.vscode-extensions;
+  vscodeUnstableExtensions = unstable.vscode-extensions;
 in {
-  environment.systemPackages = with unstable;
+  environment.systemPackages = with stable;
     lib.mkAfter [
       (vscode-with-extensions.override {
         vscodeExtensions = with vscodeExtensions;
           [
           ]
           ++ unstable.vscode-utils.extensionsFromVscodeMarketplace [
-            {
-              name = "claude-code";
-              publisher = "anthropic";
-              version = "1.0.61";
-              sha256 = "17gchnyn64adhzf7ry99k8fx9wj0knkb96r7njqn6vzaxwy8kkwa";
-            }
+            #{
+            #  name = "copilot-chat";
+            #  publisher = "github";
+            #  version = "0.31.0";
+            #  sha256 = "sha256-jMy6mjPUxz3p1dvrveZ/9tyn+KZ6rBLJinZMBUUb9QY=";
+            #}
           ]
           ++ (with vscodeExtensions; [
             ms-python.python
             ms-python.vscode-pylance
             ms-python.debugpy
-            ms-azuretools.vscode-containers
+            vscodeUnstableExtensions.ms-azuretools.vscode-containers
             ms-vscode-remote.remote-ssh
             ms-vscode-remote.remote-containers
             ms-vscode.makefile-tools
             github.copilot
-            github.copilot-chat
+            vscodeUnstableExtensions.github.copilot-chat
+            # yy0931.vscode-sqlite3-editor
+            cweijan.vscode-database-client2
+            waderyan.gitblame
             egirlcatnip.adwaita-github-theme
             dbaeumer.vscode-eslint
             bbenoist.nix
@@ -52,11 +56,11 @@ in {
             foxundermoon.shell-format
             bradlc.vscode-tailwindcss
             kamadorueda.alejandra
-            unstable.vscode-extensions.Google.gemini-cli-vscode-ide-companion
-            # unstable.google.geminicodeassist
+            vscodeUnstableExtensions.Google.gemini-cli-vscode-ide-companion
+            vscodeUnstableExtensions.anthropic.claude-code
           ]);
       })
-      (pkgs.writeShellScriptBin "sshcode" ''
+      (stable.writeShellScriptBin "sshcode" ''
         #! /usr/bin/env bash
         set -euo pipefail
 
