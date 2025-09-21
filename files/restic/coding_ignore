@@ -1,0 +1,40 @@
+# Node.js - anywhere in tree
+**/node_modules/
+**/.npm/
+**/.yarn/
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+
+# Rust - only in Rust projects (look for Cargo.toml context)
+**/Cargo.toml
+**/target/debug/
+**/target/release/
+**/target/doc/
+**/target/.rustc_info.json
+**/target/CACHEDIR.TAG
+
+# Python - anywhere in tree
+**/__pycache__/
+**/.venv/
+**/venv/
+**/.env/
+**/env/
+**/*.pyc
+**/*.pyo
+
+# Go - anywhere in tree
+**/vendor/
+
+# Java/Maven/Gradle
+**/build/
+**/.gradle/
+**/.m2/
+
+# General cache and temp
+**/cache/
+**/.cache/
+**/tmp/
+**/temp/
+**/*.tmp
+**/*.log
