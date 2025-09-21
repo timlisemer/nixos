@@ -260,14 +260,30 @@ in {
 
               # Only proceed with backup if repository is ready
               if [[ "$init_success" == "true" ]]; then
-                if sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+                # Capture restic output to determine success/partial success/failure
+                backup_output=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
                     restic --repo "$repo_url" --password-file "$PWD_FILE" backup "$path" \
                     --host "$host" \
-                    --tag user-path >/dev/null 2>&1; then
-                  echo_success "Backed up: $path"
+                    --tag user-path 2>&1)
+                backup_exit_code=$?
+
+                # Check if snapshot was created (indicates success or partial success)
+                if echo "$backup_output" | grep -q "snapshot .* saved"; then
+                  snapshot_id=$(echo "$backup_output" | grep "snapshot .* saved" | awk '{print $2}')
+
+                  # Check for warnings about unreadable files
+                  if echo "$backup_output" | grep -q "at least one source file could not be read"; then
+                    failed_files=$(echo "$backup_output" | grep -c "failed to save\|input/output error" || echo "0")
+                    echo_warning "Backed up: $path (snapshot $snapshot_id) - $failed_files files skipped due to I/O errors"
+                  else
+                    echo_success "Backed up: $path (snapshot $snapshot_id)"
+                  fi
                   ((backup_count++))
                 else
+                  # True failure - no snapshot created
+                  echo_error_lines=$(echo "$backup_output" | head -3)
                   echo_warning "Failed to backup: $path"
+                  echo_warning "Error: $echo_error_lines"
                 fi
               else
                 echo_warning "Failed to initialize repository for: $path"
@@ -302,15 +318,31 @@ in {
 
               # Only proceed with backup if repository is ready
               if [[ "$init_success" == "true" ]]; then
-                if sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+                # Capture restic output to determine success/partial success/failure
+                backup_output=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
                     restic --repo "$repo_url" --password-file "$PWD_FILE" backup "$volume_path" \
                     --host "$host" \
                     --tag docker-volume \
-                    --tag "$volume_name" >/dev/null 2>&1; then
-                  echo_success "Backed up docker volume: $volume_name"
+                    --tag "$volume_name" 2>&1)
+                backup_exit_code=$?
+
+                # Check if snapshot was created (indicates success or partial success)
+                if echo "$backup_output" | grep -q "snapshot .* saved"; then
+                  snapshot_id=$(echo "$backup_output" | grep "snapshot .* saved" | awk '{print $2}')
+
+                  # Check for warnings about unreadable files
+                  if echo "$backup_output" | grep -q "at least one source file could not be read"; then
+                    failed_files=$(echo "$backup_output" | grep -c "failed to save\|input/output error" || echo "0")
+                    echo_warning "Backed up docker volume: $volume_name (snapshot $snapshot_id) - $failed_files files skipped due to I/O errors"
+                  else
+                    echo_success "Backed up docker volume: $volume_name (snapshot $snapshot_id)"
+                  fi
                   ((backup_count++))
                 else
+                  # True failure - no snapshot created
+                  echo_error_lines=$(echo "$backup_output" | head -3)
                   echo_warning "Failed to backup docker volume: $volume_name"
+                  echo_warning "Error: $echo_error_lines"
                 fi
               else
                 echo_warning "Failed to initialize repository for docker volume: $volume_name"
