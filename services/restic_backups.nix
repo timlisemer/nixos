@@ -115,7 +115,7 @@ in {
           # Check for nested repositories (filter out restic internal structure)
           nested_dirs=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
             aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/''${SUBPATH}/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | \
-            grep "PRE" | awk '{print $2}' | sed 's|/$||' || echo "")
+            grep "PRE" | sed 's/.*PRE //' | sed 's|/$||' || echo "")
 
           # Filter out restic internal structure (data, index, keys, snapshots)
           nested_repos=""
@@ -377,7 +377,7 @@ in {
         S3_BUCKET=$(echo "$REPO_BASE" | sed -n 's|s3:https://[^/]*/\(.*\)|\1|p')
 
         # List all available hosts
-        aws s3 ls "s3://$S3_BUCKET/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true
+        aws s3 ls "s3://$S3_BUCKET/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | sed 's/.*PRE //' | sed 's|/$||' || true
       '')
 
       # Get snapshot timeline data for a specific host
@@ -420,12 +420,12 @@ in {
 
           echo >&2 "[INFO] Scanning user home directories..."
           # User Home
-          users=$(aws s3 ls "s3://$S3_BUCKET/$host/user_home/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
+          users=$(aws s3 ls "s3://$S3_BUCKET/$host/user_home/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | sed 's/.*PRE //' | sed 's|/$||' || true)
           if [[ -n "$users" ]]; then
             for user in $users; do
               echo >&2 "[INFO] Processing user: $user"
-              subdirs=$(aws s3 ls "s3://$S3_BUCKET/$host/user_home/$user/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
-              for subdir in $subdirs; do
+              aws s3 ls "s3://$S3_BUCKET/$host/user_home/$user/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | sed 's/.*PRE //' | sed 's|/$||' | while IFS= read -r subdir; do
+                [[ -n "$subdir" ]] || continue
                 echo >&2 "[INFO]   Checking $subdir..."
                 local snapshots
                 if snapshots=$(env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
@@ -439,36 +439,35 @@ in {
 
           echo >&2 "[INFO] Scanning docker volumes..."
           # Docker Volumes
-          volumes=$(aws s3 ls "s3://$S3_BUCKET/$host/docker_volume/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
-          if [[ -n "$volumes" ]]; then
-            for volume in $volumes; do
-              echo >&2 "[INFO] Processing volume: $volume"
-              local snapshots
+          aws s3 ls "s3://$S3_BUCKET/$host/docker_volume/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | sed 's/.*PRE //' | sed 's|/$||' | while IFS= read -r volume; do
+            [[ -n "$volume" ]] || continue
+            echo >&2 "[INFO] Processing volume: $volume"
+            local snapshots
 
-              # Try direct repository first
-              if snapshots=$(env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
-                restic --repo "$REPO_BASE/$host/docker_volume/$volume" --password-file "$PWD_FILE" \
-                snapshots --json 2>/dev/null); then
-                echo "$snapshots" | jq -r --arg path "/mnt/docker-data/volumes/$volume" '.[] | "\(.time)|\($path)|\(.short_id)"' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
-              else
-                # Check for nested repositories (filter out restic internal structure)
-                echo >&2 "[INFO]   No direct snapshots found for $volume, checking nested repositories..."
-                nested_dirs=$(aws s3 ls "s3://$S3_BUCKET/$host/docker_volume/$volume/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
+            # Try direct repository first
+            if snapshots=$(env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+              restic --repo "$REPO_BASE/$host/docker_volume/$volume" --password-file "$PWD_FILE" \
+              snapshots --json 2>/dev/null); then
+              echo "$snapshots" | jq -r --arg path "/mnt/docker-data/volumes/$volume" '.[] | "\(.time)|\($path)|\(.short_id)"' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
+            else
+              # Check for nested repositories (filter out restic internal structure)
+              echo >&2 "[INFO]   No direct snapshots found for $volume, checking nested repositories..."
+              nested_dirs=$(aws s3 ls "s3://$S3_BUCKET/$host/docker_volume/$volume/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | sed 's/.*PRE //' | sed 's|/$||' || true)
 
-                # Filter out restic internal structure (data, index, keys, snapshots)
-                nested_repos=""
-                if [[ -n "$nested_dirs" ]]; then
-                  for dir in $nested_dirs; do
-                    if [[ "$dir" != "data" && "$dir" != "index" && "$dir" != "keys" && "$dir" != "snapshots" ]]; then
-                      nested_repos+="$dir "
-                    fi
-                  done
-                  nested_repos=$(echo "$nested_repos" | sed 's/[[:space:]]*$//')  # trim trailing spaces
-                fi
+              # Filter out restic internal structure (data, index, keys, snapshots)
+              nested_repos=""
+              if [[ -n "$nested_dirs" ]]; then
+                for dir in $nested_dirs; do
+                  if [[ "$dir" != "data" && "$dir" != "index" && "$dir" != "keys" && "$dir" != "snapshots" ]]; then
+                    nested_repos+="$dir "
+                  fi
+                done
+                nested_repos=$(echo "$nested_repos" | sed 's/[[:space:]]*$//')  # trim trailing spaces
+              fi
 
-                if [[ -n "$nested_repos" ]]; then
-                  echo >&2 "[INFO]   Found REAL nested repositories in $volume: $nested_repos"
-                  for nested_repo in $nested_repos; do
+              if [[ -n "$nested_repos" ]]; then
+                echo >&2 "[INFO]   Found REAL nested repositories in $volume: $nested_repos"
+                for nested_repo in $nested_repos; do
                     echo >&2 "[INFO]     Processing nested: $volume/$nested_repo"
                     if snapshots=$(env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
                       restic --repo "$REPO_BASE/$host/docker_volume/$volume/$nested_repo" --password-file "$PWD_FILE" \
@@ -483,22 +482,19 @@ in {
                 fi
               fi
             done
-          fi
 
           echo >&2 "[INFO] Scanning system paths..."
           # System
-          system_paths=$(aws s3 ls "s3://$S3_BUCKET/$host/system/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
-          if [[ -n "$system_paths" ]]; then
-            for path in $system_paths; do
-              echo >&2 "[INFO] Processing system: $path"
-              local snapshots
-              if snapshots=$(env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
-                restic --repo "$REPO_BASE/$host/system/$path" --password-file "$PWD_FILE" \
-                snapshots --json 2>/dev/null); then
-                echo "$snapshots" | jq -r --arg path "/$path" '.[] | "\(.time)|\($path)|\(.short_id)"' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
-              fi
-            done
-          fi
+          aws s3 ls "s3://$S3_BUCKET/$host/system/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | sed 's/.*PRE //' | sed 's|/$||' | while IFS= read -r path; do
+            [[ -n "$path" ]] || continue
+            echo >&2 "[INFO] Processing system: $path"
+            local snapshots
+            if snapshots=$(env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
+              restic --repo "$REPO_BASE/$host/system/$path" --password-file "$PWD_FILE" \
+              snapshots --json 2>/dev/null); then
+              echo "$snapshots" | jq -r --arg path "/$path" '.[] | "\(.time)|\($path)|\(.short_id)"' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
+            fi
+          done
 
           echo >&2 "[INFO] Scanning completed!"
         }
@@ -593,7 +589,7 @@ in {
             local volume_name=$(echo "$repo_path" | sed 's|^docker_volume/||')
 
             # Check for nested repositories (filter out restic internal structure)
-            local nested_dirs=$(aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/docker_volume/''${volume_name}/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
+            local nested_dirs=$(aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/docker_volume/''${volume_name}/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | sed 's/.*PRE //' | sed 's|/$||' || true)
 
             # Filter out restic internal structure (data, index, keys, snapshots)
             local nested_repos=""
@@ -660,12 +656,12 @@ in {
 
         progress_info "Scanning user home directories..."
         # Collect User Home
-        users=$(aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/user_home/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
+        users=$(aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/user_home/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | sed 's/.*PRE //' | sed 's|/$||' || true)
         if [[ -n "$users" ]]; then
           for user in $users; do
             progress_info "Processing user: $user"
-            subdirs=$(aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/user_home/''${user}/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
-            for subdir in $subdirs; do
+            aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/user_home/''${user}/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | sed 's/.*PRE //' | sed 's|/$||' | while IFS= read -r subdir; do
+              [[ -n "$subdir" ]] || continue
               progress_info "  Checking $subdir..."
               collect_snapshots "user_home/$user/$subdir" "/home/$user/$subdir"
             done
@@ -674,23 +670,19 @@ in {
 
         progress_info "Scanning docker volumes..."
         # Collect Docker Volumes
-        volumes=$(aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/docker_volume/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
-        if [[ -n "$volumes" ]]; then
-          for volume in $volumes; do
-            progress_info "Processing volume: $volume"
-            collect_snapshots "docker_volume/$volume" "/mnt/docker-data/volumes/$volume"
-          done
-        fi
+        aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/docker_volume/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | sed 's/.*PRE //' | sed 's|/$||' | while IFS= read -r volume; do
+          [[ -n "$volume" ]] || continue
+          progress_info "Processing volume: $volume"
+          collect_snapshots "docker_volume/$volume" "/mnt/docker-data/volumes/$volume"
+        done
 
         progress_info "Scanning system paths..."
         # Collect System
-        system_paths=$(aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/system/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | awk '{print $2}' | sed 's|/$||' || true)
-        if [[ -n "$system_paths" ]]; then
-          for path in $system_paths; do
-            progress_info "Processing system: $path"
-            collect_snapshots "system/$path" "/$path"
-          done
-        fi
+        aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/system/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | sed 's/.*PRE //' | sed 's|/$||' | while IFS= read -r path; do
+          [[ -n "$path" ]] || continue
+          progress_info "Processing system: $path"
+          collect_snapshots "system/$path" "/$path"
+        done
 
         progress_info "Scanning completed!"
 
@@ -1231,7 +1223,7 @@ in {
               # Check for nested repositories (filter out restic internal structure)
               nested_dirs=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
                 aws s3 ls "s3://''${S3_BUCKET}/''${SELECTED_HOST}/''${repo_subpath}/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | \
-                grep "PRE" | awk '{print $2}' | sed 's|/$||' || echo "")
+                grep "PRE" | sed 's/.*PRE //' | sed 's|/$||' || echo "")
 
               # Filter out restic internal structure (data, index, keys, snapshots)
               nested_repos=""
