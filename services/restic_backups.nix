@@ -432,7 +432,14 @@ in {
                 [[ -n "$subdir" ]] || continue
                 echo >&2 "[INFO]   Checking $subdir..."
                 local snapshots
-                native_subdir=$(echo "$subdir" | sed 's/_/\//g')
+                # Smart underscore conversion: preserve filename underscores, convert path separators
+                if [[ "$subdir" =~ _.*_ ]]; then
+                  # Multiple underscores - likely has path structure, do conversion
+                  native_subdir=$(echo "$subdir" | sed 's/_/\//g')
+                else
+                  # Single or no underscores - likely just filename, preserve it
+                  native_subdir="$subdir"
+                fi
                 if snapshots=$(env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
                   restic --repo "$REPO_BASE/$host/user_home/$user/$subdir" --password-file "$PWD_FILE" \
                   snapshots --json 2>/dev/null); then
@@ -474,7 +481,14 @@ in {
                 echo >&2 "[INFO]   Found REAL nested repositories in $volume: $nested_repos"
                 for nested_repo in $nested_repos; do
                     echo >&2 "[INFO]     Processing nested: $volume/$nested_repo"
-                    native_nested_repo=$(echo "$nested_repo" | sed 's/_/\//g')
+                    # Smart underscore conversion: preserve filename underscores, convert path separators
+                    if [[ "$nested_repo" =~ _.*_ ]]; then
+                      # Multiple underscores - likely has path structure, do conversion
+                      native_nested_repo=$(echo "$nested_repo" | sed 's/_/\//g')
+                    else
+                      # Single or no underscores - likely just filename, preserve it
+                      native_nested_repo="$nested_repo"
+                    fi
                     if snapshots=$(env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
                       restic --repo "$REPO_BASE/$host/docker_volume/$volume/$nested_repo" --password-file "$PWD_FILE" \
                       snapshots --json 2>/dev/null); then
@@ -495,7 +509,14 @@ in {
             [[ -n "$path" ]] || continue
             echo >&2 "[INFO] Processing system: $path"
             local snapshots
-            native_path_converted=$(echo "$path" | sed 's/_/\//g')
+            # Smart underscore conversion: preserve filename underscores, convert path separators
+            if [[ "$path" =~ _.*_ ]]; then
+              # Multiple underscores - likely has path structure, do conversion
+              native_path_converted=$(echo "$path" | sed 's/_/\//g')
+            else
+              # Single or no underscores - likely just filename, preserve it
+              native_path_converted="$path"
+            fi
             if snapshots=$(env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
               restic --repo "$REPO_BASE/$host/system/$path" --password-file "$PWD_FILE" \
               snapshots --json 2>/dev/null); then
@@ -670,7 +691,14 @@ in {
             { aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/user_home/''${user}/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | sed 's/.*PRE //' | sed 's|/$||' || true; } | while IFS= read -r subdir; do
               [[ -n "$subdir" ]] || continue
               progress_info "  Checking $subdir..."
-              native_subdir=$(echo "$subdir" | sed 's/_/\//g')
+              # Smart underscore conversion: preserve filename underscores, convert path separators
+              if [[ "$subdir" =~ _.*_ ]]; then
+                # Multiple underscores - likely has path structure, do conversion
+                native_subdir=$(echo "$subdir" | sed 's/_/\//g')
+              else
+                # Single or no underscores - likely just filename, preserve it
+                native_subdir="$subdir"
+              fi
               collect_snapshots "user_home/$user/$subdir" "/home/$user/$native_subdir"
             done
           done
@@ -689,7 +717,14 @@ in {
         { aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/system/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | sed 's/.*PRE //' | sed 's|/$||' || true; } | while IFS= read -r path; do
           [[ -n "$path" ]] || continue
           progress_info "Processing system: $path"
-          native_path_converted=$(echo "$path" | sed 's/_/\//g')
+          # Smart underscore conversion: preserve filename underscores, convert path separators
+          if [[ "$path" =~ _.*_ ]]; then
+            # Multiple underscores - likely has path structure, do conversion
+            native_path_converted=$(echo "$path" | sed 's/_/\//g')
+          else
+            # Single or no underscores - likely just filename, preserve it
+            native_path_converted="$path"
+          fi
           collect_snapshots "system/$path" "/$native_path_converted"
         done
 
