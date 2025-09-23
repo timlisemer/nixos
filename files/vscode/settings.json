@@ -125,5 +125,6 @@
     "*.s3db": "${capture}.${extname}-*",
     "*.rs": "${capture}_test.rs"
   },
-  "workbench.startupEditor": "none"
+  "workbench.startupEditor": "readme",
+  "database-client.autoSync": true
 }

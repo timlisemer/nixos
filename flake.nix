@@ -4,7 +4,7 @@
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable"; # Unstable channel
     nixos-wsl.url = "github:nix-community/NixOS-WSL"; # NixOS WSL
     nixpkgs-oldvscode.url = "github:NixOS/nixpkgs/333d19c8b58402b94834ec7e0b58d83c0a0ba658"; # vscode 1.98.2
-    flatpaks.url = "github:GermanBread/declarative-flatpak/stable-v3";
+    flatpaks.url = "github:in-a-dil-emma/declarative-flatpak";
     nixos-raspberrypi.url = "github:nvmd/nixos-raspberrypi/main";
 
     alejandra = {
@@ -130,7 +130,7 @@
     };
 
     userBackupDirs = ["Coding" "Desktop" "Documents" "Pictures" "Videos" "Music" "Public" "Templates"];
-    userDotFiles = [".config" ".mozilla" ".bash_history" ".steam" ".vscode-server" ".arduinoIDE" ".npm" ".vscode"];
+    userDotFiles = [".config" ".mozilla" ".bash_history" ".steam" ".vscode-server" ".npm" ".vscode"];
     userGameFiles = [".local/share/Steam/steamapps/compatdata/916440/pfx/drive_c/users/steamuser/Documents/Anno 1800/accounts/6f5db650-dcf0-4fca-9b67-21a7c8ac7dc1" ".local/share/Paradox Interactive/" ".local/share/Steam/steamapps/compatdata/916440/pfx/drive_c/users/steamuser/Documents/Anno 1800/mods"];
     backupPaths = builtins.concatLists (builtins.map (
       username: let

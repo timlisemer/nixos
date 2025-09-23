@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:blogs.gnome.org)",
+      "Bash(systemctl status:*)",
+      "Bash(nmcli connection:*)",
+      "Bash(journalctl:*)",
+      "mcp__nixos-search__nixos_info",
+      "mcp__nixos-search__nixos_search",
+      "Bash(/tmp/test_restic_issues.sh:*)",
+      "Bash(/tmp/test_aws_listing.sh:*)",
+      "Bash(grep:*)",
+      "Bash(aws s3 ls:*)",
+      "Bash(/tmp/test_restic_snapshots.sh)",
+      "WebFetch(domain:github.com)",
+      "Bash(restic check:*)",
+      "Bash(restic rebuild-index:*)",
+      "Bash(chmod:*)",
+      "Bash(/tmp/restic_check/test_credentials.sh)",
+      "Bash(/tmp/restic_check/test_working_repos.sh)",
+      "Bash(/tmp/restic_check/test_restic_issues.sh)",
+      "Bash(./test_restic_issues.sh:*)",
+      "Bash(alejandra:*)"
+    ],
+    "deny": [],
+    "ask": [],
+    "additionalDirectories": [
+      "/tmp"
+    ]
+  }
+}
