@@ -99,6 +99,15 @@ in {
               echo "Hearts of Iron IV save directory not found, skipping symlink"
             fi
 
+            # Victoria 3 save game symlink
+            Vic3_TARGET="/home/tim/.local/share/Paradox Interactive/Victoria 3/save games"
+            if [ -d "$Vic3_TARGET" ]; then
+              ln -sfn "$Vic3_TARGET" "$HOME/Games/SaveGames/Victoria 3"
+              echo "Created symlink for Victoria 3 saves"
+            else
+              echo "Victoria 3 save directory not found, skipping symlink"
+            fi
+
             # Create the Extra directory
             mkdir -p $HOME/Games/Extra
 

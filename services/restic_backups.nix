@@ -407,6 +407,18 @@ in {
         REPO_BASE="$(sudo cat "$REPO_BASE_FILE")"
         PWD_FILE="/run/secrets/restic_password"
 
+        # Smart conversion function: preserve filename underscores, convert path separators
+        convert_s3_to_native() {
+          local s3_dir="$1"
+          if [[ "$s3_dir" =~ _.*_ ]]; then
+            # Multiple underscores - likely has path structure, do conversion
+            echo "$s3_dir" | sed 's/_/\//g'
+          else
+            # Single or no underscores - likely just filename, preserve it
+            echo "$s3_dir"
+          fi
+        }
+
         # Export AWS credentials
         export $(sudo grep -v '^#' "$ENV_FILE" | xargs)
 
@@ -432,14 +444,8 @@ in {
                 [[ -n "$subdir" ]] || continue
                 echo >&2 "[INFO]   Checking $subdir..."
                 local snapshots
-                # Smart underscore conversion: preserve filename underscores, convert path separators
-                if [[ "$subdir" =~ _.*_ ]]; then
-                  # Multiple underscores - likely has path structure, do conversion
-                  native_subdir=$(echo "$subdir" | sed 's/_/\//g')
-                else
-                  # Single or no underscores - likely just filename, preserve it
-                  native_subdir="$subdir"
-                fi
+                # Use shared conversion function for consistency
+                native_subdir=$(convert_s3_to_native "$subdir")
                 if snapshots=$(env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
                   restic --repo "$REPO_BASE/$host/user_home/$user/$subdir" --password-file "$PWD_FILE" \
                   snapshots --json 2>/dev/null); then
@@ -481,14 +487,8 @@ in {
                 echo >&2 "[INFO]   Found REAL nested repositories in $volume: $nested_repos"
                 for nested_repo in $nested_repos; do
                     echo >&2 "[INFO]     Processing nested: $volume/$nested_repo"
-                    # Smart underscore conversion: preserve filename underscores, convert path separators
-                    if [[ "$nested_repo" =~ _.*_ ]]; then
-                      # Multiple underscores - likely has path structure, do conversion
-                      native_nested_repo=$(echo "$nested_repo" | sed 's/_/\//g')
-                    else
-                      # Single or no underscores - likely just filename, preserve it
-                      native_nested_repo="$nested_repo"
-                    fi
+                    # Use shared conversion function for consistency
+                    native_nested_repo=$(convert_s3_to_native "$nested_repo")
                     if snapshots=$(env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
                       restic --repo "$REPO_BASE/$host/docker_volume/$volume/$nested_repo" --password-file "$PWD_FILE" \
                       snapshots --json 2>/dev/null); then
@@ -509,14 +509,8 @@ in {
             [[ -n "$path" ]] || continue
             echo >&2 "[INFO] Processing system: $path"
             local snapshots
-            # Smart underscore conversion: preserve filename underscores, convert path separators
-            if [[ "$path" =~ _.*_ ]]; then
-              # Multiple underscores - likely has path structure, do conversion
-              native_path_converted=$(echo "$path" | sed 's/_/\//g')
-            else
-              # Single or no underscores - likely just filename, preserve it
-              native_path_converted="$path"
-            fi
+            # Use shared conversion function for consistency
+            native_path_converted=$(convert_s3_to_native "$path")
             if snapshots=$(env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
               restic --repo "$REPO_BASE/$host/system/$path" --password-file "$PWD_FILE" \
               snapshots --json 2>/dev/null); then
@@ -572,6 +566,18 @@ in {
         REPO_BASE="$(sudo cat "$REPO_BASE_FILE")"
         HOST="''${TARGET_HOST:-$(hostname -s)}"
         PWD_FILE="/run/secrets/restic_password"
+
+        # Smart conversion function: preserve filename underscores, convert path separators
+        convert_s3_to_native() {
+          local s3_dir="$1"
+          if [[ "$s3_dir" =~ _.*_ ]]; then
+            # Multiple underscores - likely has path structure, do conversion
+            echo "$s3_dir" | sed 's/_/\//g'
+          else
+            # Single or no underscores - likely just filename, preserve it
+            echo "$s3_dir"
+          fi
+        }
 
         # Export AWS credentials
         export $(sudo grep -v '^#' "$ENV_FILE" | xargs)
@@ -691,14 +697,8 @@ in {
             { aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/user_home/''${user}/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | sed 's/.*PRE //' | sed 's|/$||' || true; } | while IFS= read -r subdir; do
               [[ -n "$subdir" ]] || continue
               progress_info "  Checking $subdir..."
-              # Smart underscore conversion: preserve filename underscores, convert path separators
-              if [[ "$subdir" =~ _.*_ ]]; then
-                # Multiple underscores - likely has path structure, do conversion
-                native_subdir=$(echo "$subdir" | sed 's/_/\//g')
-              else
-                # Single or no underscores - likely just filename, preserve it
-                native_subdir="$subdir"
-              fi
+              # Use shared conversion function for consistency
+              native_subdir=$(convert_s3_to_native "$subdir")
               collect_snapshots "user_home/$user/$subdir" "/home/$user/$native_subdir"
             done
           done
@@ -717,14 +717,8 @@ in {
         { aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/system/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | sed 's/.*PRE //' | sed 's|/$||' || true; } | while IFS= read -r path; do
           [[ -n "$path" ]] || continue
           progress_info "Processing system: $path"
-          # Smart underscore conversion: preserve filename underscores, convert path separators
-          if [[ "$path" =~ _.*_ ]]; then
-            # Multiple underscores - likely has path structure, do conversion
-            native_path_converted=$(echo "$path" | sed 's/_/\//g')
-          else
-            # Single or no underscores - likely just filename, preserve it
-            native_path_converted="$path"
-          fi
+          # Use shared conversion function for consistency
+          native_path_converted=$(convert_s3_to_native "$path")
           collect_snapshots "system/$path" "/$native_path_converted"
         done
 
@@ -830,6 +824,18 @@ in {
         REPO_BASE="$(sudo cat "$REPO_BASE_FILE")"
         CURRENT_HOST="$(hostname -s)"
         PWD_FILE="/run/secrets/restic_password"
+
+        # Smart conversion function: preserve filename underscores, convert path separators
+        convert_s3_to_native() {
+          local s3_dir="$1"
+          if [[ "$s3_dir" =~ _.*_ ]]; then
+            # Multiple underscores - likely has path structure, do conversion
+            echo "$s3_dir" | sed 's/_/\//g'
+          else
+            # Single or no underscores - likely just filename, preserve it
+            echo "$s3_dir"
+          fi
+        }
 
         echo_info "Restic Interactive Restore Tool"
         echo "==============================="
@@ -941,27 +947,31 @@ in {
 
         read -p "Your choice: " restore_choice
 
-        # Helper function to convert path to repo subpath
+        # Helper function to convert path to repo subpath - use backup creation logic
         path_to_repo_subpath() {
           local path="$1"
           if [[ "$path" =~ ^/home/ ]]; then
-            # user_home/tim/.config -> user_home/tim/.config
             user=$(echo "$path" | cut -d/ -f3)
             subdir=$(echo "$path" | cut -d/ -f4-)
             if [[ -n "$subdir" ]]; then
-              # Replace slashes with underscores in subdir
+              # Use backup creation logic: simple tr '/' '_' (matches what backup process does)
               subdir_escaped=$(echo "$subdir" | tr '/' '_')
               echo "user_home/$user/$subdir_escaped"
             else
               echo "user_home/$user"
             fi
           elif [[ "$path" =~ ^/mnt/docker-data/volumes/ ]]; then
-            # Keep the nested structure for docker volumes (don't convert slashes to underscores)
             volume=$(echo "$path" | cut -d/ -f5-)
             echo "docker_volume/$volume"
           else
-            # system paths
-            echo "system"
+            # system paths - use backup creation logic
+            sys_path=$(echo "$path" | cut -d/ -f2-)
+            if [[ -n "$sys_path" ]]; then
+              sys_escaped=$(echo "$sys_path" | tr '/' '_')
+              echo "system/$sys_escaped"
+            else
+              echo "system"
+            fi
           fi
         }
 
