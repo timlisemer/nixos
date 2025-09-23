@@ -424,7 +424,7 @@ in {
           if [[ -n "$users" ]]; then
             for user in $users; do
               echo >&2 "[INFO] Processing user: $user"
-              aws s3 ls "s3://$S3_BUCKET/$host/user_home/$user/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | sed 's/.*PRE //' | sed 's|/$||' | while IFS= read -r subdir; do
+              { aws s3 ls "s3://$S3_BUCKET/$host/user_home/$user/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | sed 's/.*PRE //' | sed 's|/$||' || true; } | while IFS= read -r subdir; do
                 [[ -n "$subdir" ]] || continue
                 echo >&2 "[INFO]   Checking $subdir..."
                 local snapshots
@@ -439,7 +439,7 @@ in {
 
           echo >&2 "[INFO] Scanning docker volumes..."
           # Docker Volumes
-          aws s3 ls "s3://$S3_BUCKET/$host/docker_volume/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | sed 's/.*PRE //' | sed 's|/$||' | while IFS= read -r volume; do
+          { aws s3 ls "s3://$S3_BUCKET/$host/docker_volume/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | sed 's/.*PRE //' | sed 's|/$||' || true; } | while IFS= read -r volume; do
             [[ -n "$volume" ]] || continue
             echo >&2 "[INFO] Processing volume: $volume"
             local snapshots
@@ -485,7 +485,7 @@ in {
 
           echo >&2 "[INFO] Scanning system paths..."
           # System
-          aws s3 ls "s3://$S3_BUCKET/$host/system/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | sed 's/.*PRE //' | sed 's|/$||' | while IFS= read -r path; do
+          { aws s3 ls "s3://$S3_BUCKET/$host/system/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | sed 's/.*PRE //' | sed 's|/$||' || true; } | while IFS= read -r path; do
             [[ -n "$path" ]] || continue
             echo >&2 "[INFO] Processing system: $path"
             local snapshots
@@ -660,7 +660,7 @@ in {
         if [[ -n "$users" ]]; then
           for user in $users; do
             progress_info "Processing user: $user"
-            aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/user_home/''${user}/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | sed 's/.*PRE //' | sed 's|/$||' | while IFS= read -r subdir; do
+            { aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/user_home/''${user}/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | sed 's/.*PRE //' | sed 's|/$||' || true; } | while IFS= read -r subdir; do
               [[ -n "$subdir" ]] || continue
               progress_info "  Checking $subdir..."
               collect_snapshots "user_home/$user/$subdir" "/home/$user/$subdir"
@@ -670,7 +670,7 @@ in {
 
         progress_info "Scanning docker volumes..."
         # Collect Docker Volumes
-        aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/docker_volume/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | sed 's/.*PRE //' | sed 's|/$||' | while IFS= read -r volume; do
+        { aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/docker_volume/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | sed 's/.*PRE //' | sed 's|/$||' || true; } | while IFS= read -r volume; do
           [[ -n "$volume" ]] || continue
           progress_info "Processing volume: $volume"
           collect_snapshots "docker_volume/$volume" "/mnt/docker-data/volumes/$volume"
@@ -678,7 +678,7 @@ in {
 
         progress_info "Scanning system paths..."
         # Collect System
-        aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/system/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | sed 's/.*PRE //' | sed 's|/$||' | while IFS= read -r path; do
+        { aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/system/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | sed 's/.*PRE //' | sed 's|/$||' || true; } | while IFS= read -r path; do
           [[ -n "$path" ]] || continue
           progress_info "Processing system: $path"
           collect_snapshots "system/$path" "/$path"
