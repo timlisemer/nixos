@@ -142,14 +142,18 @@ in {
                 echo_info "  Checking size for $nested_native_path..."
 
                 # Check if nested repository has snapshots for this path
-                if sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
-                   restic --repo "$nested_repo_url" --password-file "$PWD_FILE" \
-                   snapshots --json --path "$nested_native_path" >/dev/null 2>&1; then
+                if sudo bash -c "
+                   source <(sudo grep -v '^#' '$ENV_FILE' | sed 's/^/export /')
+                   restic --repo '$nested_repo_url' --password-file '$PWD_FILE' \
+                     snapshots --json --path '$nested_native_path' >/dev/null 2>&1
+                "; then
 
-                  nested_bytes=$(env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
-                                 restic --repo "$nested_repo_url" --password-file "$PWD_FILE" \
-                                 stats latest --mode raw-data --json --path "$nested_native_path" 2>/dev/null \
-                                 | jq '.total_size' 2>/dev/null || echo "0")
+                  nested_bytes=$(sudo bash -c "
+                    source <(sudo grep -v '^#' '$ENV_FILE' | sed 's/^/export /')
+                    restic --repo '$nested_repo_url' --password-file '$PWD_FILE' \
+                      stats latest --mode raw-data --json --path '$nested_native_path' 2>/dev/null \
+                      | jq '.total_size' 2>/dev/null || echo '0'
+                  ")
 
                   if [[ "$nested_bytes" != "0" ]]; then
                     echo_success "    $nested_native_path: $(numfmt --to=iec --suffix=B "$nested_bytes")"
@@ -428,10 +432,11 @@ in {
                 [[ -n "$subdir" ]] || continue
                 echo >&2 "[INFO]   Checking $subdir..."
                 local snapshots
+                native_subdir=$(echo "$subdir" | sed 's/_/\//g')
                 if snapshots=$(env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
                   restic --repo "$REPO_BASE/$host/user_home/$user/$subdir" --password-file "$PWD_FILE" \
                   snapshots --json 2>/dev/null); then
-                  echo "$snapshots" | jq -r --arg path "/home/$user/$subdir" '.[] | "\(.time)|\($path)|\(.short_id)"' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
+                  echo "$snapshots" | jq -r --arg path "/home/$user/$native_subdir" '.[] | "\(.time)|\($path)|\(.short_id)"' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
                 fi
               done
             done
@@ -469,10 +474,11 @@ in {
                 echo >&2 "[INFO]   Found REAL nested repositories in $volume: $nested_repos"
                 for nested_repo in $nested_repos; do
                     echo >&2 "[INFO]     Processing nested: $volume/$nested_repo"
+                    native_nested_repo=$(echo "$nested_repo" | sed 's/_/\//g')
                     if snapshots=$(env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
                       restic --repo "$REPO_BASE/$host/docker_volume/$volume/$nested_repo" --password-file "$PWD_FILE" \
                       snapshots --json 2>/dev/null); then
-                      echo "$snapshots" | jq -r --arg path "/mnt/docker-data/volumes/$volume/$nested_repo" '.[] | "\(.time)|\($path)|\(.short_id)"' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
+                      echo "$snapshots" | jq -r --arg path "/mnt/docker-data/volumes/$volume/$native_nested_repo" '.[] | "\(.time)|\($path)|\(.short_id)"' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
                     fi
                   done
                 elif [[ -n "$nested_dirs" ]]; then
@@ -489,10 +495,11 @@ in {
             [[ -n "$path" ]] || continue
             echo >&2 "[INFO] Processing system: $path"
             local snapshots
+            native_path_converted=$(echo "$path" | sed 's/_/\//g')
             if snapshots=$(env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
               restic --repo "$REPO_BASE/$host/system/$path" --password-file "$PWD_FILE" \
               snapshots --json 2>/dev/null); then
-              echo "$snapshots" | jq -r --arg path "/$path" '.[] | "\(.time)|\($path)|\(.short_id)"' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
+              echo "$snapshots" | jq -r --arg path "/$native_path_converted" '.[] | "\(.time)|\($path)|\(.short_id)"' >> "$SNAPSHOTS_FILE" 2>/dev/null || true
             fi
           done
 
@@ -663,7 +670,8 @@ in {
             { aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/user_home/''${user}/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | sed 's/.*PRE //' | sed 's|/$||' || true; } | while IFS= read -r subdir; do
               [[ -n "$subdir" ]] || continue
               progress_info "  Checking $subdir..."
-              collect_snapshots "user_home/$user/$subdir" "/home/$user/$subdir"
+              native_subdir=$(echo "$subdir" | sed 's/_/\//g')
+              collect_snapshots "user_home/$user/$subdir" "/home/$user/$native_subdir"
             done
           done
         fi
@@ -681,7 +689,8 @@ in {
         { aws s3 ls "s3://''${S3_BUCKET}/''${HOST}/system/" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | grep "PRE" | sed 's/.*PRE //' | sed 's|/$||' || true; } | while IFS= read -r path; do
           [[ -n "$path" ]] || continue
           progress_info "Processing system: $path"
-          collect_snapshots "system/$path" "/$path"
+          native_path_converted=$(echo "$path" | sed 's/_/\//g')
+          collect_snapshots "system/$path" "/$native_path_converted"
         done
 
         progress_info "Scanning completed!"
@@ -1209,9 +1218,11 @@ in {
             echo_info "Restoring ''${BOLD}$native_path''${NC} from ''${BOLD}$repo_subpath''${NC}..."
 
             # Get all snapshots for this repository
-            snapshots=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
-              restic --repo "$REPO" --password-file "$PWD_FILE" \
-              snapshots --json --path "$native_path" 2>/dev/null || echo "[]")
+            snapshots=$(sudo bash -c "
+              source <(sudo grep -v '^#' '$ENV_FILE' | sed 's/^/export /')
+              restic --repo '$REPO' --password-file '$PWD_FILE' \
+                snapshots --json --path '$native_path' 2>/dev/null || echo '[]'
+            ")
 
             if [[ "$snapshots" == "[]" ]] || [[ $(echo "$snapshots" | jq 'length') -eq 0 ]]; then
               echo_info "No direct snapshots found for $native_path, checking for nested repositories..."
@@ -1256,9 +1267,11 @@ in {
                     echo_info "  Restoring ''${BOLD}$nested_native_path''${NC} from ''${BOLD}$nested_repo_subpath''${NC}..."
 
                     # Get snapshots for the nested repository
-                    nested_snapshots=$(sudo env $(sudo grep -v '^#' "$ENV_FILE" | xargs) \
-                      restic --repo "$nested_repo_url" --password-file "$PWD_FILE" \
-                      snapshots --json --path "$nested_native_path" 2>/dev/null || echo "[]")
+                    nested_snapshots=$(sudo bash -c "
+                      source <(sudo grep -v '^#' '$ENV_FILE' | sed 's/^/export /')
+                      restic --repo '$nested_repo_url' --password-file '$PWD_FILE' \
+                        snapshots --json --path '$nested_native_path' 2>/dev/null || echo '[]'
+                    ")
 
                     if [[ "$nested_snapshots" == "[]" ]] || [[ $(echo "$nested_snapshots" | jq 'length') -eq 0 ]]; then
                       echo_warning "  No snapshots found for $nested_native_path, skipping"
