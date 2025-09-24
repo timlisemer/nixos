@@ -175,7 +175,7 @@ in {
       isNormalUser = true;
       description = user.fullName;
       hashedPassword = user.hashedPassword;
-      extraGroups = ["networkmanager" "wheel" "dialout" "docker"];
+      extraGroups = ["networkmanager" "wheel" "dialout" "docker" "i2c"];
       openssh.authorizedKeys.keys = user.authorizedKeys or [];
     })
     users;

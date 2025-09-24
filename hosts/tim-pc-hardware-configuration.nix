@@ -14,7 +14,7 @@
 
   boot.initrd.availableKernelModules = ["nvme" "xhci_pci" "ahci" "thunderbolt" "usbhid"];
   boot.initrd.kernelModules = [];
-  boot.kernelModules = ["kvm-amd" "xone"];
+  boot.kernelModules = ["kvm-amd" "xone" "i2c-piix4"];
   boot.extraModulePackages = [config.boot.kernelPackages.xone];
 
   # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
