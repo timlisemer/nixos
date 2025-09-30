@@ -2,14 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
     "allow": [
-      "Bash(sqlite3 * .tables)",
-      "Bash(sqlite3 * .schema)",
-      "Bash(sqlite3 * .headers)",
-      "Bash(sqlite3 * .mode)",
-      "Bash(sqlite3 * SELECT *)",
-      "Bash(sqlite3 * PRAGMA *)",
-      "Bash(sqlite3 * EXPLAIN *)",
-      "Bash(sqlite3 * .dump)",
+      "Bash(sqlite3:*)",
       "Bash(make check)",
       "Bash(cargo check:*)",
       "Bash(cargo test)",
@@ -33,18 +26,6 @@
       "mcp__tailwind-svelte__list_snippets_in_category",
       "mcp__tailwind-svelte__get_component_snippet"
     ],
-    "deny": [
-      "Bash(cd *)",
-      "Bash(cat *)",
-      "Bash(sqlite3 * INSERT *)",
-      "Bash(sqlite3 * UPDATE *)",
-      "Bash(sqlite3 * DELETE *)",
-      "Bash(sqlite3 * DROP *)",
-      "Bash(sqlite3 * CREATE *)",
-      "Bash(sqlite3 * ALTER *)",
-      "Bash(sqlite3 * REPLACE *)",
-      "Bash(sqlite3 * ATTACH *)",
-      "Bash(sqlite3 * DETACH *)"
-    ]
+    "deny": ["Bash(cd:*)", "Bash(cat:*)"]
   }
 }
