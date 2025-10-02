@@ -23,12 +23,12 @@ in {
           [
           ]
           ++ unstable.vscode-utils.extensionsFromVscodeMarketplace [
-            #{
-            #  name = "copilot-chat";
-            #  publisher = "github";
-            #  version = "0.31.0";
-            #  sha256 = "sha256-jMy6mjPUxz3p1dvrveZ/9tyn+KZ6rBLJinZMBUUb9QY=";
-            #}
+            {
+              name = "claude-code";
+              publisher = "anthropic";
+              version = "2.0.3";
+              sha256 = "sha256-dVhBKN2UaFBkLK5/aQTJV8ZzvLm4hrBF8PnUzcLNEwY=";
+            }
           ]
           ++ (with vscodeExtensions; [
             ms-python.python
@@ -57,7 +57,7 @@ in {
             bradlc.vscode-tailwindcss
             kamadorueda.alejandra
             vscodeUnstableExtensions.Google.gemini-cli-vscode-ide-companion
-            vscodeUnstableExtensions.anthropic.claude-code
+            # vscodeUnstableExtensions.anthropic.claude-code
           ]);
       })
       (stable.writeShellScriptBin "sshcode" ''
