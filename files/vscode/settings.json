@@ -126,5 +126,18 @@
     "*.rs": "${capture}_test.rs"
   },
   "workbench.startupEditor": "none",
-  "database-client.autoSync": true
+  "database-client.autoSync": true,
+  "kilo-code.allowedCommands": [
+    "git log",
+    "git diff",
+    "git show",
+    "sqlite3",
+    "make check",
+    "cargo check",
+    "grep",
+    "cargo test",
+    "aws s3 ls",
+    "find",
+    "alejandra"
+  ]
 }

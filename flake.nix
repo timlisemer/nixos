@@ -172,7 +172,7 @@
 
         modules = [
           disko.nixosModules.disko
-          flatpaks.nixosModule
+          flatpaks.nixosModules.default
           vscode-server.nixosModules.default
 
           (import hostFile)

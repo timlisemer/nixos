@@ -23,12 +23,12 @@ in {
           [
           ]
           ++ unstable.vscode-utils.extensionsFromVscodeMarketplace [
-            #{
-            #  name = "copilot-chat";
-            #  publisher = "github";
-            #  version = "0.31.0";
-            #  sha256 = "sha256-jMy6mjPUxz3p1dvrveZ/9tyn+KZ6rBLJinZMBUUb9QY=";
-            #}
+            {
+              name = "chatgpt";
+              publisher = "openai";
+              version = "0.4.17";
+              sha256 = "sha256-A/ta6UXAeDHQImeUqBEMDWNkevaxkGhFN1fb90S+8hY=";
+            }
           ]
           ++ (with vscodeExtensions; [
             ms-python.python
@@ -39,7 +39,7 @@ in {
             ms-vscode-remote.remote-containers
             ms-vscode.makefile-tools
             github.copilot
-            vscodeUnstableExtensions.github.copilot-chat
+            #vscodeUnstableExtensions.github.copilot-chat
             # yy0931.vscode-sqlite3-editor
             cweijan.vscode-database-client2
             waderyan.gitblame
@@ -58,6 +58,7 @@ in {
             kamadorueda.alejandra
             vscodeUnstableExtensions.Google.gemini-cli-vscode-ide-companion
             vscodeUnstableExtensions.anthropic.claude-code
+            vscodeUnstableExtensions.kilocode.kilo-code
           ]);
       })
       (stable.writeShellScriptBin "sshcode" ''

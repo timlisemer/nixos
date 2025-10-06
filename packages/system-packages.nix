@@ -58,6 +58,8 @@ in {
     i2c-tools
     unstable.gemini-cli
     unstable.claude-code
+    unstable.qwen-code
+    unstable.cursor-cli
     unstable.codex
     liquidctl
     glxinfo
