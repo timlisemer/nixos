@@ -46,6 +46,7 @@ in {
     jetbrains.rust-rover
     jetbrains.idea-community
     jetbrains.pycharm-community
+    kicad
   ];
 
   programs.steam.enable = true;

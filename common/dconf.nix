@@ -52,6 +52,25 @@ with lib.hm.gvariant; {
         "mail.adobe.com"
         "kovenuk.com"
         "privacy.faceit.com"
+        "mail.coinbase.com"
+        "alerts.spotify.com"
+        "snapchat.com"
+        "seeed.cc"
+        "cursor.com"
+        "rides-marketing.bolt.eu"
+        "rides-promotions.bolt.eu"
+        "skinport.com"
+        "myheritage.com"
+        "x.ai"
+        "n26.com"
+        "notify.cloudflare.com"
+        "e.ea.com"
+        "members.netflix.com"
+        "service-mail.dazn.com"
+        "openrouter.ai"
+        "em1.cloudflare.com"
+        "mail.cursor.com"
+        "fillibri.com"
       ];
       migrated-config = true;
       run-in-background = true;
@@ -458,12 +477,12 @@ with lib.hm.gvariant; {
     };
 
     "org/gnome/desktop/app-folders/folders/22213c86-bf18-4d86-a47d-050ddec90177" = {
-      apps = ["rust-rover.desktop" "clion.desktop" "rider.desktop" "idea-community.desktop" "code.desktop" "pycharm-community.desktop" "org.qt-project.qtcreator.desktop" "org.gnome.Builder.desktop" "arduino-ide.desktop"];
+      apps = ["rust-rover.desktop" "clion.desktop" "rider.desktop" "idea-community.desktop" "code.desktop" "pycharm-community.desktop" "org.qt-project.qtcreator.desktop" "org.gnome.Builder.desktop" "arduino-ide.desktop" "cursor.desktop"];
       name = "Programming";
     };
 
     "org/gnome/desktop/app-folders/folders/5d3de8f3-46d0-44d0-994e-34dcba42ba17" = {
-      apps = ["org.gnome.SystemMonitor.desktop" "org.gnome.clocks.desktop" "org.gnome.Totem.desktop" "org.gnome.Music.desktop" "org.wireshark.Wireshark.desktop" "com.github.flxzt.rnote.desktop" "org.gnome.Snapshot.desktop" "simple-scan.desktop" "org.gnome.Calculator.desktop" "org.gnome.TextEditor.desktop" "org.gnome.Maps.desktop" "com.google.Chrome.desktop" "org.filezillaproject.Filezilla.desktop" "com.bitwarden.desktop.desktop" "org.gnome.Boxes.desktop" "com.github.marhkb.Pods.desktop" "org.cvfosammmm.Setzer.desktop" "org.gnome.Software.desktop" "org.torproject.torbrowser-launcher.desktop" "dev.vencord.Vesktop.desktop" "org.pulseaudio.pavucontrol.desktop" "gimp.desktop" "webcord.desktop" "com.cassidyjames.butler.desktop" "google-chrome.desktop" "org.gnome.Terminal.desktop" "org.gnome.Showtime.desktop" "org.gnome.Decibels.desktop"];
+      apps = ["org.gnome.SystemMonitor.desktop" "org.gnome.clocks.desktop" "org.gnome.Totem.desktop" "org.gnome.Music.desktop" "org.wireshark.Wireshark.desktop" "com.github.flxzt.rnote.desktop" "org.gnome.Snapshot.desktop" "simple-scan.desktop" "org.gnome.Calculator.desktop" "org.gnome.TextEditor.desktop" "org.gnome.Maps.desktop" "com.google.Chrome.desktop" "org.filezillaproject.Filezilla.desktop" "com.bitwarden.desktop.desktop" "org.gnome.Boxes.desktop" "com.github.marhkb.Pods.desktop" "org.cvfosammmm.Setzer.desktop" "org.gnome.Software.desktop" "org.torproject.torbrowser-launcher.desktop" "dev.vencord.Vesktop.desktop" "org.pulseaudio.pavucontrol.desktop" "gimp.desktop" "webcord.desktop" "com.cassidyjames.butler.desktop" "google-chrome.desktop" "org.gnome.Terminal.desktop" "org.gnome.Showtime.desktop" "org.gnome.Decibels.desktop" "org.kicad.kicad.desktop"];
       name = "Applications";
       translate = false;
     };
@@ -523,8 +542,8 @@ with lib.hm.gvariant; {
     # org.mozilla.firefox.desktop
 
     "org/gnome/shell/extensions/app-hider" = {
-      hidden-apps = ["org.gnome.Characters.desktop" "cups.desktop" "org.gnome.font-viewer.desktop" "nvim.desktop" "org.gnome.FileRoller.desktop" "org.gnome.Logs.desktop" "xterm.desktop" "org.gnome.Console.desktop" "org.gnome.seahorse.Application.desktop" "org.gnome.Connections.desktop" "nixos-manual.desktop" "org.torproject.torbrowser-launcher.settings.desktop" "btop.desktop" "julia.desktop" "org.gnome.Console.desktop" "Steam Linux Runtime 3.0 (sniper).desktop" "Proton EasyAntiCheat Runtime.desktop" "Proton Experimental.desktop" "remote-viewer.desktop" "virt-manager.desktop" "Steam Linux Runtime 1.0 (scout).desktop" "Steam Linux Runtime 2.0 (soldier).desktop" "com.desktop.ding.desktop" "syncthing-ui.desktop"];
-      hidden-search-apps = ["org.gnome.Characters.desktop" "cups.desktop" "org.gnome.font-viewer.desktop" "nvim.desktop" "org.gnome.FileRoller.desktop" "org.gnome.Logs.desktop" "xterm.desktop" "org.gnome.Connections.desktop" "nixos-manual.desktop" "org.torproject.torbrowser-launcher.settings.desktop" "btop.desktop" "julia.desktop" "org.gnome.Console.desktop" "org.gnome.seahorse.Application.desktop" "Steam Linux Runtime 3.0 (sniper).desktop" "Proton EasyAntiCheat Runtime.desktop" "Proton Experimental.desktop" "remote-viewer.desktop" "virt-manager.desktop" "Steam Linux Runtime 1.0 (scout).desktop" "Steam Linux Runtime 2.0 (soldier).desktop" "com.desktop.ding.desktop"];
+      hidden-apps = ["org.gnome.Characters.desktop" "cups.desktop" "org.gnome.font-viewer.desktop" "nvim.desktop" "org.gnome.FileRoller.desktop" "org.gnome.Logs.desktop" "xterm.desktop" "org.gnome.Console.desktop" "org.gnome.seahorse.Application.desktop" "org.gnome.Connections.desktop" "nixos-manual.desktop" "org.torproject.torbrowser-launcher.settings.desktop" "btop.desktop" "julia.desktop" "org.gnome.Console.desktop" "Steam Linux Runtime 3.0 (sniper).desktop" "Proton EasyAntiCheat Runtime.desktop" "Proton Experimental.desktop" "remote-viewer.desktop" "virt-manager.desktop" "Steam Linux Runtime 1.0 (scout).desktop" "Steam Linux Runtime 2.0 (soldier).desktop" "com.desktop.ding.desktop" "syncthing-ui.desktop" "org.kicad.gerbview.desktop" "org.kicad.bitmap2component.desktop" "org.kicad.pcbcalculator.desktop" "org.kicad.pcbnew.desktop" "org.kicad.eeschema.desktop"];
+      hidden-search-apps = ["org.gnome.Characters.desktop" "cups.desktop" "org.gnome.font-viewer.desktop" "nvim.desktop" "org.gnome.FileRoller.desktop" "org.gnome.Logs.desktop" "xterm.desktop" "org.gnome.Connections.desktop" "nixos-manual.desktop" "org.torproject.torbrowser-launcher.settings.desktop" "btop.desktop" "julia.desktop" "org.gnome.Console.desktop" "org.gnome.seahorse.Application.desktop" "Steam Linux Runtime 3.0 (sniper).desktop" "Proton EasyAntiCheat Runtime.desktop" "Proton Experimental.desktop" "remote-viewer.desktop" "virt-manager.desktop" "Steam Linux Runtime 1.0 (scout).desktop" "Steam Linux Runtime 2.0 (soldier).desktop" "com.desktop.ding.desktop" "org.kicad.gerbview.desktop" "org.kicad.bitmap2component.desktop" "org.kicad.pcbcalculator.desktop" "org.kicad.pcbnew.desktop" "org.kicad.eeschema.desktop"];
     };
   };
 }
