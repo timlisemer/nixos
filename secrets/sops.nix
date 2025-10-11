@@ -34,15 +34,6 @@
   };
   sops.secrets.resticENV = {};
 
-  # Template for nix.conf with GitHub token
-  sops.templates."nix-extra.conf" = {
-    owner = "root";
-    mode = "0444";
-    content = ''
-      access-tokens = github.com=${config.sops.placeholder.github_token}
-    '';
-  };
-
   sops.secrets.openvpn_ca = {owner = "nm-openvpn";};
   sops.secrets.openvpn_extra_certs = {group = "nm-openvpn";};
   sops.secrets.openvpn_cert = {group = "nm-openvpn";};

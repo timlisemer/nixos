@@ -32,11 +32,6 @@ in {
     trusted-users = ["root" "@wheel"];
   };
 
-  # Add GitHub token for Nix to avoid rate limits
-  nix.extraOptions = ''
-    !include /run/secrets-rendered/nix-extra.conf
-  '';
-
   # Environment Variables
   environment.sessionVariables = {
     RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
@@ -433,6 +428,13 @@ in {
     extraConfig = ''
       ServerAliveInterval 60
       ServerAliveCountMax 3
+
+      # Using tim's SSH key as root's SSH key for GitHub
+      Host github.com
+        HostName github.com
+        User git
+        IdentityFile /home/tim/.ssh/id_ed25519
+        IdentitiesOnly yes
     '';
   };
 
