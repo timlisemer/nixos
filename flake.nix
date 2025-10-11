@@ -63,6 +63,11 @@
       url = "github:timlisemer/nvim";
       flake = false;
     };
+
+    restic-backup-service = {
+      url = "github:timlisemer/restic-backup-service";
+      inputs.nixpkgs.follows = "nixpkgs-stable";
+    };
   };
 
   # Optional: Binary cache for the nixos-raspberrypi flake

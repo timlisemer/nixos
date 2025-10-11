@@ -32,18 +32,7 @@
     path = "/run/secrets/google-sa";
     # restartUnits = ["rclone-gdrive.mount"]; # auto-reload after key rotation
   };
-  sops.secrets.restic_password = {};
-  sops.secrets.restic_environment = {};
-  sops.secrets.restic_repo_base = {};
-
-  # build a tiny file at runtime that *does* include the hostname
-  sops.templates.restic_repo = {
-    owner = "root";
-    mode = "0400";
-    content = "${config.sops.placeholder."restic_repo_base"}/${hostName}";
-    # optional: restart backup unit on change
-    restartUnits = ["restic-backups-${hostName}.service"];
-  };
+  sops.secrets.resticENV = {};
 
   # Template for nix.conf with GitHub token
   sops.templates."nix-extra.conf" = {
