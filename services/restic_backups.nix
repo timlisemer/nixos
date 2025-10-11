@@ -30,6 +30,6 @@ in {
     enable = true;
     backupTime = "06:30";
     backupPaths = backupPaths;
-    secretKeyFile = "/run/secrets/resticENV";
+    envContent = "${config.sops.placeholder.resticENV}";
   };
 }
