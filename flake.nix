@@ -64,8 +64,12 @@
       flake = false;
     };
 
+    # restic-backup-service = {
+    #   url = "github:timlisemer/restic-backup-service";
+    #   inputs.nixpkgs.follows = "nixpkgs-stable";
+    # };
     restic-backup-service = {
-      url = "github:timlisemer/restic-backup-service";
+      url = "path:/home/tim/Coding/Other/restic-backup-service";
       inputs.nixpkgs.follows = "nixpkgs-stable";
     };
   };
