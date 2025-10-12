@@ -2,50 +2,50 @@
   inputs = {
     nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-25.05"; # Stable channel for everything else
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable"; # Unstable channel
-    nixos-wsl.url = "github:nix-community/NixOS-WSL"; # NixOS WSL
+    nixos-wsl.url = "git+ssh://git@github.com/nix-community/NixOS-WSL.git"; # NixOS WSL
     nixpkgs-oldvscode.url = "github:NixOS/nixpkgs/333d19c8b58402b94834ec7e0b58d83c0a0ba658"; # vscode 1.98.2
-    flatpaks.url = "github:in-a-dil-emma/declarative-flatpak";
+    flatpaks.url = "git+ssh://git@github.com/in-a-dil-emma/declarative-flatpak.git";
     nixos-raspberrypi.url = "github:nvmd/nixos-raspberrypi/main";
 
     alejandra = {
       # Nix formatter -> https://drakerossman.com/blog/overview-of-nix-formatters-ecosystem
-      url = "github:kamadorueda/alejandra/4.0.0";
+      url = "git+ssh://git@github.com/kamadorueda/alejandra.git?ref=refs/tags/4.0.0";
       inputs.nixpkgs.follows = "nixpkgs-stable";
     };
 
     astal = {
-      url = "github:aylur/astal";
+      url = "git+ssh://git@github.com/aylur/astal.git";
       inputs.nixpkgs.follows = "nixpkgs-stable";
     };
 
     ags = {
-      url = "github:aylur/ags";
+      url = "git+ssh://git@github.com/aylur/ags.git";
       inputs.nixpkgs.follows = "nixpkgs-stable";
       inputs.astal.follows = "astal";
     };
 
     adwaita_hypercursor = {
-      url = "github:dp0sk/Adwaita-HyprCursor";
+      url = "git+ssh://git@github.com/dp0sk/Adwaita-HyprCursor.git";
       flake = false;
     };
 
     claude = {
-      url = "github:k3d3/claude-desktop-linux-flake";
+      url = "git+ssh://git@github.com/k3d3/claude-desktop-linux-flake.git";
       inputs.nixpkgs.follows = "nixpkgs-stable";
     };
 
     disko = {
-      url = "github:nix-community/disko";
+      url = "git+ssh://git@github.com/nix-community/disko.git";
       inputs.nixpkgs.follows = "nixpkgs-stable";
     };
 
     sops-nix = {
-      url = "github:Mic92/sops-nix";
+      url = "git+ssh://git@github.com/Mic92/sops-nix.git";
       inputs.nixpkgs.follows = "nixpkgs-stable";
     };
 
     vscode-server = {
-      url = "github:nix-community/nixos-vscode-server";
+      url = "git+ssh://git@github.com/nix-community/nixos-vscode-server.git";
       inputs.nixpkgs.follows = "nixpkgs-stable";
     };
 
@@ -55,21 +55,18 @@
     };
 
     firefox-gnome-theme = {
-      url = "github:rafaelmardojai/firefox-gnome-theme";
+      url = "git+ssh://git@github.com/rafaelmardojai/firefox-gnome-theme.git";
       flake = false;
     };
 
     tim-nvim = {
-      url = "github:timlisemer/nvim";
+      url = "git+ssh://git@github.com/timlisemer/nvim.git";
       flake = false;
     };
 
-    # restic-backup-service = {
-    #   url = "github:timlisemer/restic-backup-service";
-    #   inputs.nixpkgs.follows = "nixpkgs-stable";
-    # };
     restic-backup-service = {
-      url = "path:/home/tim/Coding/Other/restic-backup-service";
+      url = "git+ssh://git@github.com/timlisemer/restic-backup-service.git";
+      # url = "path:/home/tim/Coding/Other/restic-backup-service"; # for local development
       inputs.nixpkgs.follows = "nixpkgs-stable";
     };
   };
