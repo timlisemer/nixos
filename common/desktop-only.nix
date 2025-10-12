@@ -72,6 +72,15 @@
     alsa.enable = true;
     alsa.support32Bit = true;
     pulse.enable = true;
+
+    # Clock quantum settings
+    extraConfig.pipewire."10-clock-settings" = {
+      "context.properties" = {
+        "default.clock.quantum" = 4096;
+        "default.clock.min-quantum" = 512;
+        "default.clock.max-quantum" = 16384;
+      };
+    };
     wireplumber = {
       enable = true;
 

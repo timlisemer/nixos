@@ -56,7 +56,7 @@ in {
     distrobox
     dive
     i2c-tools
-    unstable.gemini-cli
+    # unstable.gemini-cli
     unstable.claude-code
     unstable.qwen-code
     unstable.cursor-cli

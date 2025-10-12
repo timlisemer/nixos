@@ -56,7 +56,6 @@ in {
             foxundermoon.shell-format
             bradlc.vscode-tailwindcss
             kamadorueda.alejandra
-            # vscodeUnstableExtensions.Google.gemini-cli-vscode-ide-companion
             vscodeUnstableExtensions.anthropic.claude-code
             vscodeUnstableExtensions.kilocode.kilo-code
           ]);
