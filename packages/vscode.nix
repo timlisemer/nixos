@@ -15,14 +15,49 @@
   };
   vscodeExtensions = stable.vscode-extensions;
   vscodeUnstableExtensions = unstable.vscode-extensions;
+
+  # Define all extensions as a list for easy reference
+  extensionList =
+    (with vscodeExtensions; [
+      ms-python.python
+      ms-python.vscode-pylance
+      ms-python.debugpy
+      ms-vscode-remote.remote-ssh
+      ms-vscode-remote.remote-containers
+      ms-vscode.makefile-tools
+      github.copilot
+      cweijan.vscode-database-client2
+      waderyan.gitblame
+      egirlcatnip.adwaita-github-theme
+      dbaeumer.vscode-eslint
+      bbenoist.nix
+      tauri-apps.tauri-vscode
+      rust-lang.rust-analyzer
+      njpwerner.autodocstring
+      svelte.svelte-vscode
+      tamasfe.even-better-toml
+      esbenp.prettier-vscode
+      foxundermoon.shell-format
+      bradlc.vscode-tailwindcss
+      kamadorueda.alejandra
+    ])
+    ++ (with vscodeUnstableExtensions; [
+      ms-azuretools.vscode-containers
+      anthropic.claude-code
+      kilocode.kilo-code
+    ]);
+
+  # Create a function to get extension store paths
+  getExtensionPaths = extensions: builtins.map (ext: "${ext}/share/vscode/extensions") extensions;
+
+  # Get all extension paths
+  allExtensionPaths = getExtensionPaths extensionList;
 in {
   environment.systemPackages = with stable;
     lib.mkAfter [
       (vscode-with-extensions.override {
-        vscodeExtensions = with vscodeExtensions;
-          [
-          ]
-          ++ unstable.vscode-utils.extensionsFromVscodeMarketplace [
+        vscodeExtensions =
+          unstable.vscode-utils.extensionsFromVscodeMarketplace [
             {
               name = "chatgpt";
               publisher = "openai";
@@ -30,35 +65,7 @@ in {
               sha256 = "sha256-A/ta6UXAeDHQImeUqBEMDWNkevaxkGhFN1fb90S+8hY=";
             }
           ]
-          ++ (with vscodeExtensions; [
-            ms-python.python
-            ms-python.vscode-pylance
-            ms-python.debugpy
-            vscodeUnstableExtensions.ms-azuretools.vscode-containers
-            ms-vscode-remote.remote-ssh
-            ms-vscode-remote.remote-containers
-            ms-vscode.makefile-tools
-            github.copilot
-            #vscodeUnstableExtensions.github.copilot-chat
-            # yy0931.vscode-sqlite3-editor
-            cweijan.vscode-database-client2
-            waderyan.gitblame
-            egirlcatnip.adwaita-github-theme
-            dbaeumer.vscode-eslint
-            bbenoist.nix
-            tauri-apps.tauri-vscode
-            rust-lang.rust-analyzer
-            njpwerner.autodocstring
-            svelte.svelte-vscode
-            tamasfe.even-better-toml
-            esbenp.prettier-vscode
-            dbaeumer.vscode-eslint
-            foxundermoon.shell-format
-            bradlc.vscode-tailwindcss
-            kamadorueda.alejandra
-            vscodeUnstableExtensions.anthropic.claude-code
-            vscodeUnstableExtensions.kilocode.kilo-code
-          ]);
+          ++ extensionList;
       })
       (stable.writeShellScriptBin "sshcode" ''
         #! /usr/bin/env bash
@@ -126,64 +133,52 @@ in {
         find /home/tim/.vscode-server/extensions -type l -delete 2>/dev/null || true
         find /home/tim/.vscode-server/extensions -maxdepth 1 -name "*vscode-extension-*" -type d -exec rm -rf {} \; 2>/dev/null || true
 
-        # Find all VSIX files in the Nix store and link them to the cache
-        for vsix in $(find /nix/store -name "*.vsix" -type f 2>/dev/null | grep -E "(vscode-extension-|claude-code)" | head -50); do
-          if [ -f "$vsix" ]; then
-            # Generate a unique ID for each VSIX (using hash of the path)
-            cache_id=$(echo "$vsix" | sha256sum | cut -c1-40)
-            ln -sf "$vsix" "/home/tim/.config/Code/CachedExtensionVSIXs/$cache_id" 2>/dev/null || true
-          fi
-        done
-
-        # Copy VS Code extensions from Nix store to .vscode-server
+        # Copy VS Code extensions from Nix store to .vscode-server using known paths
         # We copy instead of symlink because VS Code needs to write to these files
         # and symlinks to the read-only Nix store cause EACCES permission errors
-        for ext_dir in $(find /nix/store -maxdepth 1 -name "*vscode-extension-*" -type d 2>/dev/null); do
-          if [ -d "$ext_dir" ]; then
-            # Extract the full extension name
-            ext_name=$(basename "$ext_dir")
-            # Remove the hash prefix and "vscode-extension-" to get a clean name
-            # Format: hash-vscode-extension-publisher-name-version
-            clean_name="''${ext_name#*vscode-extension-}"
-            target_dir="/home/tim/.vscode-server/extensions/$clean_name"
+        ${builtins.concatStringsSep "\n" (builtins.map (extPath: ''
+        if [ -d "${extPath}" ]; then
+          for ext_dir in "${extPath}"/*; do
+            if [ -d "$ext_dir" ]; then
+              ext_name=$(basename "$ext_dir")
+              target_dir="/home/tim/.vscode-server/extensions/$ext_name"
 
-            # Only copy if the extension doesn't already exist
-            if [ ! -d "$target_dir" ]; then
+              # Always override existing extensions
               cp -r "$ext_dir" "$target_dir" 2>/dev/null || true
               # Make the copied files writable for VS Code
               chmod -R u+w "$target_dir" 2>/dev/null || true
             fi
-          fi
-        done
+          done
+        fi
+      '')
+      allExtensionPaths)}
 
         # Set proper ownership
         chown -R tim:users /home/tim/.config/Code/CachedExtensionVSIXs 2>/dev/null || true
         chown -R tim:users /home/tim/.vscode-server 2>/dev/null || true
 
-    # Clean and recreate Cursor extensions directory
-    rm -rf /home/tim/.cursor/extensions
-    mkdir -p /home/tim/.cursor/extensions
+        # Clean and recreate Cursor extensions directory
+        rm -rf /home/tim/.cursor/extensions
+        mkdir -p /home/tim/.cursor/extensions
 
-        # Copy VS Code extensions from Nix store to .cursor/extensions
+        # Copy VS Code extensions from Nix store to .cursor/extensions using known paths
         # We copy instead of symlink because Cursor needs to write to these files
-        for ext_dir in $(find /nix/store -maxdepth 1 -name "*vscode-extension-*" -type d 2>/dev/null); do
-          if [ -d "$ext_dir" ]; then
-            # Find the actual extension directory inside share/vscode/extensions/
-            actual_ext_dir=$(find "$ext_dir" -path "*/share/vscode/extensions/*" -type d | head -1)
-            if [ -d "$actual_ext_dir" ]; then
-              # Extract the extension name from the actual extension directory
-              ext_name=$(basename "$actual_ext_dir")
+        ${builtins.concatStringsSep "\n" (builtins.map (extPath: ''
+        if [ -d "${extPath}" ]; then
+          for ext_dir in "${extPath}"/*; do
+            if [ -d "$ext_dir" ]; then
+              ext_name=$(basename "$ext_dir")
               target_dir="/home/tim/.cursor/extensions/$ext_name"
 
-              # Only copy if the extension doesn't already exist
-              if [ ! -d "$target_dir" ]; then
-                cp -r "$actual_ext_dir" "$target_dir" 2>/dev/null || true
-                # Make the copied files writable for Cursor
-                chmod -R u+w "$target_dir" 2>/dev/null || true
-              fi
+              # Always override existing extensions
+              cp -r "$ext_dir" "$target_dir" 2>/dev/null || true
+              # Make the copied files writable for Cursor
+              chmod -R u+w "$target_dir" 2>/dev/null || true
             fi
-          fi
-        done
+          done
+        fi
+      '')
+      allExtensionPaths)}
 
         # Create/update Cursor extensions.json
         extensions_json="/home/tim/.cursor/extensions/extensions.json"
