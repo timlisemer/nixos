@@ -61,7 +61,7 @@ in {
     unstable.qwen-code
     unstable.cursor-cli
     unstable.codex
-    unstable.code-cursor-fhs
+    unstable.code-cursor
     liquidctl
     glxinfo
     jq
