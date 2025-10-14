@@ -3,6 +3,8 @@
   pkgs,
   system,
   inputs,
+  lib,
+  users,
   ...
 }: let
   unstable = import inputs.nixpkgs-unstable {
@@ -52,6 +54,8 @@
 
   # Get all extension paths
   allExtensionPaths = getExtensionPaths extensionList;
+  settingsSrc = builtins.toPath ../files/vscode/settings.json;
+  keybindingsSrc = builtins.toPath ../files/vscode/keybindings.json;
 in {
   environment.systemPackages = with stable;
     lib.mkAfter [
@@ -222,4 +226,49 @@ in {
         # Set proper ownership for Cursor extensions
         chown -R tim:users /home/tim/.cursor/extensions 2>/dev/null || true
   '';
+
+  # Also run at boot so files are recreated on every reboot as well
+  systemd.services."vscode-cursor-user-configs" = {
+    description = "Recreate VS Code and Cursor settings for all configured users";
+    after = ["local-fs.target"];
+    wantedBy = ["multi-user.target"];
+    serviceConfig = {Type = "oneshot";};
+    script = ''
+      set -euo pipefail
+
+      for user in ${lib.concatStringsSep " " (builtins.attrNames users)}; do
+        home="$(${pkgs.getent}/bin/getent passwd "$user" | cut -d: -f6)"
+        [ -n "${home:-}" ] || continue
+
+        group="$(${pkgs.coreutils}/bin/id -gn "$user" 2>/dev/null || echo "users")"
+
+        code_user_dir="$home/.config/Code/User"
+        cursor_user_dir="$home/.config/Cursor/User"
+
+        ${pkgs.coreutils}/bin/mkdir -p "$code_user_dir" "$cursor_user_dir"
+
+        # Remove existing files to ensure clean recreation
+        ${pkgs.coreutils}/bin/rm -f \
+          "$code_user_dir/settings.json" \
+          "$code_user_dir/keybindings.json" \
+          "$cursor_user_dir/settings.json" \
+          "$cursor_user_dir/keybindings.json"
+
+        # Copy fresh files from the Nix store (not symlinks)
+        ${pkgs.coreutils}/bin/cp ${settingsSrc} "$code_user_dir/settings.json"
+        ${pkgs.coreutils}/bin/cp ${keybindingsSrc} "$code_user_dir/keybindings.json"
+        ${pkgs.coreutils}/bin/cp ${settingsSrc} "$cursor_user_dir/settings.json"
+        ${pkgs.coreutils}/bin/cp ${keybindingsSrc} "$cursor_user_dir/keybindings.json"
+
+        # Make writable for the user and set ownership
+        ${pkgs.coreutils}/bin/chmod 0644 \
+          "$code_user_dir/settings.json" \
+          "$code_user_dir/keybindings.json" \
+          "$cursor_user_dir/settings.json" \
+          "$cursor_user_dir/keybindings.json" 2>/dev/null || true
+
+        ${pkgs.coreutils}/bin/chown -R "$user:$group" "$code_user_dir" "$cursor_user_dir" 2>/dev/null || true
+      done
+    '';
+  };
 }

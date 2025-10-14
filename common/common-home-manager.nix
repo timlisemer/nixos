@@ -183,25 +183,6 @@ in {
       force = true;
     };
 
-    # Vscode
-    ".config/Code/User/settings.json" = {
-      source = builtins.toPath ../files/vscode/settings.json;
-      force = true;
-    };
-    ".config/Code/User/keybindings.json" = {
-      source = builtins.toPath ../files/vscode/keybindings.json;
-      force = true;
-    };
-    # Cursor
-    ".config/Cursor/User/settings.json" = {
-      source = builtins.toPath ../files/vscode/settings.json;
-      force = true;
-    };
-    ".config/Cursor/User/keybindings.json" = {
-      source = builtins.toPath ../files/vscode/keybindings.json;
-      force = true;
-    };
-
     # Autostart
     ".config/autostart" = {
       source = ../files/autostart;
