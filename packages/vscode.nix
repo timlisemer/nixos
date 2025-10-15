@@ -41,6 +41,7 @@
       esbenp.prettier-vscode
       foxundermoon.shell-format
       bradlc.vscode-tailwindcss
+      tomoki1207.pdf
       kamadorueda.alejandra
     ])
     ++ (with vscodeUnstableExtensions; [
