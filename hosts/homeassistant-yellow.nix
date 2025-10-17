@@ -343,6 +343,39 @@
         STHOMEDIR = "/var/syncthing/config";
       };
     };
+
+    # -------------------------------------------------------------------------
+    # openthread-border-router
+    # -------------------------------------------------------------------------
+    openthread-border-router = {
+      image = "openthread/border-router:latest";
+      autoStart = true;
+
+      autoRemoveOnStop = false; # prevent implicit --rm
+      extraOptions = [
+        "--network=host"
+        "--cap-add=NET_ADMIN"
+        "--device=/dev/ttyUSB0:/dev/ttyUSB0"
+        "--device=/dev/net/tun:/dev/net/tun"
+      ];
+
+      volumes = [
+        "/var/lib/otbr:/data"
+      ];
+
+      environment = {
+        OT_RCP_DEVICE = "spinel+hdlc+uart:///dev/ttyUSB0?uart-baudrate=460800";
+        OT_INFRA_IF = "end0";
+        OT_THREAD_IF = "wpan0";
+        OT_LOG_LEVEL = "7";
+      };
+    };
+  };
+
+  services.matter-server = {
+    enable = true;
+    port = 5580;
+    logLevel = "info";
   };
 
   # Override SSH settings to enable root login for homeassistant-yellow only
