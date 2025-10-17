@@ -124,6 +124,7 @@
       8085 # Server Traefik dashboard
       8081 # Pi-hole web UI
       8082 # Filebrowser UI
+      8083 # OpenThread Border Router
       8123 # HomeAssistant
       9443 # Portainer UI
     ];
@@ -357,6 +358,10 @@
         "--cap-add=NET_ADMIN"
         "--device=/dev/ttyUSB0:/dev/ttyUSB0"
         "--device=/dev/net/tun:/dev/net/tun"
+      ];
+
+      ports = [
+        "80:8083"
       ];
 
       volumes = [
