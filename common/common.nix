@@ -133,12 +133,25 @@ in {
     enable = true;
     rootless.enable = true;
     rootless.setSocketVariable = true;
-    # daemon.settings.ipv6 = true
-    daemon.settings.data-root = "/mnt/docker-data";
+    daemon.settings = {
+      ipv6 = true;
+      fixed-cidr-v6 = "fd00::/64";
+      data-root = "/mnt/docker-data";
+    };
   };
 
-  # Unrestrict ports below 1000
-  boot.kernel.sysctl."net.ipv4.ip_unprivileged_port_start" = 0;
+  # Kernel sysctl settings
+  boot.kernel.sysctl = {
+    # Unrestrict ports below 1000
+    "net.ipv4.ip_unprivileged_port_start" = 0;
+
+    # Enable IPv6 forwarding and networking for Docker IPv6 support
+    "net.ipv6.conf.all.forwarding" = 1;
+    "net.ipv6.conf.all.accept_ra" = 0;
+    "net.ipv6.conf.default.accept_ra" = 0;
+    "net.ipv6.conf.all.autoconf" = 0;
+    "net.ipv6.conf.default.autoconf" = 0;
+  };
 
   # Syncthing (disabled by default)
   services.syncthing = {
