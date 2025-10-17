@@ -122,7 +122,8 @@
       8000 # Portainer API
       8080 # Traefik dashboard
       8085 # Server Traefik dashboard
-      8081 # Pi-hole web UI
+      8081 # OpenThread Border Router
+      8083 # Pi-hole web UI
       8082 # Filebrowser UI
       8083 # OpenThread Border Router
       8123 # HomeAssistant
@@ -195,7 +196,7 @@
       ports = [
         "53:53/tcp"
         "53:53/udp"
-        "8081:80/tcp" # Map to 8081 to avoid conflict with Traefik on port 80
+        "8083:80/tcp" # Map to 8083 to avoid conflict with Traefik on port 80
         "67:67/udp" # DHCP
         "4711:4711/udp" # FTL metrics
       ];
@@ -219,7 +220,7 @@
           "8.8.8.8;8.8.4.4;1.1.1.1;1.0.0.1;"
           + "2001:4860:4860::8888;2001:4860:4860::8844;"
           + "2606:4700:4700::1111;2606:4700:4700::1001";
-        FTLCONF_webserver_port = "10.0.0.2:8081o,[::]:8081o";
+        FTLCONF_webserver_port = "10.0.0.2:8083o,[::]:8083o";
         FTLCONF_webserver_webhome = "/";
         FTLCONF_dns_domainNeeded = "true";
         FTLCONF_dns_dnssec = "true";
@@ -360,12 +361,12 @@
         "--device=/dev/net/tun:/dev/net/tun"
       ];
 
-      ports = [
-        "8081:8083"
-      ];
-
       volumes = [
         "/var/lib/otbr:/data"
+      ];
+
+      ports = [
+        "8081:8081"
       ];
 
       environment = {
@@ -373,6 +374,7 @@
         OT_INFRA_IF = "end0";
         OT_THREAD_IF = "wpan0";
         OT_LOG_LEVEL = "7";
+        OTBR_REST_LISTEN_ADDR = "0.0.0.0";
       };
     };
   };
