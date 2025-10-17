@@ -252,6 +252,16 @@ in {
 
       # Zigbee support
       "zha"
+
+      # Climate control integrations
+      "tado"
+      "vicare"
+
+      # Pi-hole integration
+      "pi_hole"
+
+      # Camera/Doorbell integrations
+      "reolink"
     ];
   };
 }
