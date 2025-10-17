@@ -388,7 +388,7 @@ function git() {
 			echo "  git squash 5    # Squashes the last 5 commits"
 			return 1
 		fi
-		
+
 		local num_commits="$2"
 		if ! [[ "$num_commits" =~ ^[0-9]+$ ]] || [ "$num_commits" -lt 2 ]; then
 			echo "Error: Please provide a number >= 2 (need at least 2 commits to squash)"
@@ -629,28 +629,35 @@ explorer() {
 
 # --- ssh: custom SSH command to map hostnames to IP addresses -------------
 ssh() {
-	# capture the first argument (the "host" the user typed)
-	local target="$1"
-	shift
+	local full_args=("$@")
+	local has_special=false
+	local special_pos=-1
 
-	# prevent running with no target argument
-	if [[ -z "$target" ]]; then
-		echo "Usage: ssh <host> [args...]" >&2
-		return 1
-	fi
+	# Scan for special hostname (non-option)
+	for ((j = 0; j < ${#full_args[@]}; j++)); do
+		local arg="${full_args[j]}"
+		if [[ "$arg" == "tim-pc" || "$arg" == "pc" || "$arg" == "$USER@tim-pc" || "$arg" == "$USER@pc" ]] && [[ "$arg" != -* ]]; then
+			has_special=true
+			special_pos=$j
+			break
+		fi
+	done
 
-	# special handling for tim-pc: use connect_tim_pc helper with Wake-on-LAN
-	if [[ "$target" == "tim-pc" || "$target" == "pc" || "$target" == "$USER@tim-pc" || "$target" == "$USER@pc" ]]; then
-		connect_tim_pc "$@"
+	if [[ "$has_special" == true ]]; then
+		# Prepare args without the special host
+		local opts_rest=()
+		for ((k = 0; k < ${#full_args[@]}; k++)); do
+			if [[ $k -ne $special_pos ]]; then
+				opts_rest+=("${full_args[k]}")
+			fi
+		done
+		# Call connect_tim_pc with remaining args
+		connect_tim_pc "${opts_rest[@]}"
 		return
 	fi
 
-	# only rewrite if the user did not already include a username
-	if [[ "$target" != *@* ]]; then
-		target="$USER@$target"
-	fi
-
-	command ssh "$target" "$@"
+	# No special host, pass through unchanged
+	command ssh "$@"
 }
 # ---------------------------------------------------------------------------
 
