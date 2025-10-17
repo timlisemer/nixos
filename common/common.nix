@@ -290,7 +290,7 @@ in {
     earlySetup = true; # apply before the login prompt
     # font = "ter-v32n"; # 16 × 32 Terminus, good for Hi-DPI
     # packages = with pkgs; [terminus_font]; # make sure the PSF is present
-    keyMap = "de";
+    keyMap = "de-latin1-nodeadkeys";
   };
 
   home-manager.sharedModules = [
