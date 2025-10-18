@@ -133,6 +133,7 @@
     # UDP ports to open
     allowedUDPPorts = [
       53 # Pi-hole DNS
+      5353 # OpenThread Border Router
     ];
 
     # ICMP (ping) is allowed separately
@@ -367,6 +368,7 @@
 
       ports = [
         "8081:8081"
+        "5353:5353/udp"
       ];
 
       environment = {
