@@ -146,11 +146,13 @@ in {
     "net.ipv4.ip_unprivileged_port_start" = 0;
 
     # Enable IPv6 forwarding and networking for Docker IPv6 support
-    "net.ipv6.conf.all.forwarding" = 1;
-    "net.ipv6.conf.all.accept_ra" = 0;
-    "net.ipv6.conf.default.accept_ra" = 0;
-    "net.ipv6.conf.all.autoconf" = 0;
-    "net.ipv6.conf.default.autoconf" = 0;
+    "net.ipv6.conf.all.forwarding" = 1; # Enable IPv6 forwarding
+    "net.ipv6.conf.all.accept_ra" = 2; # Accept RA even with forwarding (overrides your =0)
+    "net.ipv6.conf.default.accept_ra" = 2; # Accept RA for default interface
+    "net.ipv6.conf.all.autoconf" = 1; # Enable SLAAC for IPv6 addresses (overrides your =0)
+    "net.ipv6.conf.default.autoconf" = 1; # Enable SLAAC for default interface
+    "net.ipv6.conf.all.accept_ra_rt_info_max_plen" = 64; # Allow /64 prefix routes from RA
+    "net.ipv6.conf.end0.accept_ra_rt_info_max_plen" = 64; # Specific to OTBR infra interface
   };
 
   # Syncthing (disabled by default)

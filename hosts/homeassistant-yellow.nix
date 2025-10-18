@@ -119,6 +119,7 @@
       53 # Pi-hole DNS
       80 # HTTP / Traefik
       443 # HTTPS / Traefik
+      5580 # Matter server
       8000 # Portainer API
       8080 # Traefik dashboard
       8085 # Server Traefik dashboard
