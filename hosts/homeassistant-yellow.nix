@@ -135,6 +135,7 @@
     allowedUDPPorts = [
       53 # Pi-hole DNS
       5353 # OpenThread Border Router
+      49154 # OpenThread Border Agent port
     ];
 
     # ICMP (ping) is allowed separately
@@ -370,6 +371,7 @@
       ports = [
         "8081:8081"
         "5353:5353/udp"
+        "49154:49154/udp" # "docker exec -it openthread-border-router ot-ctl ba port" -> "49154"
       ];
 
       environment = {
