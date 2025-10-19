@@ -371,7 +371,7 @@
       ];
 
       volumes = [
-        "/var/lib/otbr:/data"
+        "/mnt/docker-data/volumes/openthread-border-router:/data"
       ];
 
       ports = [
@@ -389,12 +389,34 @@
         OTBR_REST_LISTEN_ADDR = "0.0.0.0";
       };
     };
-  };
 
-  services.matter-server = {
-    enable = true;
-    port = 5580;
-    logLevel = "info";
+    # -------------------------------------------------------------------------
+    # python-matter-server
+    # -------------------------------------------------------------------------
+    python-matter-server = {
+      image = "ghcr.io/home-assistant-libs/python-matter-server:stable";
+      autoStart = true;
+
+      autoRemoveOnStop = false; # prevent implicit --rm
+      extraOptions = [
+        "--network=host"
+        "--security-opt=apparmor=unconfined"
+      ];
+
+      # Expose Matter WebSocket API
+      ports = [
+        "5580:5580"
+      ];
+
+      volumes = [
+        "/mnt/docker-data/volumes/matter-server:/data"
+        "/run/dbus:/run/dbus:ro"
+      ];
+
+      environment = {
+        TZ = "Europe/Berlin";
+      };
+    };
   };
 
   # Override SSH settings to enable root login for homeassistant-yellow only
