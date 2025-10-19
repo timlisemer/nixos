@@ -110,6 +110,11 @@
     "2001:4860:4860::8888" # Google DNS IPv6
   ];
 
+  # Disable wlan0 interface
+  # Done to prevent mdns requests from being sent out over end0 but expected on wlan0, which would never work
+  networking.wireless.enable = false;
+  networking.networkmanager.unmanaged = ["interface-name:wlan0"];
+
   networking.firewall = lib.mkForce {
     enable = true;
 
