@@ -134,6 +134,7 @@
     # UDP ports to open
     allowedUDPPorts = [
       53 # Pi-hole DNS
+      19788 # Thread MLE (Mesh Link Establishment)
       5353 # OpenThread Border Router
       49154 # OpenThread Border Agent port
     ];
@@ -370,6 +371,7 @@
 
       ports = [
         "8081:8081"
+        "19788:19788/udp" # Thread MLE (Mesh Link Establishment)
         "5353:5353/udp"
         "49154:49154/udp" # "docker exec -it openthread-border-router ot-ctl ba port" -> "49154"
       ];

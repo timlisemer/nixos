@@ -75,6 +75,7 @@ in {
     spice
     # spice-gtk
     sqlite
+    tcpdump
     virt-viewer
     libvirt
     virt-manager
