@@ -140,8 +140,10 @@
     allowedUDPPorts = [
       53 # Pi-hole DNS
       19788 # Thread MLE (Mesh Link Establishment)
-      5353 # OpenThread Border Router
+      5353 # Multicast DNS (mDNS)
       49154 # OpenThread Border Agent port
+      45963 # TREL (Thread Radio Encapsulation Link)
+      61631 # Backbone Border Router (BBR) for the Thread Management Framework (TMF)
     ];
 
     # ICMP (ping) is allowed separately
@@ -377,8 +379,10 @@
       ports = [
         "8081:8081"
         "19788:19788/udp" # Thread MLE (Mesh Link Establishment)
-        "5353:5353/udp"
+        "5353:5353/udp" # Multicast DNS (mDNS)
         "49154:49154/udp" # "docker exec -it openthread-border-router ot-ctl ba port" -> "49154"
+        "45963:45963/udp" # TREL (Thread Radio Encapsulation Link)
+        "61631:61631/udp" # Backbone Border Router (BBR) for the Thread Management Framework (TMF)
       ];
 
       environment = {
