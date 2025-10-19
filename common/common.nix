@@ -145,7 +145,7 @@ in {
     # Unrestrict ports below 1000
     "net.ipv4.ip_unprivileged_port_start" = 0;
 
-    "net.ipv6.conf.all.forwarding" = 0; # Let OTBR manage forwarding. The kernel should NOT be a router.
+    "net.ipv6.conf.all.forwarding" = 1; # Enable IPv6 forwarding globally
     "net.ipv6.conf.all.accept_ra" = 2; # Accept RA even with forwarding (overrides your =0)
     "net.ipv6.conf.default.accept_ra" = 2; # Accept RA for default interface
     "net.ipv6.conf.all.autoconf" = 1; # Enable SLAAC for IPv6 addresses (overrides your =0)
