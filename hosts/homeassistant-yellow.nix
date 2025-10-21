@@ -78,6 +78,9 @@
   # Force override to prevent nixos-raspberrypi flake from adding console=ttyAMA10
   boot.kernelParams = lib.mkForce ["console=tty0"];
 
+  # Ensure end0 still accepts Router Advertisements even with forwarding enabled globally
+  boot.kernel.sysctl."net.ipv6.conf.end0.accept_ra" = 2;
+
   # Completely disable serial console services
   systemd.services = {
     "serial-getty@ttyAMA10" = lib.mkForce {
@@ -87,6 +90,51 @@
     "getty@ttyAMA10" = lib.mkForce {
       enable = false;
       wantedBy = [];
+    };
+
+    # Ensure OTBR on-mesh OMR prefix is present and BBR is enabled
+    otbr-ensure-prefix = let
+      containerName = "openthread-border-router";
+      omrPrefix = "fdf6:944e:701b:1::/64";
+    in {
+      description = "Ensure OTBR OMR on-mesh prefix and BBR";
+      after = [
+        "docker.service"
+        "docker-openthread-border-router.service"
+        "network-online.target"
+      ];
+      wants = ["network-online.target"];
+      requires = [
+        "docker-openthread-border-router.service"
+      ];
+      wantedBy = ["multi-user.target"];
+      serviceConfig.Type = "oneshot";
+      path = [pkgs.docker pkgs.gnugrep pkgs.coreutils pkgs.bash];
+      script = ''
+        #! /usr/bin/env bash
+        set -euo pipefail
+
+        CONTAINER="${containerName}"
+        # OMR prefix observed in LAN RAs. Keep in sync with your intended OMR.
+        OMR_PREFIX="${omrPrefix}"
+
+        echo "Waiting for ot-ctl in container $CONTAINER..."
+        for i in {1..60}; do
+          if docker exec "$CONTAINER" ot-ctl state >/dev/null 2>&1; then
+            break
+          fi
+          sleep 1
+        done
+
+        echo "Enabling BBR…"
+        docker exec "$CONTAINER" ot-ctl bbr enable || true
+
+        echo "Ensuring OMR on-mesh prefix $OMR_PREFIX exists..."
+        if ! docker exec "$CONTAINER" ot-ctl prefix | grep -F "$OMR_PREFIX" >/dev/null; then
+          docker exec "$CONTAINER" ot-ctl prefix add "$OMR_PREFIX" paos
+          docker exec "$CONTAINER" ot-ctl netdata register || true
+        fi
+      '';
     };
   };
 
@@ -154,7 +202,7 @@
     checkReversePath = false; # Disables rpfilter to prevent drops on routed traffic
     extraForwardRules = ''
       iifname "end0" oifname "wpan0" accept
-      iifname "wpan0" oifname "end0" ct state established,related accept
+      iifname "wpan0" oifname "end0" accept
     '';
   };
 

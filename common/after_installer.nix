@@ -61,7 +61,7 @@
       };
     };
 
-    networking.firewall = lib.mkForce {
+    firewall = lib.mkForce {
       enable = true;
 
       # TCP ports to open
