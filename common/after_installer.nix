@@ -26,17 +26,60 @@
     ../services/restic_backups.nix
   ];
 
+  services.avahi = {
+    enable = true;
+    nssmdns4 = true; # Use mdns_minimal for .local name resolution (IPv4)
+    nssmdns6 = true; # Use mdns_minimal for .local name resolution (IPv6)
+    openFirewall = true; # Allow mDNS traffic through the firewall -> UDP port 5353 for mDNS multicast traffic
+    publish = {
+      enable = true;
+      addresses = true;
+      workstation = true;
+    };
+    # This is crucial: It ensures mDNS packets are correctly routed
+    # between the physical interface (end0) and any virtual interfaces.
+    reflector = true;
+  };
+
+  # Disable systemd-resolved to prevent conflicts with Avahi mDNS
+  services.resolved.enable = false;
+
   # Open ports in the firewall
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable entirely:
   networking = {
-    firewall.enable = false;
     networkmanager.enable = true;
 
     networkmanager.plugins = with pkgs; [
       networkmanager-openvpn
     ];
+
+    networkmanager.settings = {
+      connection = {
+        mdns = 2; # Enables full mDNS resolution and publishing for .local domains. 0 = disabled, 1 = enabled, 2 = enabled and managed by Avahi
+      };
+    };
+
+    networking.firewall = lib.mkForce {
+      enable = true;
+
+      # TCP ports to open
+      allowedTCPPorts = [
+        22 # SSH
+        80 # HTTP / Traefik
+        443 # HTTPS / Traefik
+        3000 # Personal dev port
+      ];
+
+      # UDP ports to open
+      allowedUDPPorts = [
+        5353 # Multicast DNS (mDNS)
+      ];
+
+      # ICMP (ping) is allowed separately
+      allowPing = true;
+    };
 
     networkmanager.ensureProfiles.environmentFiles = [
       "/run/secrets/wifiENV"

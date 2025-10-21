@@ -179,21 +179,6 @@ in {
     };
   };
 
-  services.avahi = {
-    enable = true;
-    nssmdns4 = true; # Use mdns_minimal for .local name resolution (IPv4)
-    nssmdns6 = true; # Use mdns_minimal for .local name resolution (IPv6)
-    openFirewall = true; # Allow mDNS traffic through the firewall -> UDP port 5353 for mDNS multicast traffic
-    publish = {
-      enable = true;
-      addresses = true;
-      workstation = true;
-    };
-    # This is crucial: It ensures mDNS packets are correctly routed
-    # between the physical interface (end0) and any virtual interfaces.
-    reflector = true;
-  };
-
   users.users =
     lib.mapAttrs (_name: user: {
       isNormalUser = true;

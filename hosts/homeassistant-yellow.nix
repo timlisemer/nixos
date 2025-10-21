@@ -149,6 +149,13 @@
 
     # ICMP (ping) is allowed separately
     allowPing = true;
+
+    trustedInterfaces = ["wpan0"]; # Allows unrestricted input from wpan0 to the host
+    checkReversePath = false; # Disables rpfilter to prevent drops on routed traffic
+    extraForwardRules = ''
+      iifname "end0" oifname "wpan0" accept
+      iifname "wpan0" oifname "end0" ct state established,related accept
+    '';
   };
 
   virtualisation.oci-containers.containers = {
