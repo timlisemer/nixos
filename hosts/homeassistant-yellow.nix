@@ -75,27 +75,14 @@
     };
   };
 
-  # Force override to prevent nixos-raspberrypi flake from adding console=ttyAMA10
-  boot.kernelParams = lib.mkForce ["console=tty0"];
-
   # Ensure end0 still accepts Router Advertisements even with forwarding enabled globally
   boot.kernel.sysctl."net.ipv6.conf.end0.accept_ra" = 2;
 
   # Completely disable serial console services
   systemd.services = {
-    "serial-getty@ttyAMA10" = lib.mkForce {
-      enable = false;
-      wantedBy = [];
-    };
-    "getty@ttyAMA10" = lib.mkForce {
-      enable = false;
-      wantedBy = [];
-    };
-
     # Ensure OTBR on-mesh OMR prefix is present and BBR is enabled
     otbr-ensure-prefix = let
       containerName = "openthread-border-router";
-      omrPrefix = "fdf6:944e:701b:1::/64";
     in {
       description = "Ensure OTBR OMR on-mesh prefix and BBR";
       after = [
@@ -115,9 +102,6 @@
         set -euo pipefail
 
         CONTAINER="${containerName}"
-        # OMR prefix observed in LAN RAs. Keep in sync with your intended OMR.
-        OMR_PREFIX="${omrPrefix}"
-
         echo "Waiting for ot-ctl in container $CONTAINER..."
         for i in {1..60}; do
           if docker exec "$CONTAINER" ot-ctl state >/dev/null 2>&1; then
@@ -129,27 +113,34 @@
         echo "Enabling BBR…"
         docker exec "$CONTAINER" ot-ctl bbr enable || true
 
-        echo "Ensuring OMR on-mesh prefix $OMR_PREFIX exists..."
-        if ! docker exec "$CONTAINER" ot-ctl prefix | grep -F "$OMR_PREFIX" >/dev/null; then
-          docker exec "$CONTAINER" ot-ctl prefix add "$OMR_PREFIX" paos
-          docker exec "$CONTAINER" ot-ctl netdata register || true
+        # Discover current ULA on-mesh prefix dynamically (first fd..../64 from ot-ctl prefix)
+        OMR_PREFIX=""
+        while IFS= read -r line; do
+          set -- $line
+          prefix="$1"
+          case "$prefix" in
+            fd*/*)
+              length=$(printf '%s\n' "$prefix" | cut -d/ -f2)
+              if [ "$length" = "64" ]; then
+                OMR_PREFIX="$prefix"
+                break
+              fi
+              ;;
+          esac
+        done < <(docker exec "$CONTAINER" ot-ctl prefix)
+        if [ -n "$OMR_PREFIX" ]; then
+          echo "Detected on-mesh ULA prefix: $OMR_PREFIX"
+          # Ensure it's registered in network data (no-op if already present)
+          if ! docker exec "$CONTAINER" ot-ctl prefix | grep -F "$OMR_PREFIX" >/dev/null; then
+            docker exec "$CONTAINER" ot-ctl prefix add "$OMR_PREFIX" paos || true
+            docker exec "$CONTAINER" ot-ctl netdata register || true
+          fi
+        else
+          echo "No ULA on-mesh prefix detected; skipping prefix add."
         fi
       '';
     };
   };
-
-  # GPIO reset control and UART device permissions for Silicon Labs OpenThread RCP
-  services.udev.extraRules = ''
-    # Silicon Labs UART device permissions
-    KERNEL=="ttyAMA10", GROUP="dialout", MODE="0664"
-
-    # GPIO access for Silicon Labs reset control (GPIO 24/25)
-    SUBSYSTEM=="gpio", KERNEL=="gpiochip*", GROUP="gpio", MODE="0660"
-    SUBSYSTEM=="bcm2835-gpiomem", KERNEL=="gpiomem", GROUP="gpio", MODE="0660"
-  '';
-
-  # Create GPIO group for Silicon Labs reset control
-  users.groups.gpio = {};
 
   networking.networkmanager.insertNameservers = [
     "127.0.0.1" # Primary: localhost - intentionally set to Pi-hole
@@ -296,45 +287,6 @@
         FTLCONF_dns_domain = "fritz.box";
       };
     };
-
-    # -------------------------------------------------------------------------
-    # homeassistant - MIGRATED TO NATIVE NIXOS SERVICE
-    # -------------------------------------------------------------------------
-    # Home Assistant is now running as a native NixOS service
-    # Configuration: ../services/homeassistant.nix
-    # Config directory: /mnt/docker-data/volumes/homeassistant/config
-    # Service: systemd service home-assistant.service
-    # Logs: journalctl -u home-assistant
-    #
-    # Original Docker configuration (kept for reference):
-    # homeassistant = {
-    #   image = "ghcr.io/home-assistant/home-assistant:stable";
-    #   autoStart = true;
-    #
-    #   autoRemoveOnStop = false; # prevent implicit --rm
-    #   extraOptions = [
-    #     "--network=host"
-    #     "--device=/dev/dri:/dev/dri" # GPU access
-    #     "--device=/dev/ttyAMA10:/dev/ttyAMA10"
-    #     "--privileged"
-    #   ];
-    #
-    #   ports = [
-    #     "8123:8123" # Home Assistant
-    #   ];
-    #
-    #   volumes = [
-    #     "/mnt/docker-data/volumes/homeassistant/config:/config:rw"
-    #     "/mnt/docker-data/volumes/homeassistant/media:/media:rw"
-    #     "/run/dbus:/run/dbus:ro" # DBus access, needed for some integrations for example Bluetooth
-    #   ];
-    #
-    #   #environmentFiles = [
-    #   #  "/run/secrets/homeassistantENV"
-    #   #];
-    #
-    #   environment.TZ = "Europe/Berlin";
-    # };
 
     # -------------------------------------------------------------------------
     # portainer
