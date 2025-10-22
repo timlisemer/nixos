@@ -78,70 +78,6 @@
   # Ensure end0 still accepts Router Advertisements even with forwarding enabled globally
   boot.kernel.sysctl."net.ipv6.conf.end0.accept_ra" = 2;
 
-  # Completely disable serial console services
-  systemd.services = {
-    # Ensure OTBR on-mesh OMR prefix is present and BBR is enabled
-    otbr-ensure-prefix = let
-      containerName = "openthread-border-router";
-    in {
-      description = "Ensure OTBR OMR on-mesh prefix and BBR";
-      after = [
-        "docker.service"
-        "docker-openthread-border-router.service"
-        "network-online.target"
-      ];
-      wants = ["network-online.target"];
-      requires = [
-        "docker-openthread-border-router.service"
-      ];
-      wantedBy = ["multi-user.target"];
-      serviceConfig.Type = "oneshot";
-      path = [pkgs.docker pkgs.gnugrep pkgs.coreutils pkgs.bash];
-      script = ''
-        #! /usr/bin/env bash
-        set -euo pipefail
-
-        CONTAINER="${containerName}"
-        echo "Waiting for ot-ctl in container $CONTAINER..."
-        for i in {1..60}; do
-          if docker exec "$CONTAINER" ot-ctl state >/dev/null 2>&1; then
-            break
-          fi
-          sleep 1
-        done
-
-        echo "Enabling BBR…"
-        docker exec "$CONTAINER" ot-ctl bbr enable || true
-
-        # Discover current ULA on-mesh prefix dynamically (first fd..../64 from ot-ctl prefix)
-        OMR_PREFIX=""
-        while IFS= read -r line; do
-          set -- $line
-          prefix="$1"
-          case "$prefix" in
-            fd*/*)
-              length=$(printf '%s\n' "$prefix" | cut -d/ -f2)
-              if [ "$length" = "64" ]; then
-                OMR_PREFIX="$prefix"
-                break
-              fi
-              ;;
-          esac
-        done < <(docker exec "$CONTAINER" ot-ctl prefix)
-        if [ -n "$OMR_PREFIX" ]; then
-          echo "Detected on-mesh ULA prefix: $OMR_PREFIX"
-          # Ensure it's registered in network data (no-op if already present)
-          if ! docker exec "$CONTAINER" ot-ctl prefix | grep -F "$OMR_PREFIX" >/dev/null; then
-            docker exec "$CONTAINER" ot-ctl prefix add "$OMR_PREFIX" paos || true
-            docker exec "$CONTAINER" ot-ctl netdata register || true
-          fi
-        else
-          echo "No ULA on-mesh prefix detected; skipping prefix add."
-        fi
-      '';
-    };
-  };
-
   networking.networkmanager.insertNameservers = [
     "127.0.0.1" # Primary: localhost - intentionally set to Pi-hole
     "1.1.1.1" # Backup: Cloudflare DNS
@@ -192,6 +128,15 @@
     trustedInterfaces = ["wpan0"]; # Allows unrestricted input from wpan0 to the host
     checkReversePath = false; # Disables rpfilter to prevent drops on routed traffic
     extraForwardRules = ''
+      # --- FORWARDING RULES (IPv6) ---
+      # Allow new IPv6 connections from LAN (end0) to Thread (wpan0)
+      ip6 iifname "end0" oifname "wpan0" accept
+
+      # Allow established/related IPv6 connections back from Thread to LAN
+      ip6 iifname "wpan0" oifname "end0" ct state established,related accept
+
+      # --- FORWARDING RULES (IPv4 - optional, for good measure) ---
+      # This isn't needed for Thread, but doesn't hurt.
       iifname "end0" oifname "wpan0" accept
       iifname "wpan0" oifname "end0" accept
     '';
