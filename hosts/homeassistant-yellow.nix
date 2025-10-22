@@ -140,6 +140,11 @@
       iifname "end0" oifname "wpan0" accept
       iifname "wpan0" oifname "end0" accept
     '';
+
+    extraCommands = ''
+      ip6tables -I DOCKER-USER -i end0 -o wpan0 -j ACCEPT || true
+      ip6tables -I DOCKER-USER -i wpan0 -o end0 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT || true
+    '';
   };
 
   virtualisation.oci-containers.containers = {
