@@ -62,16 +62,20 @@ in {
               WantedBy = ["default.target"];
             };
             Service = {
-              ExecStartPre = "${pkgs.coreutils}/bin/chmod 600 %h/.ssh/id_ed25519";
               ExecStart = lib.concatStringsSep " " [
-                "${pkgs.openssh}/bin/ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -N -i %h/.ssh/id_ed25519"
+                "${pkgs.autossh}/bin/autossh"
+                "-M 0"
+                "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -N -i %h/.ssh/id_ed25519"
                 "-o ExitOnForwardFailure=yes"
+                "-o ServerAliveInterval=30"
+                "-o ServerAliveCountMax=3"
                 "-R 0.0.0.0:8123:localhost:8123"
                 "-L 0.0.0.0:9001:tim-server:9001"
                 "-L 0.0.0.0:8085:tim-server:8085"
                 "-L 0.0.0.0:4743:tim-server:4743"
                 "tim@tim-server"
               ];
+              Environment = ["AUTOSSH_GATETIME=0"];
               Restart = "always";
               RestartSec = "5s";
             };

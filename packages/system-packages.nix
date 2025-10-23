@@ -13,6 +13,7 @@ in {
   environment.systemPackages = with pkgs; [
     adw-gtk3
     alejandra
+    autossh
     awscli2
     dbus
     nautilus-open-any-terminal
