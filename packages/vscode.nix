@@ -47,7 +47,7 @@
     ++ (with vscodeUnstableExtensions; [
       ms-azuretools.vscode-containers
       anthropic.claude-code
-      kilocode.kilo-code
+      # kilocode.kilo-code
     ]);
 
   # Create a function to get extension store paths
