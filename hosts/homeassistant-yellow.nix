@@ -165,6 +165,37 @@
     };
   };
 
+  systemd.services.tim-server-tunnel = {
+    description = "Persistent SSH tunnel to tim-server";
+    wantedBy = ["multi-user.target"];
+    after = ["network-online.target"];
+    wants = ["network-online.target"];
+    serviceConfig = {
+      Type = "simple";
+      User = "root";
+      WorkingDirectory = "/home/tim";
+      ExecStart = lib.concatStringsSep " " [
+        "${pkgs.autossh}/bin/autossh"
+        "-M 0"
+        "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -N -i /home/tim/.ssh/id_ed25519"
+        "-o ExitOnForwardFailure=yes"
+        "-o ServerAliveInterval=30"
+        "-o ServerAliveCountMax=3"
+        "-R 0.0.0.0:8123:localhost:8123"
+        "-L 0.0.0.0:9001:tim-server:9001"
+        "-L 0.0.0.0:8085:tim-server:8085"
+        "-L 0.0.0.0:4743:tim-server:4743"
+        "tim@tim-server"
+      ];
+      Environment = [
+        "AUTOSSH_GATETIME=0"
+        "HOME=/home/tim"
+      ];
+      Restart = "always";
+      RestartSec = "5s";
+    };
+  };
+
   virtualisation.oci-containers.containers = {
     # -------------------------------------------------------------------------
     # traefik  (uses a secret file for the Cloudflare token)

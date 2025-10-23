@@ -53,34 +53,6 @@ in {
             };
           };
         }
-        // (lib.optionalAttrs isHomeAssistant {
-          systemd.user.services.tim-server-tunnel = {
-            Unit = {
-              Description = "Persistent SSH tunnel to tim-server";
-            };
-            Install = {
-              WantedBy = ["default.target"];
-            };
-            Service = {
-              ExecStart = lib.concatStringsSep " " [
-                "${pkgs.autossh}/bin/autossh"
-                "-M 0"
-                "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -N -i %h/.ssh/id_ed25519"
-                "-o ExitOnForwardFailure=yes"
-                "-o ServerAliveInterval=30"
-                "-o ServerAliveCountMax=3"
-                "-R 0.0.0.0:8123:localhost:8123"
-                "-L 0.0.0.0:9001:tim-server:9001"
-                "-L 0.0.0.0:8085:tim-server:8085"
-                "-L 0.0.0.0:4743:tim-server:4743"
-                "tim@tim-server"
-              ];
-              Environment = ["AUTOSSH_GATETIME=0"];
-              Restart = "always";
-              RestartSec = "5s";
-            };
-          };
-        })
         // (lib.optionalAttrs (_name == "tim") {
           home.activation.gameSaveSymlinks = lib.hm.dag.entryAfter ["writeBoundary"] ''
             # Create the SaveGames directory
