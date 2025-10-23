@@ -147,6 +147,24 @@
     '';
   };
 
+  systemd.services.fixDockerFirewall = {
+    description = "Apply IPv6 forwarding rules to DOCKER-USER after Docker starts";
+    after = ["docker.service"];
+    bindsTo = ["docker.service"]; # Restart this service if Docker restarts
+    wantedBy = ["multi-user.target"];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStart = let
+        script = pkgs.writeShellScript "fix-docker-fw.sh" ''
+          #!${pkgs.runtimeShell}
+          ${pkgs.iptables}/bin/ip6tables -I DOCKER-USER -i end0 -o wpan0 -j ACCEPT
+          ${pkgs.iptables}/bin/ip6tables -I DOCKER-USER -i wpan0 -o end0 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+        '';
+      in "${script}";
+    };
+  };
+
   virtualisation.oci-containers.containers = {
     # -------------------------------------------------------------------------
     # traefik  (uses a secret file for the Cloudflare token)
