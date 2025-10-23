@@ -10,12 +10,16 @@
     config = {allowUnfree = true;};
     inherit system;
   };
+  stable = import inputs.nixpkgs-stable {
+    config = {allowUnfree = true;};
+    inherit system;
+  };
 in {
   services.home-assistant = {
     enable = true;
 
     # Use unstable package for latest features
-    package = unstable.home-assistant;
+    package = stable.home-assistant;
 
     # Declarative configuration mode - managed by NixOS
     config = {
