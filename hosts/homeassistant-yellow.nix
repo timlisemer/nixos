@@ -320,9 +320,18 @@
       ports = ["8082:80"]; # Expose Filebrowser UI on host port 8082
 
       volumes = [
-        "/mnt/docker-data/volumes/filebrowser:/srv:rw" # Files to browse
         "/mnt/docker-data/volumes/filebrowser/config:/config:rw" # Filebrowser config
         "/mnt/docker-data/volumes/filebrowser/database:/database:rw" # Filebrowser database
+
+        # Files to browse
+        "/mnt/docker-data/volumes/homeassistant/config:/srv/homeassistant config:rw"
+        "/mnt/docker-data/volumes/homeassistant/media:/srv/homeassistant media:rw"
+        "/mnt/docker-data/volumes/traefik:/srv/traefik (homeassistant-yellow):rw"
+        "/mnt/docker-data/volumes/pihole:/srv/pihole:rw"
+        "/mnt/docker-data/volumes/portainer:/srv/portainer:rw"
+        "/mnt/docker-data/volumes/syncthing:/srv/syncthing:rw"
+        "/mnt/docker-data/volumes/openthread-border-router:/srv/openthread-border-router:rw"
+        "/mnt/docker-data/volumes/matter-server:/srv/matter-server:rw"
       ];
 
       environment.TZ = "Europe/Berlin";
