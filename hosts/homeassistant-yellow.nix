@@ -324,8 +324,7 @@
         "/mnt/docker-data/volumes/filebrowser/database:/database:rw" # Filebrowser database
 
         # Files to browse
-        "/mnt/docker-data/volumes/homeassistant/config:/srv/homeassistant config:rw"
-        "/mnt/docker-data/volumes/homeassistant/media:/srv/homeassistant media:rw"
+        "/var/lib/homeassistant:/srv/homeassistant:rw"
         "/mnt/docker-data/volumes/traefik:/srv/traefik (homeassistant-yellow):rw"
         "/mnt/docker-data/volumes/pihole:/srv/pihole:rw"
         "/mnt/docker-data/volumes/portainer:/srv/portainer:rw"

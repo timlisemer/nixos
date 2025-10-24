@@ -138,6 +138,7 @@
     userBackupDirs = ["Coding" "Desktop" "Documents" "Pictures" "Videos" "Music" "Public" "Templates"];
     userDotFiles = [".config" ".mozilla" ".bash_history" ".steam" ".vscode-server" ".npm" ".vscode" ".local/share/kicad"];
     userGameFiles = [".local/share/Steam/steamapps/compatdata/916440/pfx/drive_c/users/steamuser/Documents/Anno 1800/accounts/6f5db650-dcf0-4fca-9b67-21a7c8ac7dc1" ".local/share/Paradox Interactive/" ".local/share/Steam/steamapps/compatdata/916440/pfx/drive_c/users/steamuser/Documents/Anno 1800/mods"];
+    systemFiles = ["/var/lib/homeassistant"];
     backupPaths = builtins.concatLists (builtins.map (
       username: let
         h = "/home/${username}/";
@@ -145,6 +146,7 @@
         (map (dir: "${h}${dir}") userBackupDirs)
         ++ (map (dir: "${h}${dir}") userDotFiles)
         ++ (map (dir: "${h}${dir}") userGameFiles)
+        ++ systemFiles
     ) (builtins.attrNames users));
   in {
     mkSystem = {
