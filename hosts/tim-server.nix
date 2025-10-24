@@ -65,7 +65,6 @@
       80 # Traefik HTTP
       443 # HTTPS / Traefik
       2283 # Immich server
-      3080 # LibreChat
       4743 # Vaultwarden
       8085 # Traefik dashboard
       8123 # Home Assistant (tunneled from homeassistant-yellow)
@@ -332,12 +331,6 @@
       };
     };
   };
-
-  #system.activationScripts.copyLibrechatYaml = lib.stringAfter ["var"] ''
-  #  mkdir -p /mnt/docker-data/volumes/librechat-api
-  #  cp ${./../files/librechat.yaml} /mnt/docker-data/volumes/librechat-api/librechat.yaml
-  #  chmod 644 /mnt/docker-data/volumes/librechat-api/librechat.yaml
-  #'';
 
   system.activationScripts.copyMcpServerConfig = lib.stringAfter ["var"] ''
     mkdir -p /mnt/docker-data/volumes/mcp-server-host/config

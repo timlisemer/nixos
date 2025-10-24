@@ -103,11 +103,10 @@
       5580 # Matter server
       8000 # Portainer API
       8080 # Traefik dashboard
-      8085 # Server Traefik dashboard
       8081 # OpenThread Border Router
-      8083 # Pi-hole web UI
       8082 # Filebrowser UI
-      8083 # OpenThread Border Router
+      8083 # Pi-hole web UI
+      8085 # Server Traefik dashboard
       8123 # HomeAssistant
       9443 # Portainer UI
     ];
@@ -115,10 +114,10 @@
     # UDP ports to open
     allowedUDPPorts = [
       53 # Pi-hole DNS
-      19788 # Thread MLE (Mesh Link Establishment)
       5353 # Multicast DNS (mDNS)
-      49154 # OpenThread Border Agent port
+      19788 # Thread MLE (Mesh Link Establishment)
       45963 # TREL (Thread Radio Encapsulation Link)
+      49154 # OpenThread Border Agent port
       61631 # Backbone Border Router (BBR) for the Thread Management Framework (TMF)
     ];
 
