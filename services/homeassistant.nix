@@ -221,8 +221,9 @@ in {
 
       # External file includes
       automation = "!include automations.yaml";
-      script = "!include scripts.yaml";
       scene = "!include scenes.yaml";
+      script = "!include scripts.yaml";
+      zone = "!include zones.yaml";
     };
 
     # Lovelace configuration will be added later
