@@ -268,5 +268,9 @@ in {
       # Camera/Doorbell integrations
       "reolink"
     ];
+
+    customComponents = [
+      pkgs.home-assistant-custom-components.better_thermostat
+    ];
   };
 }
