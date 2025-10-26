@@ -4,6 +4,7 @@
   ...
 }: {
   environment.systemPackages = with pkgs; [
+    coder
     haskellPackages.cabal-install
     glib-networking
     libcanberra-gtk2

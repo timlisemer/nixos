@@ -21,10 +21,10 @@
   # Define all extensions as a list for easy reference
   extensionList =
     (with vscodeExtensions; [
+      coder.coder-remote
       ms-python.python
       ms-python.vscode-pylance
       ms-python.debugpy
-      ms-vscode-remote.remote-ssh
       ms-vscode-remote.remote-containers
       ms-vscode.makefile-tools
       github.copilot
@@ -70,6 +70,11 @@ in {
               sha256 = "sha256-A/ta6UXAeDHQImeUqBEMDWNkevaxkGhFN1fb90S+8hY=";
             }
           ]
+          ++ (with vscodeExtensions; [
+            ms-vscode-remote.remote-ssh
+            github.copilot
+            github.copilot-chat
+          ])
           ++ extensionList;
       })
       (stable.writeShellScriptBin "sshcode" ''
