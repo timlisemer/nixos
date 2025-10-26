@@ -92,6 +92,12 @@
     eslint_d
     pkg-config
     gobject-introspection
+    # ESP32-H2 tooling
+    espflash
+    ldproxy
+    openocd
+    probe-rs
+    minicom
     rustc
     cargo
     cargo-edit

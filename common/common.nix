@@ -41,6 +41,11 @@ in {
     SGX_ENCLAVE_SIZE = "4G";
     RUST_MIN_STACK = "268435456";
     QT_QPA_PLATFORM = "wayland";
+    # ESP32-H2 (riscv32imac-unknown-none-elf) tooling
+    CARGO_TARGET_RISCV32IMAC_UNKNOWN_NONE_ELF_LINKER = "${pkgs.ldproxy}/bin/ldproxy";
+    LDPROXY_LINKER = "${pkgs.llvmPackages_latest.lld}/bin/rust-lld";
+    CARGO_TARGET_RISCV32IMAC_UNKNOWN_NONE_ELF_RUNNER = "${pkgs.espflash}/bin/espflash flash --monitor";
+    ESPFLASH_BAUD = "921600";
     # WEBKIT_DISABLE_DMABUF_RENDERER = "1"; # Tauri Apps couldn’t run on NixOS NVIDIA
     # PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig:${pkgs.glib.dev}/lib/pkgconfig:${pkgs.gtk3.dev}/lib/pkgconfig:${pkgs.gtk4.dev}/lib/pkgconfig";
     BLESH_PATH = "${pkgs.blesh}/share/blesh";
