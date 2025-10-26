@@ -94,11 +94,12 @@
     gobject-introspection
     rustc
     cargo
-    rustfmt
-    clippy
     cargo-edit
     cargo-tauri
     cargo-expand
+    cargo-generate
+    rustfmt
+    clippy
     sqlite
     at-spi2-atk
     atkmm

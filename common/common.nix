@@ -46,7 +46,6 @@ in {
     BLESH_PATH = "${pkgs.blesh}/share/blesh";
     LIBRARY_PATH = "/run/current-system/sw/lib";
     # environment.variables.GEMINI_API_KEY = "YOUR_API_KEY"; # OPTIONAL - For Gemini CLI
-    GITHUB_TOKEN = "${config.sops.placeholder.github_token}";
   };
   environment.pathsToLink = ["/lib/pkgconfig" "/share/pkgconfig" "/include" "/lib"];
 
