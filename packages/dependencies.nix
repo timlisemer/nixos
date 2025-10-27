@@ -8,6 +8,7 @@
     targets = ["riscv32imac-unknown-none-elf" "riscv32imc-unknown-none-elf"];
     extensions = ["rust-src" "rustfmt" "clippy"];
   };
+  rustAnalyzer = pkgs.rust-bin.stable.latest.rust-analyzer;
 in {
   environment.systemPackages = with pkgs; [
     coder
@@ -94,7 +95,7 @@ in {
     vimPlugins.nvim-treesitter-parsers.markdown_inline
     vimPlugins.mini-nvim
     pyright
-    rust-analyzer
+    rustAnalyzer
     prettierd
     eslint_d
     pkg-config

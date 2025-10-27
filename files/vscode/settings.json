@@ -43,6 +43,8 @@
   ],
   "rust-analyzer.procMacro.enable": true,
   "rust-analyzer.lens.enable": true,
+  // Force VSCode extension to use system rust-analyzer (from oxalica overlay)
+  "rust-analyzer.server.path": "/run/current-system/sw/bin/rust-analyzer",
 
   // Typescript setup
   "typescript.tsserver.experimental.enableProjectDiagnostics": true,
