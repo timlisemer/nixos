@@ -2,7 +2,13 @@
   config,
   pkgs,
   ...
-}: {
+}: let
+  # Default Rust toolchain via oxalica rust-overlay, pinned and with ESP32-H2 target
+  rustToolchain = pkgs.rust-bin.stable.latest.default.override {
+    targets = ["riscv32imac-unknown-none-elf" "riscv32imc-unknown-none-elf"];
+    extensions = ["rust-src" "rustfmt" "clippy"];
+  };
+in {
   environment.systemPackages = with pkgs; [
     coder
     haskellPackages.cabal-install
@@ -99,14 +105,11 @@
     openocd
     probe-rs
     minicom
-    rustc
-    cargo
+    rustToolchain
     cargo-edit
     cargo-tauri
     cargo-expand
     cargo-generate
-    rustfmt
-    clippy
     sqlite
     at-spi2-atk
     atkmm

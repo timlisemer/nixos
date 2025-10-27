@@ -11,6 +11,8 @@
 }: let
   dockerBin = "${pkgs.docker}/bin/docker";
 in {
+  nixpkgs.overlays = [inputs.rust-overlay.overlays.default];
+
   # imports
   imports = [
     home-manager.nixosModules.home-manager

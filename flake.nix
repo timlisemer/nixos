@@ -44,6 +44,11 @@
       inputs.nixpkgs.follows = "nixpkgs-stable";
     };
 
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs-stable";
+    };
+
     vscode-server = {
       url = "git+ssh://git@github.com/nix-community/nixos-vscode-server.git";
       inputs.nixpkgs.follows = "nixpkgs-stable";
@@ -96,6 +101,7 @@
     adwaita_hypercursor,
     tim-nvim,
     claude,
+    rust-overlay,
     ...
   }: let
     # ────────────────────────────────────────────────────────────────
