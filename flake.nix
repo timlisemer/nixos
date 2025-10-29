@@ -74,6 +74,10 @@
       # url = "path:/home/tim/Coding/Other/restic-backup-service"; # for local development
       inputs.nixpkgs.follows = "nixpkgs-stable";
     };
+    nixpkgs-esp-dev = {
+      url = "github:mirrexagon/nixpkgs-esp-dev";
+      inputs.nixpkgs.follows = "nixpkgs-stable";
+    };
   };
 
   # Optional: Binary cache for the nixos-raspberrypi flake
@@ -98,6 +102,7 @@
     firefox-gnome-theme,
     nixos-wsl,
     nixos-raspberrypi,
+    nixpkgs-esp-dev,
     adwaita_hypercursor,
     tim-nvim,
     claude,

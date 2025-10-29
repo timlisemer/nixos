@@ -3,12 +3,18 @@
   pkgs,
   ...
 }: let
-  # Standard host Rust toolchain, extended with RISC-V target for ESP32-H2 cross-compilation
-  rustToolchain = pkgs.rust-bin.stable.latest.default.override {
-    targets = ["riscv32imac-unknown-none-elf"];
-    extensions = ["rust-src" "rustfmt" "clippy"];
-  };
-  rustAnalyzer = pkgs.rust-bin.stable.latest.rust-analyzer;
+  # Global upstream nightly toolchain to support build-std for custom targets
+  rustToolchain = pkgs.rust-bin.selectLatestNightlyWith (
+    toolchain:
+      toolchain.default.override {
+        targets = [
+          # Keep upstream-provided target; custom target will be handled via build-std
+          "riscv32imac-unknown-none-elf"
+        ];
+        extensions = ["rust-src" "rustfmt" "clippy"];
+      }
+  );
+  rustAnalyzer = pkgs.rust-bin.nightly.latest.rust-analyzer;
 in {
   environment.systemPackages = with pkgs; [
     coder

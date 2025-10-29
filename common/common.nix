@@ -11,7 +11,7 @@
 }: let
   dockerBin = "${pkgs.docker}/bin/docker";
 in {
-  nixpkgs.overlays = [inputs.rust-overlay.overlays.default];
+  nixpkgs.overlays = [inputs.rust-overlay.overlays.default inputs.nixpkgs-esp-dev.overlays.default];
 
   # imports
   imports = [
@@ -37,6 +37,7 @@ in {
   # Environment Variables
   environment.sessionVariables = {
     RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
+    RUST_TARGET_PATH = "/etc/rust/targets";
     MOZ_DISABLE_RDD_SANDBOX = "1";
     MUTTER_DEBUG_KMS_THREAD_TYPE = "user";
     NODE_OPTIONS = "--max-old-space-size=4096";
@@ -47,7 +48,10 @@ in {
     CARGO_TARGET_RISCV32IMAC_UNKNOWN_NONE_ELF_LINKER = "${pkgs.llvmPackages_latest.lld}/bin/ld.lld";
     LDPROXY_LINKER = "${pkgs.llvmPackages_latest.lld}/bin/ld.lld";
     CARGO_TARGET_RISCV32IMAC_UNKNOWN_NONE_ELF_RUNNER = "${pkgs.espflash}/bin/espflash flash --monitor";
-    ESPFLASH_BAUD = "921600";
+    ESPFLASH_BAUD = "115200";
+    # Rust ESP-IDF target (riscv32imac-esp-espidf)
+    CARGO_TARGET_RISCV32IMAC_ESP_ESPIDF_LINKER = "${pkgs.ldproxy}/bin/ldproxy";
+    CARGO_TARGET_RISCV32IMAC_ESP_ESPIDF_RUNNER = "${pkgs.espflash}/bin/espflash flash --monitor";
     # WEBKIT_DISABLE_DMABUF_RENDERER = "1"; # Tauri Apps couldn’t run on NixOS NVIDIA
     # PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig:${pkgs.glib.dev}/lib/pkgconfig:${pkgs.gtk3.dev}/lib/pkgconfig:${pkgs.gtk4.dev}/lib/pkgconfig";
     BLESH_PATH = "${pkgs.blesh}/share/blesh";
@@ -58,6 +62,30 @@ in {
 
   # Ensure dev outputs are available so .pc files exist
   environment.extraOutputsToInstall = ["dev"];
+
+  # Provide custom Rust target JSON globally
+  environment.etc."rust/targets/riscv32imac-esp-espidf.json".text = ''
+    {
+      "arch": "riscv32",
+      "data-layout": "e-m:e-p:32:32-i64:64-n32-S128",
+      "llvm-target": "riscv32",
+      "target-endian": "little",
+      "target-pointer-width": "32",
+      "target-c-int-width": "32",
+      "os": "espidf",
+      "env": "",
+      "vendor": "esp",
+      "executables": true,
+      "features": "+m,+a,+c",
+      "relocation-model": "static",
+      "panic-strategy": "abort",
+      "max-atomic-width": 32,
+      "crt-static-default": false,
+      "crt-static-respected": true,
+      "eh-frame-header": false,
+      "emit-debug-gdb-scripts": false
+    }
+  '';
 
   # Build PKG_CONFIG_PATH dynamically at login
   environment.loginShellInit = ''
@@ -338,6 +366,18 @@ in {
         };
         ".config/starship.toml" = {
           source = builtins.toPath ../files/starship.toml;
+          force = true;
+        };
+        ".cargo/config.toml" = {
+          text = ''
+            [unstable]
+            build-std = ["core", "alloc"]
+            build-std-features = ["compiler-builtins-mem"]
+
+            [target.riscv32imac-esp-espidf]
+            linker = "${pkgs.ldproxy}/bin/ldproxy"
+            runner = "${pkgs.espflash}/bin/espflash flash --monitor"
+          '';
           force = true;
         };
       };
