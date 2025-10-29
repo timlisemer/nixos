@@ -71,7 +71,9 @@ in {
     nixpkgs-fmt
     xorg.libxcb
     openal
+    lsof
     rpiboot
+    psmisc
     screen
     spice
     # spice-gtk

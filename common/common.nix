@@ -108,6 +108,17 @@ in {
   # Load the kernel module for Silicon Labs USB-to-UART bridges. For the homeassistant yellow
   boot.kernelModules = ["cp210x"];
 
+  # Serial port hygiene: prevent ModemManager from grabbing MCU/dev boards
+  networking.modemmanager.enable = false;
+
+  # Ensure ModemManager (if present) ignores Espressif and Silicon Labs serial interfaces
+  services.udev.extraRules = ''
+    # Espressif (USB-CDC ACM) - ESP32-S2/S3/H2 native USB and USB-Serial-JTAG
+    ACTION=="add|change", SUBSYSTEM=="tty", ATTRS{idVendor}=="303a", ENV{ID_MM_DEVICE_IGNORE}="1", ENV{ID_MM_PORT_IGNORE}="1"
+    # Silicon Labs (CP210x and CDC ACM variants)
+    ACTION=="add|change", SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ENV{ID_MM_DEVICE_IGNORE}="1", ENV{ID_MM_PORT_IGNORE}="1"
+  '';
+
   # Enable CUPS to print documents.
   services.printing.enable = true;
 
@@ -190,7 +201,7 @@ in {
       isNormalUser = true;
       description = user.fullName;
       hashedPassword = user.hashedPassword;
-      extraGroups = ["networkmanager" "wheel" "dialout" "docker" "i2c"];
+      extraGroups = ["networkmanager" "wheel" "dialout" "uucp" "docker" "i2c"];
       openssh.authorizedKeys.keys = user.authorizedKeys or [];
     })
     users;

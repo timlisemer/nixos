@@ -3,9 +3,9 @@
   pkgs,
   ...
 }: let
-  # Default Rust toolchain via oxalica rust-overlay, pinned and with ESP32-H2 target
+  # Standard host Rust toolchain, extended with RISC-V target for ESP32-H2 cross-compilation
   rustToolchain = pkgs.rust-bin.stable.latest.default.override {
-    targets = ["riscv32imac-unknown-none-elf" "riscv32imc-unknown-none-elf"];
+    targets = ["riscv32imac-unknown-none-elf"];
     extensions = ["rust-src" "rustfmt" "clippy"];
   };
   rustAnalyzer = pkgs.rust-bin.stable.latest.rust-analyzer;
