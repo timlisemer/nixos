@@ -85,6 +85,15 @@ in {
               echo "Victoria 3 save directory not found, skipping symlink"
             fi
 
+            # Europa Universalis V save game symlink
+            EUV_TARGET="/home/tim/.local/share/Steam/steamapps/compatdata/3450310/pfx/drive_c/users/steamuser/Documents/Paradox Interactive/Europa Universalis V/save games"
+            if [ -d "$EUV_TARGET" ]; then
+              ln -sfn "$EUV_TARGET" "$HOME/Games/SaveGames/Europa Universalis V"
+              echo "Created symlink for Europa Universalis V saves"
+            else
+              echo "Europa Universalis V save directory not found, skipping symlink"
+            fi
+
             # Create the Extra directory
             mkdir -p $HOME/Games/Extra
 
