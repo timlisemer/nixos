@@ -488,7 +488,7 @@ with lib.hm.gvariant; {
     };
 
     "org/gnome/desktop/app-folders/folders/b7f1bd08-58dc-44cd-9a8b-439e07678f8f" = {
-      apps = ["minecraft-launcher.desktop" "steam.desktop" "Anno 1800.desktop" "Counter-Strike 2.desktop" "Crusader Kings III.desktop" "Cyberpunk 2077.desktop" "Europa Universalis IV.desktop" "Factorio.desktop" "Fall Guys.desktop" "Farthest Frontier.desktop" "Hearts of Iron IV.desktop" "Hogwarts Legacy.desktop" "Horizon Forbidden West Complete Edition.desktop" "Marvels Spider-Man Remastered.desktop" "Palworld.desktop" "Pummel Party.desktop" "Rise of the Tomb Raider.desktop" "Rocket League.desktop" "Sid Meier's Civilization VI.desktop" "Stardew Valley.desktop" "Stellaris.desktop" "Total War PHARAOH.desktop" "Victoria 3.desktop" "org.prismlauncher.PrismLauncher.desktop" "Diablo IV.desktop" "DEATH STRANDING DIRECTOR'S CUT.desktop"];
+      apps = ["minecraft-launcher.desktop" "steam.desktop" "Anno 1800.desktop" "Counter-Strike 2.desktop" "Crusader Kings III.desktop" "Cyberpunk 2077.desktop" "Europa Universalis IV.desktop" "Factorio.desktop" "Fall Guys.desktop" "Farthest Frontier.desktop" "Hearts of Iron IV.desktop" "Hogwarts Legacy.desktop" "Horizon Forbidden West Complete Edition.desktop" "Marvels Spider-Man Remastered.desktop" "Palworld.desktop" "Pummel Party.desktop" "Rise of the Tomb Raider.desktop" "Rocket League.desktop" "Sid Meier's Civilization VI.desktop" "Stardew Valley.desktop" "Stellaris.desktop" "Total War PHARAOH.desktop" "Victoria 3.desktop" "Europa Universalis V.desktop" "org.prismlauncher.PrismLauncher.desktop" "Diablo IV.desktop" "DEATH STRANDING DIRECTOR'S CUT.desktop"];
       name = "Games";
     };
 
