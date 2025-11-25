@@ -1,0 +1,83 @@
+views:
+  - title: Home
+    sections:
+      - type: grid
+        cards:
+          - square: true
+            type: grid
+            cards:
+              - type: custom:better-thermostat-ui-card
+                entity: climate.tim_buro_schlafzimmer_heizung
+                name: Tim & Schlafzimmer
+              - type: custom:better-thermostat-ui-card
+                entity: climate.kuche_heizung
+                name: Küche
+              - type: custom:better-thermostat-ui-card
+                entity: climate.wohnzimmer_heizung
+                name: Wohnzimmer
+            columns: 1
+            title: Heizung
+        column_span: 1
+      - type: grid
+        cards:
+          - square: true
+            type: grid
+            cards:
+              - type: entities
+                entities:
+                  - entity: switch.s4_2
+                  - entity: switch.s4
+                  - entity: switch.tim_pc_2
+                title: Büro
+              - type: entities
+                entities:
+                  - entity: switch.s4_3
+                  - entity: switch.s4_4
+                title: Tim-Schlafzimmer
+              - type: entities
+                entities: []
+                title: Küche
+              - type: entities
+                entities:
+                  - entity: switch.eve_energy_20ebo8301
+                title: Wohnzimmer
+            grid_options:
+              columns: 24
+              rows: auto
+            columns: 2
+            title: Allgemein
+        column_span: 2
+      - type: grid
+        cards:
+          - type: heading
+            icon: mdi:view-dashboard
+            heading: Überblick
+            heading_style: title
+          - clock_size: small
+            time_format: '24'
+            show_seconds: false
+            type: clock
+            grid_options:
+              columns: 12
+              rows: 1
+          - show_current: true
+            show_forecast: true
+            type: weather-forecast
+            entity: weather.forecast_home
+            forecast_type: daily
+            name: Griesheim
+          - square: true
+            type: grid
+            cards:
+              - type: clock
+              - show_current: true
+                show_forecast: true
+                type: weather-forecast
+                entity: weather.forecast_home
+                forecast_type: daily
+                name: Griesheim
+            columns: 1
+            title: Überblick
+            grid_options:
+              columns: 12
+              rows: 1

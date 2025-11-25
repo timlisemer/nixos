@@ -1,0 +1,31 @@
+views:
+  - title: Home
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading_style: title
+          - type: custom:better-thermostat-ui-card
+            entity: climate.tim_buro_schlafzimmer_heizung
+            eco_temperature: 18
+            disable_summer: false
+            disable_menu: false
+            disable_battery_warning: false
+            set_current_as_main: false
+            name: Tim Büro & Schlafzimmer
+      - type: grid
+        cards:
+          - type: heading
+            heading_style: title
+          - type: custom:better-thermostat-ui-card
+            entity: climate.kuche_heizung
+            eco_temperature: 18
+            name: Küche
+      - type: grid
+        cards:
+          - type: heading
+            heading_style: title
+          - type: custom:better-thermostat-ui-card
+            entity: climate.wohnzimmer_heizung
+            eco_temperature: 18
+            name: Wohnzimmer

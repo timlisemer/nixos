@@ -19,6 +19,12 @@
     url = "https://github.com/KartoffelToby/better-thermostat-ui-card/releases/download/2.2.1/better-thermostat-ui-card.js";
     sha256 = "sha256-tmE5EzioQQ21bAeMLuvYh/Pnh4Bi0iW254EVeT3fNO4=";
   };
+
+  heizung-dashboard = pkgs.writeText "heizung.yaml" (builtins.readFile ../files/homeassistant/heizung.yaml);
+
+  # Create a custom ui-lovelace.yaml that will serve as the default "Overview" dashboard
+  # We can make this a redirect to our other dashboards or a simple landing page
+  ui-lovelace = pkgs.writeText "ui-lovelace.yaml" (builtins.readFile ../files/homeassistant/overview.yaml);
 in {
   services.home-assistant = {
     enable = true;
@@ -268,5 +274,8 @@ in {
   systemd.tmpfiles.rules = [
     "d /var/lib/homeassistant/www 0755 homeassistant homeassistant"
     "L+ /var/lib/homeassistant/www/better-thermostat-ui-card.js - - - - ${better-thermostat-ui-card}"
+    "d /var/lib/homeassistant/dashboards 0755 homeassistant homeassistant"
+    "L+ /var/lib/homeassistant/dashboards/heizung.yaml - - - - ${heizung-dashboard}"
+    "L+ /var/lib/homeassistant/ui-lovelace.yaml - - - - ${ui-lovelace}"
   ];
 }
