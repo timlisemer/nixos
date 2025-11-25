@@ -14,6 +14,11 @@
     config = {allowUnfree = true;};
     inherit system;
   };
+
+  better-thermostat-ui-card = pkgs.fetchurl {
+    url = "https://github.com/KartoffelToby/better-thermostat-ui-card/releases/download/2.2.1/better-thermostat-ui-card.js";
+    sha256 = "sha256-tmE5EzioQQ21bAeMLuvYh/Pnh4Bi0iW254EVeT3fNO4=";
+  };
 in {
   services.home-assistant = {
     enable = true;
@@ -102,7 +107,7 @@ in {
       switch = [
         {
           platform = "wake_on_lan";
-          mac = "40:B0:76:DC:79:AA";
+          mac = "30:56:0F:00:CB:BF";
           name = "Tim-PC";
         }
       ];
@@ -126,26 +131,6 @@ in {
             value_template = "{{ 'ON' if value == 'ON' else 'OFF' }}";
           }
         ];
-      };
-
-      # Input boolean helper entities
-      input_boolean = {
-        tim_open_window = {
-          name = "Tim Open Window";
-          icon = "mdi:window-open";
-        };
-        tim_heating_boost = {
-          name = "Tim Heating Boost";
-          icon = "mdi:fire";
-        };
-        wohnzimmer_open_window = {
-          name = "Wohnzimmer Open Window";
-          icon = "mdi:window-open";
-        };
-        wohnzimmer_heating_boost = {
-          name = "Wohnzimmer Heating Boost";
-          icon = "mdi:fire";
-        };
       };
 
       # Alexa integration
@@ -201,6 +186,12 @@ in {
       # Lovelace configuration
       lovelace = {
         mode = "yaml";
+        resources = [
+          {
+            url = "/local/better-thermostat-ui-card.js";
+            type = "module";
+          }
+        ];
         dashboards = {
           camera-dashboard = {
             mode = "yaml";
@@ -273,4 +264,9 @@ in {
       pkgs.home-assistant-custom-components.better_thermostat
     ];
   };
+
+  systemd.tmpfiles.rules = [
+    "d /var/lib/homeassistant/www 0755 homeassistant homeassistant"
+    "L+ /var/lib/homeassistant/www/better-thermostat-ui-card.js - - - - ${better-thermostat-ui-card}"
+  ];
 }
