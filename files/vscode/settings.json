@@ -131,5 +131,7 @@
   "database-client.autoSync": true,
   "window.commandCenter": true,
   "cursor.cpp.disabledLanguages": ["plaintext", "markdown", "scminput"],
-  "extensions.ignoreRecommendations": true
+  "extensions.ignoreRecommendations": true,
+
+  "claudeCode.claudeProcessWrapper": "/run/current-system/sw/bin/claude"
 }
