@@ -47,7 +47,7 @@
     ])
     ++ (with vscodeUnstableExtensions; [
       ms-azuretools.vscode-containers
-      # anthropic.claude-code
+      anthropic.claude-code
       # kilocode.kilo-code
     ]);
 
