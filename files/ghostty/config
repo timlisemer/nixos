@@ -58,7 +58,12 @@
 
 # # part of the value. For example, this will have a value of "#123abc":
 
+# adwaita theme
 theme = dark:Adwaita Dark,light:Adwaita
+
+# default window width and height
+window-height = 28
+window-width = 100
 
 # background = #242424
 
