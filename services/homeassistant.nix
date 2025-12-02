@@ -32,6 +32,14 @@ in {
     # Use unstable package for latest features
     package = stable.home-assistant;
 
+    # Extra Python packages for performance optimizations
+    # Resolves: aiohttp_fast_zlib warning about zlib_ng and isal not being available
+    extraPackages = python3Packages:
+      with python3Packages; [
+        zlib-ng # Fast zlib replacement using zlib-ng
+        isal # Intel ISA-L bindings for fast compression
+      ];
+
     # Declarative configuration mode - managed by NixOS
     config = {
       # Loads default set of integrations. Do not remove.
