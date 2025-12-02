@@ -15,7 +15,7 @@
   services.xserver.enable = true;
 
   # Enable the GDM Display Manager
-  services.xserver.displayManager.gdm.enable = true;
+  services.displayManager.gdm.enable = true;
 
   # Export for every X/Wayland app that honours XCURSOR_*
   environment.variables = {
@@ -54,7 +54,7 @@
   services.switcherooControl.enable = true;
 
   # Laptop lid switch on external power
-  services.logind.lidSwitchExternalPower = "ignore";
+  services.logind.settings.Login.HandleLidSwitchExternalPower = "ignore";
 
   # Enable Power Profiles
   services.power-profiles-daemon.enable = true;

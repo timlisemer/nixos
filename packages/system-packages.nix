@@ -18,7 +18,7 @@ in {
     dbus
     nautilus-open-any-terminal
     syncthing
-    vaapiVdpau
+    libva-vdpau-driver
     comfortaa
     pciutils
     bat
@@ -38,7 +38,7 @@ in {
     gamemode
     gamescope
     unzip
-    justbuild
+    # justbuild
     pulseaudio
     sockdump
     nix-prefetch
@@ -64,7 +64,7 @@ in {
     unstable.codex
     unstable.code-cursor
     liquidctl
-    glxinfo
+    mesa-demos
     jq
     libglvnd
     mesa

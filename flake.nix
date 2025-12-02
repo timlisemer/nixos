@@ -1,6 +1,6 @@
 {
   inputs = {
-    nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-25.05"; # Stable channel for everything else
+    nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-25.11"; # Stable channel for everything else
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable"; # Unstable channel
     nixos-wsl.url = "git+ssh://git@github.com/nix-community/NixOS-WSL.git"; # NixOS WSL
     nixpkgs-oldvscode.url = "github:NixOS/nixpkgs/333d19c8b58402b94834ec7e0b58d83c0a0ba658"; # vscode 1.98.2
@@ -55,7 +55,7 @@
     };
 
     home-manager = {
-      url = "github:nix-community/home-manager/release-25.05";
+      url = "github:nix-community/home-manager/release-25.11";
       inputs.nixpkgs.follows = "nixpkgs-stable";
     };
 

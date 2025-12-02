@@ -16,7 +16,7 @@ in {
     glib-networking
     libcanberra-gtk2
     libdvdcss
-    vaapiVdpau
+    libva-vdpau-driver
     libva-utils
     pipewire
     socat
@@ -104,7 +104,7 @@ in {
     espflash
     ldproxy
     openocd
-    probe-rs
+    probe-rs-tools
     minicom
     rustToolchain
     cargo-edit

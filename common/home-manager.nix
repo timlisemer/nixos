@@ -35,9 +35,9 @@ in {
         {
           programs.git = {
             enable = true;
-            userName = user.gitUsername;
-            userEmail = user.gitEmail;
-            extraConfig = {
+            settings = {
+              user.name = user.gitUsername;
+              user.email = user.gitEmail;
               init.defaultBranch = "main";
               safe.directory = ["/etc/nixos" "/tmp/NixOs"];
               pull.rebase = "true";
