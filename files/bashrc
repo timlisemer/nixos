@@ -15,7 +15,7 @@ alias install_tim_server='nix run nixpkgs#nixos-anywhere -- --flake /etc/nixos#t
 alias install_homeassistant_yellow='nix run nixpkgs#nixos-anywhere -- --flake /etc/nixos#homeassistant-yellow nixos@homeassistant-yellow'
 alias nix_clean='sudo nix-collect-garbage -d && sudo nix-store --gc && sudo nix-store --optimize && sudo nix-store --verify --check-contents'
 alias git_amend='git amend'
-alias wake_tim-pc='wol 40:B0:76:DC:79:AA'
+alias wake_tim-pc='wol 30:56:0F:00:CB:BF'
 
 if [[ -n "$HYPRLAND_INSTANCE_SIGNATURE" ]]; then
 	alias logout='hyprctl dispatch exit'

@@ -132,8 +132,11 @@ in {
   # Enable the OpenSSH daemon.
   services.openssh = {
     enable = true;
-    settings.PermitRootLogin = "no";
-    settings.PasswordAuthentication = false;
+    settings = {
+      PermitRootLogin = "no";
+      PasswordAuthentication = false;
+      UseDns = false;
+    };
   };
 
   # VSCode Server
