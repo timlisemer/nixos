@@ -44,6 +44,9 @@
   # May break stuff on aarch64, but is needed for some packages
   nixpkgs.config.allowUnsupportedSystem = true;
 
+  # Disable power management - this is a 24/7 server
+  powerManagement.enable = false;
+
   # Fix shebangs in scripts # Try to bring this back to common/common.nix however currently it breaks a lot of things for example npm
   services.envfs.enable = true;
 

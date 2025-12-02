@@ -14,6 +14,18 @@
 
   # Machine specific configurations
 
+  # Enable Wake on LAN for ethernet interface
+  systemd.services.wol-enable = {
+    description = "Enable Wake on LAN for enp14s0";
+    after = ["network.target"];
+    wantedBy = ["multi-user.target"];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStart = "${pkgs.ethtool}/bin/ethtool -s enp14s0 wol g";
+    };
+  };
+
   boot = {
     kernelParams = ["acpi_enforce_resources=lax"];
     kernelModules = ["i2c-dev" "i2c-piix4"];

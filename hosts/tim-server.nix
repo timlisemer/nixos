@@ -41,6 +41,9 @@
 
   # Machine specific configurations
 
+  # Disable power management - this is a 24/7 server
+  powerManagement.enable = false;
+
   environment.variables.SERVER = "1";
 
   networking.networkmanager.insertNameservers = [
