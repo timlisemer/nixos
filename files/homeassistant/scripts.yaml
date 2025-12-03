@@ -1,0 +1,63 @@
+# Home Assistant Scripts Configuration
+# Documentation: https://www.home-assistant.io/integrations/script/
+
+# Thermostat control scripts for Better Thermostat integration
+set_thermostat_active:
+  alias: "Set Thermostat Active"
+  description: "Reset heating power and set temperature (for when room is in use)"
+  fields:
+    device_id:
+      description: "Better Thermostat device ID"
+      required: true
+      selector:
+        text:
+    entity_id:
+      description: "Climate entity ID"
+      required: true
+      selector:
+        entity:
+          domain: climate
+    temperature:
+      description: "Target temperature"
+      required: true
+      selector:
+        number:
+          min: 5
+          max: 30
+          step: 0.5
+          unit_of_measurement: "°C"
+  sequence:
+    - action: better_thermostat.reset_heating_power
+      data: {}
+      target:
+        device_id: "{{ device_id }}"
+    - action: climate.set_temperature
+      data:
+        temperature: "{{ temperature }}"
+      target:
+        entity_id: "{{ entity_id }}"
+
+set_thermostat_away:
+  alias: "Set Thermostat Away"
+  description: "Set target temperature for away mode (no reset)"
+  fields:
+    device_id:
+      description: "Better Thermostat device ID"
+      required: true
+      selector:
+        text:
+    temperature:
+      description: "Target temperature"
+      required: true
+      selector:
+        number:
+          min: 5
+          max: 30
+          step: 0.5
+          unit_of_measurement: "°C"
+  sequence:
+    - action: better_thermostat.set_temp_target_temperature
+      data:
+        temperature: "{{ temperature }}"
+      target:
+        device_id: "{{ device_id }}"
