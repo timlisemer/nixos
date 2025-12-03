@@ -24,7 +24,7 @@ sensor:
     unit_of_measurement: '°C'
     ignore_non_numeric: true
     entities:
-      - sensor.wohnzimmer_thermostat_1_temperature
+      # - sensor.wohnzimmer_thermostat_1_temperature
       - sensor.wohnzimmer_thermost_2_temperature
 
   - platform: group
@@ -140,3 +140,17 @@ template:
         unique_id: kuche_wohnzimmer_in_use
         device_class: occupancy
         state: "{{ is_state('binary_sensor.wohnzimmer_tv_steckdose_in_use', 'on') }}"
+
+      # Time-based heating period detection
+      - name: 'Daytime Heating Period'
+        unique_id: daytime_heating_period
+        state: >
+          {% set day = now().weekday() %}
+          {% set time_decimal = now().hour + now().minute / 60 %}
+          {% if day >= 4 %}
+            {# Weekend: Fri(4), Sat(5), Sun(6) - 8:00 to midnight #}
+            {{ time_decimal >= 8.0 }}
+          {% else %}
+            {# Weekday: Mon(0)-Thu(3) - 7:30 to 22:00 #}
+            {{ time_decimal >= 7.5 and time_decimal < 22.0 }}
+          {% endif %}
