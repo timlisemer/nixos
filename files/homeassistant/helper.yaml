@@ -1,0 +1,19 @@
+# Home Assistant Helper Groups Configuration
+# Documentation: https://www.home-assistant.io/integrations/group/
+#
+# TODO: Replace placeholder sensor names with your actual entity IDs
+#       Find your entities in: Settings -> Devices & Services -> Entities
+
+# Temperature Sensor Groups (arithmetic mean)
+sensor:
+  - platform: group
+    name: 'Küche Temperatur IA'
+    unique_id: kuche_temperatur_ia
+    type: mean
+    device_class: temperature
+    state_class: measurement
+    unit_of_measurement: '°C'
+    ignore_non_numeric: true
+    entities:
+      - sensor.kuche_thermostat_1_temperature
+      - sensor.kuche_thermostat_2_temperature
