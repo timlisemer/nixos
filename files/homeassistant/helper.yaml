@@ -1,8 +1,5 @@
 # Home Assistant Helper Groups Configuration
 # Documentation: https://www.home-assistant.io/integrations/group/
-#
-# TODO: Replace placeholder sensor names with your actual entity IDs
-#       Find your entities in: Settings -> Devices & Services -> Entities
 
 # Temperature Sensor Groups (arithmetic mean)
 sensor:
@@ -102,10 +99,44 @@ binary_sensor:
       - binary_sensor.buro_fenster
       - binary_sensor.tim_schlafzimmer_fenster
 
-# Template Binary Sensors (power-based device usage detection)
+# Template Binary Sensors
 template:
   - binary_sensor:
+      # Power-based device usage detection
       - name: 'Wohnzimmer-TV Steckdose in use'
         unique_id: wohnzimmer_tv_steckdose_in_use
         device_class: power
         state: "{{ states('sensor.wohnzimmer_tv_steckdose_power') | float(0) > 5 }}"
+
+      # Presence detection - individual
+      - name: 'Tim Home'
+        unique_id: tim_home
+        device_class: presence
+        state: "{{ states('person.tim') == 'home' }}"
+
+      - name: 'Edith Home'
+        unique_id: edith_home
+        device_class: presence
+        state: "{{ states('person.edith') == 'home' }}"
+
+      # Presence detection - combined
+      - name: 'Somebody Home'
+        unique_id: somebody_home
+        device_class: presence
+        state: "{{ states('person.tim') == 'home' or states('person.edith') == 'home' }}"
+
+      - name: 'Everyone Home'
+        unique_id: everyone_home
+        device_class: presence
+        state: "{{ states('person.tim') == 'home' and states('person.edith') == 'home' }}"
+
+      - name: 'Nobody is Home'
+        unique_id: nobody_home
+        device_class: presence
+        state: "{{ states('person.tim') != 'home' and states('person.edith') != 'home' }}"
+
+      # Room occupancy detection
+      - name: 'Küche & Wohnzimmer in use'
+        unique_id: kuche_wohnzimmer_in_use
+        device_class: occupancy
+        state: "{{ is_state('binary_sensor.wohnzimmer_tv_steckdose_in_use', 'on') }}"
