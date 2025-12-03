@@ -7,8 +7,8 @@
 # Temperature Sensor Groups (arithmetic mean)
 sensor:
   - platform: group
-    name: 'Küche Temperatur IA'
-    unique_id: kuche_temperatur_ia
+    name: 'Küche Temperatur'
+    unique_id: kuche_temperatur
     type: mean
     device_class: temperature
     state_class: measurement
@@ -17,3 +17,87 @@ sensor:
     entities:
       - sensor.kuche_thermostat_1_temperature
       - sensor.kuche_thermostat_2_temperature
+
+  - platform: group
+    name: 'Wohnzimmer Temperatur'
+    unique_id: wohnzimmer_temperatur
+    type: mean
+    device_class: temperature
+    state_class: measurement
+    unit_of_measurement: '°C'
+    ignore_non_numeric: true
+    entities:
+      - sensor.wohnzimmer_thermostat_1_temperature
+      - sensor.wohnzimmer_thermost_2_temperature
+
+  - platform: group
+    name: 'Tim Büro & Schlafzimmer Temperatur'
+    unique_id: tim_buro_schlafzimmer_temperatur
+    type: mean
+    device_class: temperature
+    state_class: measurement
+    unit_of_measurement: '°C'
+    ignore_non_numeric: true
+    entities:
+      - sensor.tim_thermometer_temperature
+      - sensor.buro_thermostat_temperature
+      # - sensor.tim_schlafzimmer_thermostat_temperature
+
+  # Humidity Sensor Groups (arithmetic mean)
+  - platform: group
+    name: 'Küche Luftfeuchtigkeit'
+    unique_id: kuche_luftfeuchtigkeit
+    type: mean
+    device_class: humidity
+    state_class: measurement
+    unit_of_measurement: '%'
+    ignore_non_numeric: true
+    entities:
+      - sensor.kuche_thermostat_1_humidity
+      - sensor.kuche_thermostat_2_humidity
+
+  - platform: group
+    name: 'Wohnzimmer Luftfeuchtigkeit'
+    unique_id: wohnzimmer_luftfeuchtigkeit
+    type: mean
+    device_class: humidity
+    state_class: measurement
+    unit_of_measurement: '%'
+    ignore_non_numeric: true
+    entities:
+      - sensor.wohnzimmer_thermostat_1_humidity
+      - sensor.wohnzimmer_thermost_2_humidity
+
+  - platform: group
+    name: 'Tim Büro & Schlafzimmer Luftfeuchtigkeit'
+    unique_id: tim_buro_schlafzimmer_luftfeuchtigkeit
+    type: mean
+    device_class: humidity
+    state_class: measurement
+    unit_of_measurement: '%'
+    ignore_non_numeric: true
+    entities:
+      - sensor.tim_thermometer_humidity
+      - sensor.buro_thermostat_humidity
+      # - sensor.tim_schlafzimmer_thermostat_humidity
+
+# Binary Sensor Groups (window/door sensors)
+binary_sensor:
+  - platform: group
+    name: 'Küche & Wohnzimmer Fenster Sensoren'
+    unique_id: kuche_wohnzimmer_fenster_sensoren
+    device_class: window
+    entities:
+      - binary_sensor.terrassentur
+      - binary_sensor.wohnzimmer_fenster
+      - binary_sensor.kuche_fenster_1
+      - binary_sensor.kuche_fenster_2
+
+  - platform: group
+    name: 'Tim Büro & Schlafzimmer Fenster Sensoren'
+    unique_id: tim_buro_schlafzimmer_fenster_sensoren
+    device_class: window
+    entities:
+      - binary_sensor.balkontur
+      - binary_sensor.buro_fenster
+      - binary_sensor.tim_schlafzimmer_fenster
