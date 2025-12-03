@@ -44,6 +44,10 @@
   # May break stuff on aarch64, but is needed for some packages
   nixpkgs.config.allowUnsupportedSystem = true;
 
+  # Migrate to new bootloader (kernelboot is deprecated)
+  # See: https://github.com/nvmd/nixos-raspberrypi/pull/61
+  boot.loader.raspberryPi.bootloader = "kernel";
+
   # Disable power management - this is a 24/7 server
   powerManagement.enable = false;
 
