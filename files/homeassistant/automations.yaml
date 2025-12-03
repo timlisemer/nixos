@@ -1,0 +1,74 @@
+# Climate Control Automations
+# Uses helper binary sensors for cleaner trigger logic
+
+- alias: "Tim Büro & Schlafzimmer Heizung"
+  description: "Control Tim's office/bedroom heating based on Tim's presence only"
+  triggers:
+    - trigger: state
+      entity_id: binary_sensor.tim_home
+    - trigger: time_pattern
+      hours: "/1"
+  conditions: []
+  actions:
+    - if:
+        - condition: state
+          entity_id: binary_sensor.tim_home
+          state: "on"
+      then:
+        - action: script.set_thermostat_active
+          data:
+            device_id: "8e43dd49edabad810cad3280f1bdaed2"
+            entity_id: "climate.tim_buro_schlafzimmer_heizung"
+            temperature: 22
+      else:
+        - action: script.set_thermostat_away
+          data:
+            device_id: "8e43dd49edabad810cad3280f1bdaed2"
+            temperature: 18
+  mode: single
+
+- alias: "Küche & Wohnzimmer Heizung"
+  description: "Control kitchen/living room heating based on Tim, Edith, or room activity"
+  triggers:
+    - trigger: state
+      entity_id: binary_sensor.tim_home
+    - trigger: state
+      entity_id: binary_sensor.edith_home
+    - trigger: state
+      entity_id: binary_sensor.kuche_wohnzimmer_in_use
+    - trigger: time_pattern
+      hours: "/1"
+  conditions: []
+  actions:
+    - variables:
+        room_active: >
+          {{ is_state('binary_sensor.tim_home', 'on')
+             or is_state('binary_sensor.edith_home', 'on')
+             or is_state('binary_sensor.kuche_wohnzimmer_in_use', 'on') }}
+    - if:
+        - condition: template
+          value_template: "{{ room_active }}"
+      then:
+        # Wohnzimmer: 22°C when active
+        - action: script.set_thermostat_active
+          data:
+            device_id: "b43a7d28a741800dded3477f78596736"
+            entity_id: "climate.wohnzimmer_heizung"
+            temperature: 22
+        # Küche: 20°C when active
+        - action: script.set_thermostat_active
+          data:
+            device_id: "2061d772983f8c3717ab1ab3ff5e26b0"
+            entity_id: "climate.kuche_heizung"
+            temperature: 20
+      else:
+        # Both rooms: 18°C when not active
+        - action: script.set_thermostat_away
+          data:
+            device_id: "b43a7d28a741800dded3477f78596736"
+            temperature: 18
+        - action: script.set_thermostat_away
+          data:
+            device_id: "2061d772983f8c3717ab1ab3ff5e26b0"
+            temperature: 18
+  mode: single

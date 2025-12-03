@@ -26,6 +26,8 @@
 
   helper-yaml = pkgs.writeText "helper.yaml" (builtins.readFile ../files/homeassistant/helper.yaml);
 
+  automations-yaml = pkgs.writeText "automations.yaml" (builtins.readFile ../files/homeassistant/automations.yaml);
+
   # Create a custom ui-lovelace.yaml that will serve as the default "Overview" dashboard
   # We can make this a redirect to our other dashboards or a simple landing page
   ui-lovelace = pkgs.writeText "ui-lovelace.yaml" (builtins.readFile ../files/homeassistant/overview.yaml);
@@ -295,5 +297,6 @@ in {
     "L+ /var/lib/homeassistant/ui-lovelace.yaml - - - - ${ui-lovelace}"
     "L+ /var/lib/homeassistant/scripts.yaml - - - - ${scripts-yaml}"
     "L+ /var/lib/homeassistant/helper.yaml - - - - ${helper-yaml}"
+    "L+ /var/lib/homeassistant/automations.yaml - - - - ${automations-yaml}"
   ];
 }

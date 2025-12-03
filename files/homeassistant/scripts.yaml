@@ -10,13 +10,8 @@ set_thermostat_active:
       description: "Better Thermostat device ID"
       required: true
       selector:
-        text:
-    entity_id:
-      description: "Climate entity ID"
-      required: true
-      selector:
-        entity:
-          domain: climate
+        device:
+          integration: better_thermostat
     temperature:
       description: "Target temperature"
       required: true
@@ -35,7 +30,7 @@ set_thermostat_active:
       data:
         temperature: "{{ temperature }}"
       target:
-        entity_id: "{{ entity_id }}"
+        device_id: "{{ device_id }}"
 
 set_thermostat_away:
   alias: "Set Thermostat Away"
@@ -45,7 +40,8 @@ set_thermostat_away:
       description: "Better Thermostat device ID"
       required: true
       selector:
-        text:
+        device:
+          integration: better_thermostat
     temperature:
       description: "Target temperature"
       required: true
