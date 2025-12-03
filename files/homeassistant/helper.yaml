@@ -101,3 +101,11 @@ binary_sensor:
       - binary_sensor.balkontur
       - binary_sensor.buro_fenster
       - binary_sensor.tim_schlafzimmer_fenster
+
+# Template Binary Sensors (power-based device usage detection)
+template:
+  - binary_sensor:
+      - name: 'Wohnzimmer-TV Steckdose in use'
+        unique_id: wohnzimmer_tv_steckdose_in_use
+        device_class: power
+        state: "{{ states('sensor.wohnzimmer_tv_steckdose_power') | float(0) > 5 }}"
