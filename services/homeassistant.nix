@@ -26,7 +26,7 @@
 
   helper-yaml = pkgs.writeText "helper.yaml" (builtins.readFile ../files/homeassistant/helper.yaml);
 
-  automations-yaml = pkgs.writeText "automations.yaml" (builtins.readFile ../files/homeassistant/automations.yaml);
+  climate-control-yaml = pkgs.writeText "climate_control.yaml" (builtins.readFile ../files/homeassistant/automations/climate_control.yaml);
 
   # Create a custom ui-lovelace.yaml that will serve as the default "Overview" dashboard
   # We can make this a redirect to our other dashboards or a simple landing page
@@ -235,7 +235,7 @@ in {
       };
 
       # External file includes
-      automation = "!include automations.yaml";
+      automation = "!include_dir_merge_list automations";
       scene = "!include scenes.yaml";
       script = "!include scripts.yaml";
       zone = "!include zones.yaml";
@@ -290,13 +290,14 @@ in {
   };
 
   systemd.tmpfiles.rules = [
-    "d /var/lib/homeassistant/www 0755 homeassistant homeassistant"
+    "d /var/lib/homeassistant/www 0755 hass hass"
     "L+ /var/lib/homeassistant/www/better-thermostat-ui-card.js - - - - ${better-thermostat-ui-card}"
-    "d /var/lib/homeassistant/dashboards 0755 homeassistant homeassistant"
+    "d /var/lib/homeassistant/dashboards 0755 hass hass"
     "L+ /var/lib/homeassistant/dashboards/heizung.yaml - - - - ${heizung-dashboard}"
     "L+ /var/lib/homeassistant/ui-lovelace.yaml - - - - ${ui-lovelace}"
     "L+ /var/lib/homeassistant/scripts.yaml - - - - ${scripts-yaml}"
     "L+ /var/lib/homeassistant/helper.yaml - - - - ${helper-yaml}"
-    "L+ /var/lib/homeassistant/automations.yaml - - - - ${automations-yaml}"
+    "d /var/lib/homeassistant/automations 0755 hass hass"
+    "L+ /var/lib/homeassistant/automations/climate_control.yaml - - - - ${climate-control-yaml}"
   ];
 }

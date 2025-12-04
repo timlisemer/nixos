@@ -1,34 +1,36 @@
 # Climate Control Automations
 # Uses helper binary sensors for cleaner trigger logic
 
-- alias: "Tim Büro & Schlafzimmer Heizung"
+- id: 'tim_buro_schlafzimmer_heizung'
+  alias: 'Tim Büro & Schlafzimmer Heizung'
   description: "Control Tim's office/bedroom heating based on Tim's presence only"
   triggers:
     - trigger: state
       entity_id: binary_sensor.tim_home
     - trigger: time_pattern
-      hours: "/1"
+      hours: '/1'
   conditions: []
   actions:
     - if:
         - condition: state
           entity_id: binary_sensor.tim_home
-          state: "on"
+          state: 'on'
       then:
         - action: script.set_thermostat_active
           data:
-            device_id: "8e43dd49edabad810cad3280f1bdaed2"
-            entity_id: "climate.tim_buro_schlafzimmer_heizung"
+            device_id: '8e43dd49edabad810cad3280f1bdaed2'
+            entity_id: 'climate.tim_buro_schlafzimmer_heizung'
             temperature: 22
       else:
         - action: script.set_thermostat_away
           data:
-            device_id: "8e43dd49edabad810cad3280f1bdaed2"
+            device_id: '8e43dd49edabad810cad3280f1bdaed2'
             temperature: 18
   mode: single
 
-- alias: "Küche & Wohnzimmer Heizung"
-  description: "Control kitchen/living room heating based on presence, room activity, and time of day"
+- id: 'kuche_wohnzimmer_heizung'
+  alias: 'Küche & Wohnzimmer Heizung'
+  description: 'Control kitchen/living room heating based on presence, room activity, and time of day'
   triggers:
     - trigger: state
       entity_id: binary_sensor.tim_home
@@ -39,41 +41,35 @@
     - trigger: state
       entity_id: binary_sensor.daytime_heating_period
     - trigger: time_pattern
-      hours: "/1"
+      hours: '/1'
   conditions: []
   actions:
     - variables:
         is_daytime: "{{ is_state('binary_sensor.daytime_heating_period', 'on') }}"
         room_in_use: "{{ is_state('binary_sensor.kuche_wohnzimmer_in_use', 'on') }}"
-        someone_home: >
-          {{ is_state('binary_sensor.tim_home', 'on')
-             or is_state('binary_sensor.edith_home', 'on') }}
-        # Heat if: room is in use (overrides night mode) OR (daytime AND someone home)
-        should_heat: "{{ room_in_use or (is_daytime and someone_home) }}"
+        someone_home: "{{ is_state('binary_sensor.tim_home', 'on') or is_state('binary_sensor.edith_home', 'on') }}"
+        should_heat: '{{ room_in_use or (is_daytime and someone_home) }}'
     - if:
         - condition: template
-          value_template: "{{ should_heat }}"
+          value_template: '{{ should_heat }}'
       then:
-        # Wohnzimmer: 22°C when active
         - action: script.set_thermostat_active
           data:
-            device_id: "b43a7d28a741800dded3477f78596736"
-            entity_id: "climate.wohnzimmer_heizung"
+            device_id: 'b43a7d28a741800dded3477f78596736'
+            entity_id: 'climate.wohnzimmer_heizung'
             temperature: 22
-        # Küche: 20°C when active
         - action: script.set_thermostat_active
           data:
-            device_id: "2061d772983f8c3717ab1ab3ff5e26b0"
-            entity_id: "climate.kuche_heizung"
+            device_id: '838541bdd2f7fe50973709d68bf1707c'
+            entity_id: 'climate.kuche_heizung'
             temperature: 20
       else:
-        # Both rooms: 18°C when night mode or away
         - action: script.set_thermostat_away
           data:
-            device_id: "b43a7d28a741800dded3477f78596736"
+            device_id: 'b43a7d28a741800dded3477f78596736'
             temperature: 18
         - action: script.set_thermostat_away
           data:
-            device_id: "2061d772983f8c3717ab1ab3ff5e26b0"
+            device_id: '838541bdd2f7fe50973709d68bf1707c'
             temperature: 18
   mode: single
