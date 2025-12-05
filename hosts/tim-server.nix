@@ -71,7 +71,6 @@
       4743 # Vaultwarden
       8085 # Traefik dashboard
       8123 # Home Assistant (tunneled from homeassistant-yellow)
-      9001 # Portainer agent
       25565 # Minecraft server
     ];
 
@@ -131,25 +130,6 @@
         "traefik.http.routers.api.service" = "api@internal";
         "traefik.enable" = "true";
       };
-    };
-
-    # -------------------------------------------------------------------------
-    # portainer_agent
-    # -------------------------------------------------------------------------
-    portainer_agent = {
-      image = "portainer/agent:latest";
-      autoStart = true;
-
-      autoRemoveOnStop = false; # prevent implicit --rm
-      extraOptions = ["--network=docker-network" "--ip=172.18.0.3"];
-
-      ports = ["9001:9001"];
-
-      volumes = [
-        "/mnt/docker-data/volumes/portainer:/var/lib/docker/volumes:rw"
-        "/var/run/docker.sock:/var/run/docker.sock:rw"
-      ];
-      # No environment values needed for the agent
     };
 
     # --------------------------------------------------------------------------

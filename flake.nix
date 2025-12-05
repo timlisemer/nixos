@@ -117,7 +117,6 @@
       "pihole.local.yakweide.de" = "10.0.0.2";
       "filebrowser.local.yakweide.de" = "10.0.0.2";
       "fritzbox.local.yakweide.de" = "10.0.0.2";
-      "portainer.local.yakweide.de" = "10.0.0.2";
       "syncthing.local.yakweide.de" = "10.0.0.2";
       "homeassistant.yakweide.de" = "142.132.234.128";
       "traefik.yakweide.de" = "142.132.234.128";

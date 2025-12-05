@@ -106,16 +106,16 @@
       53 # Pi-hole DNS
       80 # HTTP / Traefik
       443 # HTTPS / Traefik
+      1883 # Mosquitto MQTT
       5540 # Matter device communication port
       5580 # Matter server
-      8000 # Portainer API
       8080 # Traefik dashboard
       8081 # OpenThread Border Router
       8082 # Filebrowser UI
       8083 # Pi-hole web UI
       8085 # Server Traefik dashboard
       8123 # HomeAssistant
-      9443 # Portainer UI
+      9001 # Mosquitto WebSocket
     ];
 
     # UDP ports to open
@@ -188,7 +188,6 @@
         "-o ServerAliveInterval=30"
         "-o ServerAliveCountMax=3"
         "-R 0.0.0.0:8123:localhost:8123"
-        "-L 0.0.0.0:9001:tim-server:9001"
         "-L 0.0.0.0:8085:tim-server:8085"
         "-L 0.0.0.0:4743:tim-server:4743"
         "tim@tim-server"
@@ -294,27 +293,6 @@
     };
 
     # -------------------------------------------------------------------------
-    # portainer
-    # -------------------------------------------------------------------------
-    portainer = {
-      image = "portainer/portainer-ce:latest"; # Or use :lts for stability
-      autoStart = true;
-
-      autoRemoveOnStop = false; # prevent implicit --rm
-      extraOptions = ["--network=docker-network" "--ip=172.18.0.3"];
-
-      ports = [
-        "8000:8000"
-        "9443:9443"
-      ];
-
-      volumes = [
-        "/var/run/docker.sock:/var/run/docker.sock"
-        "/mnt/docker-data/volumes/portainer_data:/data"
-      ];
-    };
-
-    # -------------------------------------------------------------------------
     # filebrowser
     # -------------------------------------------------------------------------
     filebrowser = {
@@ -329,12 +307,12 @@
       volumes = [
         "/mnt/docker-data/volumes/filebrowser/config:/config:rw" # Filebrowser config
         "/mnt/docker-data/volumes/filebrowser/database:/database:rw" # Filebrowser database
+        "/mnt/docker-data/volumes/filebrowser/srv:/srv:rw"
 
         # Files to browse
         "/var/lib/homeassistant:/srv/homeassistant:rw"
         "/mnt/docker-data/volumes/traefik:/srv/traefik (homeassistant-yellow):rw"
         "/mnt/docker-data/volumes/pihole:/srv/pihole:rw"
-        "/mnt/docker-data/volumes/portainer:/srv/portainer:rw"
         "/mnt/docker-data/volumes/syncthing:/srv/syncthing:rw"
         "/mnt/docker-data/volumes/openthread-border-router:/srv/openthread-border-router:rw"
         "/mnt/docker-data/volumes/matter-server:/srv/matter-server:rw"
@@ -437,6 +415,30 @@
       volumes = [
         "/mnt/docker-data/volumes/matter-server:/data"
         "/run/dbus:/run/dbus:ro"
+      ];
+
+      environment = {
+        TZ = "Europe/Berlin";
+      };
+    };
+
+    # -------------------------------------------------------------------------
+    # mosquitto
+    # -------------------------------------------------------------------------
+    mosquitto = {
+      image = "eclipse-mosquitto:latest";
+      autoStart = true;
+
+      autoRemoveOnStop = false; # prevent implicit --rm
+      extraOptions = ["--network=docker-network" "--ip=172.18.0.6"];
+
+      ports = [
+        "1883:1883" # MQTT
+        "9001:9001" # WebSocket
+      ];
+
+      volumes = [
+        "/mnt/docker-data/volumes/mosquitto:/mosquitto:rw"
       ];
 
       environment = {

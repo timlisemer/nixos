@@ -43,29 +43,6 @@
       };
     };
   };
-
-  # Portainer Container
-  virtualisation.oci-containers.containers = {
-    # -------------------------------------------------------------------------
-    # portainer_agent
-    # -------------------------------------------------------------------------
-    portainer_agent = {
-      image = "portainer/agent:latest";
-      autoStart = true;
-
-      autoRemoveOnStop = false; # prevent implicit --rm
-      extraOptions = ["--network=docker-network" "--ip=172.18.0.3"];
-
-      ports = ["9001:9001"];
-
-      volumes = [
-        "/mnt/docker-data/volumes/portainer:/var/lib/docker/volumes:rw"
-        "/var/run/docker.sock:/var/run/docker.sock:rw"
-      ];
-      # No environment values needed for the agent
-    };
-  };
-
   # services.udev.extraRules = builtins.readFile ../files/OpenRGB/60-openrgb.rules;
 
   # environment.systemPackages = with pkgs; [openrgb-with-all-plugins];
