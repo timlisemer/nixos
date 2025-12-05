@@ -28,12 +28,6 @@
 
   climate-control-yaml = pkgs.writeText "climate_control.yaml" (builtins.readFile ../files/homeassistant/automations/climate_control.yaml);
 
-  audio-receiver-control-yaml = pkgs.substituteAll {
-    src = ../files/homeassistant/automations/audio_receiver_control.yaml;
-    name = "audio_receiver_control.yaml";
-    webhook_id_audio_receiver = config.sops.placeholder.webhook_id_audio_receiver;
-  };
-
   # Create a custom ui-lovelace.yaml that will serve as the default "Overview" dashboard
   # We can make this a redirect to our other dashboards or a simple landing page
   ui-lovelace = pkgs.writeText "ui-lovelace.yaml" (builtins.readFile ../files/homeassistant/overview.yaml);
@@ -299,6 +293,20 @@ in {
     "L+ /var/lib/homeassistant/helper.yaml - - - - ${helper-yaml}"
     "d /var/lib/homeassistant/automations 0755 hass hass"
     "L+ /var/lib/homeassistant/automations/climate_control.yaml - - - - ${climate-control-yaml}"
-    "L+ /var/lib/homeassistant/automations/audio_receiver_control.yaml - - - - ${audio-receiver-control-yaml}"
+    # audio_receiver_control.yaml is created by sops.templates below
   ];
+
+  # SOPS template for automation files with secrets
+  # Reads the YAML file and substitutes @placeholder@ with actual secrets at runtime
+  sops.templates."audio_receiver_control.yaml" = {
+    owner = "hass";
+    group = "hass";
+    mode = "0644";
+    path = "/var/lib/homeassistant/automations/audio_receiver_control.yaml";
+    content =
+      builtins.replaceStrings
+      ["@webhook_id_audio_receiver@"]
+      [config.sops.placeholder.webhook_id_audio_receiver]
+      (builtins.readFile ../files/homeassistant/automations/audio_receiver_control.yaml);
+  };
 }
