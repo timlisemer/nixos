@@ -1,0 +1,8 @@
+{
+  "name": "custom-quicksettings",
+  "description": "Custom Gnome quicksettings for easy homeassistant webhooks ",
+  "uuid": "gnome-quicksettings@timlisemer",
+  "shell-version": [
+    "49"
+  ]
+}

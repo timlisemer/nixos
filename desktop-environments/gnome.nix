@@ -1,8 +1,14 @@
 {
   config,
   pkgs,
+  users,
   ...
-}: {
+}: let
+  extensionSource = builtins.path {
+    path = ../files/gnome-extensions + "/gnome-quicksettings@timlisemer";
+    name = "gnome-quicksettings-timlisemer";
+  };
+in {
   programs.dconf.enable = true;
   services.desktopManager.gnome.enable = true;
 
@@ -14,9 +20,8 @@
     gnomeExtensions.blur-my-shell
     gnomeExtensions.dash-to-panel
     # gnomeExtensions.desktop-icons-ng-ding
-    gnomeExtensions.gtk4-desktop-icons-ng-ding
+    # gnomeExtensions.gtk4-desktop-icons-ng-ding
     gnomeExtensions.phi-pi-hole-indicator
-    gnomeExtensions.spotify-tray
     gnomeExtensions.user-themes
   ];
 
@@ -30,4 +35,9 @@
     gnome-system-monitor
     totem
   ];
+
+  systemd.tmpfiles.rules = builtins.concatLists (builtins.map (username: [
+    "d /home/${username}/.local/share/gnome-shell/extensions 0755 ${username} users -"
+    "L+ /home/${username}/.local/share/gnome-shell/extensions/gnome-quicksettings@timlisemer - - - - ${extensionSource}"
+  ]) (builtins.attrNames users));
 }

@@ -27,7 +27,8 @@
       ms-python.debugpy
       ms-vscode-remote.remote-containers
       ms-vscode.makefile-tools
-      ms-vscode-remote.remote-ssh
+      # ms-vscode-remote.remote-ssh
+      # anysphere.remote-ssh
       github.copilot
       cweijan.vscode-database-client2
       waderyan.gitblame
@@ -74,6 +75,7 @@ in {
           ++ (with vscodeExtensions; [
             github.copilot
             github.copilot-chat
+            ms-vscode-remote.remote-ssh
           ])
           ++ extensionList;
       })
