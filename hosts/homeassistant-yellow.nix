@@ -438,7 +438,9 @@
       ];
 
       volumes = [
-        "/mnt/docker-data/volumes/mosquitto:/mosquitto:rw"
+        "/mnt/docker-data/volumes/mosquitto/config:/mosquitto/config:rw"
+        "/mnt/docker-data/volumes/mosquitto/data:/mosquitto/data:rw"
+        "/mnt/docker-data/volumes/mosquitto/log:/mosquitto/log:rw"
       ];
 
       environment = {
