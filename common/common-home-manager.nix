@@ -10,7 +10,7 @@
   isHomeAssistant,
   ...
 }: let
-  astalPkgs = inputs.astal.packages.${pkgs.system};
+  astalPkgs = inputs.astal.packages.${pkgs.stdenv.hostPlatform.system};
   adwaitaHyprCursor = pkgs.stdenv.mkDerivation {
     pname = "adwaita-hyprcursor";
     version = "git";
