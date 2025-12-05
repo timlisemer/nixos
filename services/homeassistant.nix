@@ -28,6 +28,8 @@
 
   climate-control-yaml = pkgs.writeText "climate_control.yaml" (builtins.readFile ../files/homeassistant/automations/climate_control.yaml);
 
+  unavailable-entities-yaml = pkgs.writeText "unavailable_entities.yaml" (builtins.readFile ../files/homeassistant/automations/unavailable_entities.yaml);
+
   # Create a custom ui-lovelace.yaml that will serve as the default "Overview" dashboard
   # We can make this a redirect to our other dashboards or a simple landing page
   ui-lovelace = pkgs.writeText "ui-lovelace.yaml" (builtins.readFile ../files/homeassistant/overview.yaml);
@@ -293,6 +295,7 @@ in {
     "L+ /var/lib/homeassistant/helper.yaml - - - - ${helper-yaml}"
     "d /var/lib/homeassistant/automations 0755 hass hass"
     "L+ /var/lib/homeassistant/automations/climate_control.yaml - - - - ${climate-control-yaml}"
+    "L+ /var/lib/homeassistant/automations/unavailable_entities.yaml - - - - ${unavailable-entities-yaml}"
     # audio_receiver_control.yaml is created by sops.templates below
   ];
 

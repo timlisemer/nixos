@@ -1,0 +1,23 @@
+# Unavailable Entity Detection & Notification
+# Uses blueprint to detect and notify about unavailable entities
+
+- id: 'unavailable_entity_detection'
+  alias: Unavailable entity detection & notification
+  description: ''
+  use_blueprint:
+    path: gmlupatelli/unavailable_entities_notification.yaml
+    input:
+      time: '14:00:00'
+      actions:
+        - condition: template
+          value_template: '{{ entities | length > 0 }}'
+        - action: notify.persistent_notification
+          metadata: {}
+          data:
+            title: Unavailable Entities
+            message: "Here is a list of unavailable entities in your home:\n{{entities}}"
+        - action: notify.mobile_app_tim_handy
+          metadata: {}
+          data:
+            title: Unavailable Entities
+            message: "Here is a list of unavailable entities in your home:\n{{entities}}"
