@@ -1,20 +1,24 @@
-alias: Audio Receiver Control
-description: ""
-triggers:
-  - trigger: webhook
-    allowed_methods:
-      - POST
-      - PUT
-    local_only: true
-    webhook_id: "-dC_Warhx4zNGCclEHBFVawf0"
-conditions: []
-actions:
-  - type: toggle
-    device_id: 441987f6059dab787eecbf0bb4ab8772
-    entity_id: 163cf491ca723c4c3fae0276b9b44941
-    domain: switch
-  - type: toggle
-    device_id: 59dfe98b78d38430e8dac97b563135db
-    entity_id: 47dc605081e46b9e576e2a8bb9c39ee1
-    domain: switch
-mode: single
+# Audio Receiver Control Automation
+# Toggles audio receiver and subwoofer via webhook
+
+- id: 'audio_receiver_control'
+  alias: Audio Receiver Control
+  description: ""
+  triggers:
+    - trigger: webhook
+      allowed_methods:
+        - POST
+        - PUT
+      local_only: true
+      webhook_id: "-dC_Warhx4zNGCclEHBFVawf0"
+  conditions: []
+  actions:
+    - type: toggle
+      device_id: 441987f6059dab787eecbf0bb4ab8772
+      entity_id: 163cf491ca723c4c3fae0276b9b44941
+      domain: switch
+    - type: toggle
+      device_id: 59dfe98b78d38430e8dac97b563135db
+      entity_id: 47dc605081e46b9e576e2a8bb9c39ee1
+      domain: switch
+  mode: single

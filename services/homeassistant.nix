@@ -272,6 +272,12 @@ in {
 
       # Camera/Doorbell integrations
       "reolink"
+
+      # Media device integrations (discovered via network)
+      "cast" # Google Cast / Chromecast
+      "androidtv_remote" # Android TV Remote
+      "samsungtv" # Samsung TV
+      "homekit_controller" # HomeKit device control
     ];
 
     customComponents = [
