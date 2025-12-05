@@ -3,14 +3,14 @@
 
 - id: 'audio_receiver_control'
   alias: Audio Receiver Control
-  description: ""
+  description: ''
   triggers:
     - trigger: webhook
       allowed_methods:
         - POST
         - PUT
-      local_only: true
-      webhook_id: "-dC_Warhx4zNGCclEHBFVawf0"
+      local_only: false
+      webhook_id: '@webhook_id_audio_receiver@'
   conditions: []
   actions:
     - type: toggle

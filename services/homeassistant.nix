@@ -28,7 +28,11 @@
 
   climate-control-yaml = pkgs.writeText "climate_control.yaml" (builtins.readFile ../files/homeassistant/automations/climate_control.yaml);
 
-  audio-receiver-control-yaml = pkgs.writeText "audio_receiver_control.yaml" (builtins.readFile ../files/homeassistant/automations/audio_receiver_control.yaml);
+  audio-receiver-control-yaml = pkgs.substituteAll {
+    src = ../files/homeassistant/automations/audio_receiver_control.yaml;
+    name = "audio_receiver_control.yaml";
+    webhook_id_audio_receiver = config.sops.placeholder.webhook_id_audio_receiver;
+  };
 
   # Create a custom ui-lovelace.yaml that will serve as the default "Overview" dashboard
   # We can make this a redirect to our other dashboards or a simple landing page
