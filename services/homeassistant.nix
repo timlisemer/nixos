@@ -124,18 +124,6 @@ in {
         ip_ban_enabled = false;
       };
 
-      # Wake on LAN integration
-      wake_on_lan = {};
-
-      # Switch configuration
-      switch = [
-        {
-          platform = "wake_on_lan";
-          mac = "30:56:0F:00:CB:BF";
-          name = "Tim-PC";
-        }
-      ];
-
       # Text to speech
       tts = [
         {

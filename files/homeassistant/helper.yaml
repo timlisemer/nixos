@@ -125,11 +125,6 @@ template:
         device_class: presence
         state: "{{ states('person.tim') == 'home' or states('person.edith') == 'home' }}"
 
-      - name: 'Everyone Home'
-        unique_id: everyone_home
-        device_class: presence
-        state: "{{ states('person.tim') == 'home' and states('person.edith') == 'home' }}"
-
       - name: 'Nobody is Home'
         unique_id: nobody_home
         device_class: presence
@@ -141,9 +136,34 @@ template:
         device_class: occupancy
         state: "{{ is_state('binary_sensor.wohnzimmer_tv_steckdose_in_use', 'on') }}"
 
+      # Power-based device usage detection for Büro & Tim Schlafzimmer
+      - name: 'Tim PC Steckdose in use'
+        unique_id: tim_pc_steckdose_in_use
+        device_class: power
+        state: "{{ states('sensor.tim_pc_steckdose_power') | float(0) > 5 }}"
+
+      - name: 'Tim TV Steckdose in use'
+        unique_id: tim_tv_steckdose_in_use
+        device_class: power
+        state: "{{ states('sensor.tim_tv_steckdose_power') | float(0) > 5 }}"
+
+      - name: 'Monitor in use'
+        unique_id: monitor_in_use
+        device_class: power
+        state: "{{ is_state('switch.monitor', 'on') }}"
+
+      - name: 'Büro & Tim Schlafzimmer in use'
+        unique_id: buro_tim_schlafzimmer_in_use
+        device_class: occupancy
+        state: >
+          {{ is_state('binary_sensor.tim_pc_steckdose_in_use', 'on')
+             or is_state('binary_sensor.tim_tv_steckdose_in_use', 'on')
+             or is_state('binary_sensor.monitor_in_use', 'on') }}
+
       # Time-based heating period detection
-      - name: 'Daytime Heating Period'
-        unique_id: daytime_heating_period
+      - name: 'Wohnzimmer & Küche Daytime Heating Period'
+        unique_id: wohnzimmer_kuche_daytime_heating_period
+        icon: mdi:moon-waning-crescent
         state: >
           {% set day = now().weekday() %}
           {% set time_decimal = now().hour + now().minute / 60 %}
@@ -154,3 +174,11 @@ template:
             {# Weekday: Mon(0)-Thu(3) - 7:30 to 22:00 #}
             {{ time_decimal >= 7.5 and time_decimal < 22.0 }}
           {% endif %}
+
+      - name: 'Tim Daytime Heating Period'
+        unique_id: tim_daytime_heating_period
+        icon: mdi:moon-waning-crescent
+        state: >
+          {% set time_decimal = now().hour + now().minute / 60 %}
+          {# Daytime: 9:00 to 01:00 (next day), Night: 01:00 to 09:00 #}
+          {{ time_decimal >= 9.0 or time_decimal < 1.0 }}

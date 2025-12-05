@@ -3,18 +3,26 @@
 
 - id: 'tim_buro_schlafzimmer_heizung'
   alias: 'Tim Büro & Schlafzimmer Heizung'
-  description: "Control Tim's office/bedroom heating based on Tim's presence only"
+  description: "Control Tim's office/bedroom heating based on Tim's presence, room activity, and time of day"
   triggers:
     - trigger: state
       entity_id: binary_sensor.tim_home
+    - trigger: state
+      entity_id: binary_sensor.buro_tim_schlafzimmer_in_use
+    - trigger: state
+      entity_id: binary_sensor.tim_daytime_heating_period
     - trigger: time_pattern
       hours: '/1'
   conditions: []
   actions:
+    - variables:
+        is_daytime: "{{ is_state('binary_sensor.tim_daytime_heating_period', 'on') }}"
+        room_in_use: "{{ is_state('binary_sensor.buro_tim_schlafzimmer_in_use', 'on') }}"
+        tim_home: "{{ is_state('binary_sensor.tim_home', 'on') }}"
+        should_heat: '{{ room_in_use or (is_daytime and tim_home) }}'
     - if:
-        - condition: state
-          entity_id: binary_sensor.tim_home
-          state: 'on'
+        - condition: template
+          value_template: '{{ should_heat }}'
       then:
         - action: script.set_thermostat_active
           data:
@@ -33,21 +41,19 @@
   description: 'Control kitchen/living room heating based on presence, room activity, and time of day'
   triggers:
     - trigger: state
-      entity_id: binary_sensor.tim_home
-    - trigger: state
-      entity_id: binary_sensor.edith_home
+      entity_id: binary_sensor.somebody_home
     - trigger: state
       entity_id: binary_sensor.kuche_wohnzimmer_in_use
     - trigger: state
-      entity_id: binary_sensor.daytime_heating_period
+      entity_id: binary_sensor.wohnzimmer_kuche_daytime_heating_period
     - trigger: time_pattern
       hours: '/1'
   conditions: []
   actions:
     - variables:
-        is_daytime: "{{ is_state('binary_sensor.daytime_heating_period', 'on') }}"
+        is_daytime: "{{ is_state('binary_sensor.wohnzimmer_kuche_daytime_heating_period', 'on') }}"
         room_in_use: "{{ is_state('binary_sensor.kuche_wohnzimmer_in_use', 'on') }}"
-        someone_home: "{{ is_state('binary_sensor.tim_home', 'on') or is_state('binary_sensor.edith_home', 'on') }}"
+        someone_home: "{{ is_state('binary_sensor.somebody_home', 'on') }}"
         should_heat: '{{ room_in_use or (is_daytime and someone_home) }}'
     - if:
         - condition: template

@@ -5,6 +5,7 @@
 set_thermostat_active:
   alias: "Set Thermostat Active"
   description: "Reset heating power and set temperature (for when room is in use)"
+  icon: mdi:heat-wave
   fields:
     device_id:
       description: "Better Thermostat device ID"
@@ -35,6 +36,7 @@ set_thermostat_active:
 set_thermostat_away:
   alias: "Set Thermostat Away"
   description: "Set target temperature for away mode (no reset)"
+  icon: mdi:heat-wave
   fields:
     device_id:
       description: "Better Thermostat device ID"

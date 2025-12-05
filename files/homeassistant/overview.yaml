@@ -25,21 +25,21 @@ views:
             cards:
               - type: entities
                 entities:
-                  - entity: switch.s4_2
-                  - entity: switch.s4
-                  - entity: switch.tim_pc_2
+                  - entity: switch.audio_receiver
+                  - entity: switch.subwoofer
+                  - entity: switch.tim_pc_steckdose
                 title: Büro
               - type: entities
                 entities:
-                  - entity: switch.s4_3
-                  - entity: switch.s4_4
+                  - entity: switch.monitor
+                  - entity: switch.tim_tv_steckdose
                 title: Tim-Schlafzimmer
               - type: entities
                 entities: []
                 title: Küche
               - type: entities
                 entities:
-                  - entity: switch.eve_energy_20ebo8301
+                  - entity: switch.wohnzimmer_tv_steckdose
                 title: Wohnzimmer
             grid_options:
               columns: 24
