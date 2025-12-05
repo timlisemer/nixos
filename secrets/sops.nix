@@ -22,7 +22,9 @@
   sops.secrets.wifiENV = {};
   sops.secrets.amazon_client_id = {};
   sops.secrets.amazon_client_secret = {};
-  sops.secrets.webhook_id_audio_receiver = {};
+  sops.secrets.webhook_id_audio_receiver = {
+    mode = "0444"; # Readable by GNOME extension
+  };
   sops.secrets.cloudflare_rclone = {};
   sops.secrets.google-sa = {
     sopsFile = ./secrets.yaml;

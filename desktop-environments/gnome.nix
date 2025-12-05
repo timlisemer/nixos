@@ -5,8 +5,8 @@
   ...
 }: let
   extensionSource = builtins.path {
-    path = ../files/gnome-extensions + "/gnome-quicksettings@timlisemer";
-    name = "gnome-quicksettings-timlisemer";
+    path = ../files/gnome-extensions + "/homeassistant-quicksettings@timlisemer";
+    name = "homeassistant-quicksettings-timlisemer";
   };
 in {
   programs.dconf.enable = true;
@@ -38,6 +38,6 @@ in {
 
   systemd.tmpfiles.rules = builtins.concatLists (builtins.map (username: [
     "d /home/${username}/.local/share/gnome-shell/extensions 0755 ${username} users -"
-    "L+ /home/${username}/.local/share/gnome-shell/extensions/gnome-quicksettings@timlisemer - - - - ${extensionSource}"
+    "L+ /home/${username}/.local/share/gnome-shell/extensions/homeassistant-quicksettings@timlisemer - - - - ${extensionSource}"
   ]) (builtins.attrNames users));
 }

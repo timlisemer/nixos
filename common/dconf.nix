@@ -528,6 +528,7 @@ with lib.hm.gvariant; {
         ]
       ];
       enabled-extensions = [
+        "homeassistant-quicksettings@timlisemer"
         "user-theme@gnome-shell-extensions.gcampax.github.com"
         "sp-tray@sp-tray.esenliyim.github.com"
         "phi@ziyagenc.github.com"

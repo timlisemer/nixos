@@ -1,0 +1,8 @@
+{
+  "name": "Home Assistant Quick Settings",
+  "description": "Quick settings toggles for Home Assistant webhook control",
+  "uuid": "homeassistant-quicksettings@timlisemer",
+  "shell-version": [
+    "49"
+  ]
+}
