@@ -133,5 +133,7 @@
   "cursor.cpp.disabledLanguages": ["plaintext", "markdown", "scminput"],
   "extensions.ignoreRecommendations": true,
 
-  "claudeCode.claudeProcessWrapper": "/run/current-system/sw/bin/claude"
+  "claudeCode.claudeProcessWrapper": "/run/current-system/sw/bin/claude",
+  "claudeCode.preferredLocation": "panel",
+  "claudeCode.useTerminal": true
 }

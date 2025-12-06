@@ -18,6 +18,17 @@
   vscodeExtensions = stable.vscode-extensions;
   vscodeUnstableExtensions = unstable.vscode-extensions;
 
+  # Manually managed extensions - updates faster than nixpkgs maintainers
+  # When hash mismatch occurs, update sha256 with the "got:" value from error
+  manualExtensions = unstable.vscode-utils.extensionsFromVscodeMarketplace [
+    {
+      name = "claude-code";
+      publisher = "anthropic";
+      version = "2.0.59";
+      sha256 = "sha256-QDUW5VXhFE6eSg1A+kbyMznys/o6EfVsU7AoilLGa+g=";
+    }
+  ];
+
   # Define all extensions as a list for easy reference
   extensionList =
     (with vscodeExtensions; [
@@ -45,12 +56,13 @@
       bradlc.vscode-tailwindcss
       tomoki1207.pdf
       kamadorueda.alejandra
+      # anthropic.claude-code  # Managed manually below due to frequent hash mismatches
+      ms-azuretools.vscode-containers
     ])
     ++ (with vscodeUnstableExtensions; [
-      ms-azuretools.vscode-containers
-      anthropic.claude-code
       # kilocode.kilo-code
-    ]);
+    ])
+    ++ manualExtensions;
 
   # Create a function to get extension store paths
   getExtensionPaths = extensions: builtins.map (ext: "${ext}/share/vscode/extensions") extensions;
