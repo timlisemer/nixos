@@ -5,6 +5,16 @@
   lib,
   ...
 }: {
+  # Disable Avahi on desktop systems
+  # Avahi conflicts with direct mDNS implementations (e.g., mdns-sd crate) by binding port 5353
+  # and intercepting multicast traffic, preventing applications from sending mDNS announcements.
+  # Applications like virtual-matter-bridge use direct mDNS instead.
+  services.avahi.enable = lib.mkForce false;
+
+  # Disable reverse path filtering for Matter/mDNS IPv6 traffic
+  # rpfilter can drop legitimate IPv6 multicast/link-local packets whose source address
+  # isn't routable via the receiving interface. This matches homeassistant-yellow config.
+  networking.firewall.checkReversePath = false;
   # Bootloader
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;

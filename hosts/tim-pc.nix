@@ -2,6 +2,7 @@
   disks,
   config,
   pkgs,
+  lib,
   ...
 }: {
   # Import the common configuration shared across all machines
@@ -44,6 +45,25 @@
     };
   };
   # services.udev.extraRules = builtins.readFile ../files/OpenRGB/60-openrgb.rules;
+
+  # Firewall configuration for Matter development
+  networking.firewall = lib.mkForce {
+    enable = true;
+
+    # TCP ports to open
+    allowedTCPPorts = [
+      22 # SSH
+      5540 # Matter commissioning port
+    ];
+
+    # UDP ports to open
+    allowedUDPPorts = [
+      5353 # Multicast DNS (mDNS)
+      5540 # Matter commissioning port
+    ];
+
+    allowPing = true;
+  };
 
   # environment.systemPackages = with pkgs; [openrgb-with-all-plugins];
   # services.hardware.openrgb.enable = true;
