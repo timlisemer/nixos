@@ -51,52 +51,12 @@ The repository follows a modular structure:
 
 ## Key Commands
 
-### System Management
-
-```bash
-# Rebuild current system configuration
-sudo nixos-rebuild switch
-
-# Rebuild with specific flake
-sudo nixos-rebuild switch --flake .#tim-laptop
-
-# Update flake inputs
-nix flake update
-
-# Format Nix files (Alejandra is included in flake)
-alejandra .
-```
-
-### Installation (from live ISO)
-
-```bash
-# Install for tim-laptop (single disk)
-sudo nix --extra-experimental-features 'nix-command flakes' run github:nix-community/disko -- --mode zap_create_mount /tmp/nixos/common/disko.nix --arg disks '[ "/dev/nvme0n1" ]'
-sudo nixos-install --flake '/mnt/etc/nixos#tim-laptop'
-
-# Install for tim-pc (dual disk)
-sudo nix --extra-experimental-features 'nix-command flakes' run github:nix-community/disko -- --mode zap_create_mount /tmp/nixos/common/disko.nix --arg disks '[ "/dev/nvme0n1" "/dev/nvme1n1" ]'
-sudo nixos-install --flake '/mnt/etc/nixos#tim-pc'
-```
-
-### Development
-
-```bash
-# Test configuration without switching
-sudo nixos-rebuild test
-
-# Check Nix syntax
-nix flake check
-
-# Show flake outputs
-nix flake show
-```
-
 ## IMPORTANT: System Modification Restrictions
 
 **Claude Code must NEVER run permanent system-changing commands.** Only testing and validation commands are allowed:
 
 ### Allowed Commands
+
 ```bash
 # Test configuration without making permanent changes
 sudo nixos-rebuild test
@@ -108,6 +68,7 @@ alejandra --check .
 ```
 
 ### FORBIDDEN Commands
+
 ```bash
 # NEVER run these - they make permanent system changes
 sudo nixos-rebuild switch
@@ -141,13 +102,6 @@ Uses SOPS with age keys derived from SSH keys:
 - Configuration in `sops.yaml`
 - Secrets stored in `secrets/secrets.yaml`
 - Age keys expected at `~/.config/sops/age/keys.txt`
-
-### Backup Configuration
-
-Automated backups via Restic are configured in `services/restic_backups.nix`. Paths are defined in `flake.nix`, additonally all docker volumes in /mnt/docker/volumes are automatically and dynamically added:
-
-- `userBackupDirs`: Standard user directories
-- `userDotFiles`: Configuration directories
 
 ## Working with NixOS Options
 
@@ -205,47 +159,12 @@ alejandra --check .
 alejandra <file>
 ```
 
-### When working with Nix files:
-
-1. Make your changes to the Nix configuration
-2. **ALWAYS** run `alejandra --check .` to verify syntax and formatting
-3. If formatting issues are found, run `alejandra .` to fix them
-4. Only present the solution to the user after alejandra passes without errors
-
-## Service Module Pattern
-
-Services in `/services/` follow this pattern:
-- Accept standard NixOS module arguments (`config`, `pkgs`, `lib`, `inputs`, etc.)
-- Can use unstable packages via `inputs.nixpkgs-unstable`
-- Are imported directly in host configurations
-- Can define systemd services, users, and system configuration
-
-### Home Assistant Migration
-
-Home Assistant is configured in two modes:
-1. **Imperative mode** (current): Uses existing Docker volume at `/mnt/docker-data/volumes/homeassistant/config`
-2. **Declarative mode** (future): Will migrate configuration into Nix expressions
-
-Key directories:
-- Config: `/mnt/docker-data/volumes/homeassistant/config`
-- Media: `/mnt/docker-data/volumes/homeassistant/media`
-- Service: `systemd service home-assistant.service`
-- Logs: `journalctl -u home-assistant`
-
 ## Host-Specific Configuration
 
 ### homeassistant-yellow
+
 - Raspberry Pi-based system with NVMe storage
-- Runs multiple services via Docker (Traefik, Pi-hole, Portainer, etc.)
+- Runs multiple services via Docker (Traefik, Pi-hole)
 - Home Assistant runs as native NixOS service
 - Uses host networking for device discovery
-- Hardware access: `/dev/ttyAMA10` (Zigbee), `/dev/dri` (GPU)
-
-## Docker to Native Service Migration Pattern
-
-When migrating from Docker to native NixOS services:
-1. Create service module in `/services/`
-2. Use imperative configuration pointing to existing Docker volumes
-3. Import service module in host configuration
-4. Comment out (don't delete) Docker container configuration
-5. Test thoroughly before considering declarative migration
+- Hardware access: `/dev/ttyAMA10` (Thread / Zigbee), `/dev/dri` (GPU)
