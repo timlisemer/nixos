@@ -10,20 +10,20 @@
     (import ../common/disko.nix {inherit disks;})
     ./desktop-only-imports.nix
     ./tim-pc-hardware-configuration.nix
-    ../common/nvidia.nix
+    ../common/amdgpu.nix
   ];
 
   # Machine specific configurations
 
   # Enable Wake on LAN for ethernet interface
   systemd.services.wol-enable = {
-    description = "Enable Wake on LAN for enp14s0";
+    description = "Enable Wake on LAN for enp16s0";
     after = ["network.target"];
     wantedBy = ["multi-user.target"];
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
-      ExecStart = "${pkgs.ethtool}/bin/ethtool -s enp14s0 wol g";
+      ExecStart = "${pkgs.ethtool}/bin/ethtool -s enp16s0 wol g";
     };
   };
 

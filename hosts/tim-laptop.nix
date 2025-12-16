@@ -9,6 +9,7 @@
     (import ../common/disko.nix {inherit disks;})
     ./desktop-only-imports.nix
     ./tim-laptop-hardware-configuration.nix
+    ../common/amdgpu.nix
   ];
 
   hardware = {

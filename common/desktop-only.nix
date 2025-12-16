@@ -44,6 +44,12 @@
   environment.etc."pkcs11/modules/opensc-pkcs11".text = lib.mkForce ''
     module: ${pkgs.opensc}/lib/opensc-pkcs11.so
   '';
+  # Steam configuration
+  programs.steam = {
+    enable = true;
+    extraCompatPackages = [pkgs.proton-ge-bin];
+  };
+
   environment.systemPackages = with pkgs; [
     adwaita-icon-theme
 
