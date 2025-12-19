@@ -14,6 +14,7 @@
     ../common/common.nix
     ../packages/system-packages.nix
     ../packages/dependencies.nix
+    ../services/kiosk.nix
     (import ../common/home-manager.nix {
       inherit config pkgs inputs home-manager lib users;
       isDesktop = false;
