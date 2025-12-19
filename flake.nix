@@ -113,7 +113,7 @@
       "tim-server" = "142.132.234.128";
       "tim-pi4" = "10.0.0.76";
       "homeassistant-yellow" = "10.0.0.2";
-      "tim-pi5" = "10.0.0.50";
+      "rpi5" = "10.0.0.80";
       "traefik.local.yakweide.de" = "10.0.0.2";
       "pihole.local.yakweide.de" = "10.0.0.2";
       "filebrowser.local.yakweide.de" = "10.0.0.2";
@@ -289,8 +289,8 @@
           };
         };
 
-      tim-pi5 = let
-        hostName = "tim-pi5";
+      rpi5 = let
+        hostName = "rpi5";
       in
         nixos-raspberrypi.lib.nixosSystem {
           system = "aarch64-linux";
@@ -302,7 +302,7 @@
               ];
             }
             vscode-server.nixosModules.default
-            ./hosts/tim-pi5.nix
+            ./hosts/rpi5.nix
           ];
 
           specialArgs = {

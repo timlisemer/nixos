@@ -55,7 +55,7 @@
     i2c.enable = true;
     bluetooth.settings = {
       General = {
-        Name = "tim-pi5";
+        Name = "rpi5";
         DisablePlugins = "hostname";
       };
     };
