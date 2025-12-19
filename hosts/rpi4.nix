@@ -16,7 +16,7 @@
     ../packages/system-packages.nix
     ../packages/dependencies.nix
     (import ../common/home-manager.nix {
-      inherit config pkgs inputs home-manager li usersb;
+      inherit config pkgs inputs home-manager lib users;
       isDesktop = false;
       isWsl = false;
       isServer = false;

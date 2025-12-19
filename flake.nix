@@ -113,6 +113,7 @@
       "tim-server" = "142.132.234.128";
       "tim-pi4" = "10.0.0.76";
       "homeassistant-yellow" = "10.0.0.2";
+      "tim-pi5" = "10.0.0.50";
       "traefik.local.yakweide.de" = "10.0.0.2";
       "pihole.local.yakweide.de" = "10.0.0.2";
       "filebrowser.local.yakweide.de" = "10.0.0.2";
@@ -278,6 +279,30 @@
                 config.boot.kernelPackages.kernel.version
               ];
             })
+          ];
+
+          specialArgs = {
+            hostName = hostName;
+            backupPaths = backupPaths;
+            system = "aarch64-linux";
+            inherit inputs home-manager adwaita_hypercursor self nixos-raspberrypi users hostIps;
+          };
+        };
+
+      tim-pi5 = let
+        hostName = "tim-pi5";
+      in
+        nixos-raspberrypi.lib.nixosSystem {
+          system = "aarch64-linux";
+          modules = [
+            {
+              imports = with nixos-raspberrypi.nixosModules; [
+                raspberry-pi-5.base
+                sd-image
+              ];
+            }
+            vscode-server.nixosModules.default
+            ./hosts/tim-pi5.nix
           ];
 
           specialArgs = {

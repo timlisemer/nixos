@@ -468,22 +468,28 @@ nixos_generate_image() {
 
 	local OUT="nixos_${FORMAT}_image_${HOST}_$(date +%Y%m%d_%H%M%S)"
 	local TMPDIR="/tmp/$OUT"
-	local DESTDIR=~/Coding/Other/nixos-images/
-	local SUDO_CMD=""
+	local DESTDIR=~/Coding/Other/nixos-images
 
 	mkdir -p "$DESTDIR"
 
+	# For sd-aarch64, use nixos-raspberrypi's sdImage builder (not nixos-generators)
 	if [ "$FORMAT" = "sd-aarch64" ]; then
-		SUDO_CMD="sudo"
+		echo "Building SD image for $HOST..."
+		if sudo nix build /etc/nixos#nixosConfigurations."$HOST".config.system.build.sdImage -o "$TMPDIR"; then
+			zstd --decompress "$TMPDIR"/sd-image/*.zst -o "$DESTDIR/$OUT.img"
+			chmod 644 "$DESTDIR/$OUT.img"
+			sudo chown $USER:users "$DESTDIR/$OUT.img"
+			echo "Image: $DESTDIR/$OUT.img"
+			echo "Flash: sudo dd if=$DESTDIR/$OUT.img of=/dev/sdX bs=4M status=progress"
+			return 0
+		else
+			echo "Failed to build SD image for $HOST"
+			return 1
+		fi
 	fi
 
-	# Check for GitHub token to avoid rate limits
-	if [ -z "$GITHUB_TOKEN" ]; then
-		echo "Warning: GITHUB_TOKEN not set. You may hit GitHub API rate limits."
-		echo "To fix: export GITHUB_TOKEN=your_github_personal_access_token"
-	fi
-
-	if $SUDO_CMD nix run --impure github:nix-community/nixos-generators -- \
+	# For iso/qcow, use nixos-generators
+	if nix run --impure github:nix-community/nixos-generators -- \
 		--format "$FORMAT" \
 		--flake /etc/nixos#"${HOST}" \
 		-o "$TMPDIR"; then
@@ -492,17 +498,12 @@ nixos_generate_image() {
 		iso)
 			cp "$TMPDIR"/iso/*.iso "$DESTDIR/$OUT.iso"
 			chmod 644 "$DESTDIR/$OUT.iso"
-			chown $USER:$USER "$DESTDIR/$OUT.iso"
+			chown $USER:users "$DESTDIR/$OUT.iso"
 			;;
 		qcow)
 			cp "$TMPDIR"/nixos.qcow2 "$DESTDIR/$OUT.qcow2"
 			chmod 644 "$DESTDIR/$OUT.qcow2"
-			chown $USER:$USER "$DESTDIR/$OUT.qcow2"
-			;;
-		sd-aarch64)
-			zstd --decompress "$TMPDIR"/sd-image/*.zst -o "$DESTDIR/$OUT.img"
-			chmod 644 "$DESTDIR/$OUT.img"
-			sudo chown $USER:$USER "$DESTDIR/$OUT.img"
+			chown $USER:users "$DESTDIR/$OUT.qcow2"
 			;;
 		esac
 
