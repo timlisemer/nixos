@@ -341,8 +341,12 @@
         fi
 
         HOST="$1"
-        REMOTE_USER="$USER@$HOST"
-        KEY_PATH="$HOME/.ssh/id_ed25519"
+        # Use SUDO_USER if running under sudo, otherwise use USER
+        REAL_USER="''${SUDO_USER:-$USER}"
+        REAL_HOME="$(getent passwd "$REAL_USER" | cut -d: -f6)"
+
+        REMOTE_USER="$REAL_USER@$HOST"
+        KEY_PATH="$REAL_HOME/.ssh/id_ed25519"
         LOCAL_INSTALL_KEYS_BIN="$(command -v install_keys || true)"
 
         [[ -f "$KEY_PATH" ]] || { echo "Missing $KEY_PATH" >&2; exit 1; }
@@ -354,7 +358,7 @@
         scp "$KEY_PATH".pub "$REMOTE_USER:~/.ssh/id_ed25519.pub"
 
         echo "→ running install_keys on $HOST…"
-        ssh "$REMOTE_USER" 'bash install_keys'
+        ssh -t "$REMOTE_USER" 'bash install_keys'
 
         echo "SSH key transferred and install_keys executed successfully on $HOST."
       '')

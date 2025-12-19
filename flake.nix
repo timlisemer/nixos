@@ -113,7 +113,7 @@
       "tim-server" = "142.132.234.128";
       "tim-pi4" = "10.0.0.76";
       "homeassistant-yellow" = "10.0.0.2";
-      "rpi5" = "10.0.0.80";
+      "rpi5" = "10.0.0.95";
       "traefik.local.yakweide.de" = "10.0.0.2";
       "pihole.local.yakweide.de" = "10.0.0.2";
       "filebrowser.local.yakweide.de" = "10.0.0.2";
