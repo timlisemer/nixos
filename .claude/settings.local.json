@@ -21,7 +21,8 @@
       "Bash(/tmp/restic_check/test_working_repos.sh)",
       "Bash(/tmp/restic_check/test_restic_issues.sh)",
       "Bash(./test_restic_issues.sh:*)",
-      "Bash(alejandra:*)"
+      "Bash(alejandra:*)",
+      "WebFetch(domain:forums.raspberrypi.com)"
     ],
     "deny": [],
     "ask": [],

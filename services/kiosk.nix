@@ -1,29 +1,32 @@
 {pkgs, ...}: let
-  # External path to your Tauri app binary
   tauriApp = "/opt/rpi5-ui/rpi5-ui";
+
+  kioskScript = pkgs.writeShellScript "kiosk-start" ''
+    export WLR_DRM_DEVICES=/dev/dri/card2
+    export WLR_RENDERER=pixman
+    export WLR_NO_HARDWARE_CURSORS=1
+    ${pkgs.cage}/bin/cage -s -- ${tauriApp}
+  '';
 in {
   environment.systemPackages = with pkgs; [
-    cage # Wayland compositor
-    wvkbd # On-screen keyboard
+    cage
+    wvkbd
   ];
 
-  # greetd for auto-start (no display manager)
   services.greetd = {
     enable = true;
     settings = {
       default_session = {
-        command = "${pkgs.cage}/bin/cage -s -- ${tauriApp}";
+        command = "${kioskScript}";
         user = "kiosk";
       };
     };
   };
 
-  # Dedicated kiosk user
   users.users.kiosk = {
     isNormalUser = true;
-    extraGroups = ["networkmanager" "video" "input"];
+    extraGroups = ["networkmanager" "video" "input" "render"];
   };
 
-  # Ensure NetworkManager is enabled for WiFi control
   networking.networkmanager.enable = true;
 }
