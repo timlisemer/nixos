@@ -46,6 +46,8 @@ in {
     python3Packages.universal-silabs-flasher
     phpPackages.composer
     go
+    gtk3
+    gtk3.dev
     gtk4.dev
     gobject-introspection
     gjs
