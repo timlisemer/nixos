@@ -1,3 +1,9 @@
+# Kiosk configuration for Tauri app on SPI display
+#
+# Debugging:
+#   journalctl -t kiosk -n 50 --no-pager        # View kiosk script logs
+#   systemctl status greetd -n 50 --no-pager    # Check greetd service
+#   systemctl status seatd -n 50 --no-pager     # Check seat daemon
 {pkgs, ...}: let
   tauriApp = "/opt/rpi5-ui/rpi5-ui";
 
@@ -43,11 +49,16 @@ in {
     wvkbd
   ];
 
+  # Seat management daemon - required for cage/wlroots DRM access
+  services.seatd.enable = true;
+
   services.greetd = {
     enable = true;
+    restart = false; # Don't restart on failure for auto-login
     settings = {
       default_session = {
-        command = "${kioskScript}";
+        # Pipe all output to journalctl via systemd-cat
+        command = "${pkgs.systemd}/bin/systemd-cat -t kiosk ${kioskScript}";
         user = "kiosk";
       };
     };
@@ -55,7 +66,7 @@ in {
 
   users.users.kiosk = {
     isNormalUser = true;
-    extraGroups = ["networkmanager" "video" "input" "render"];
+    extraGroups = ["networkmanager" "video" "input" "render" "seat"];
   };
 
   networking.networkmanager.enable = true;
