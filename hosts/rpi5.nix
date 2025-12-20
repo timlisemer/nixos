@@ -64,7 +64,7 @@
     # SPI display configuration for 3.5" ILI9486 TFT
     # piscreen overlay with all params on one line (required for driver to receive them)
     raspberry-pi.extra-config = ''
-      dtoverlay=piscreen,speed=64000000,drm=1,rotate=90
+      dtoverlay=piscreen,speed=64000000,drm=1
     '';
 
     raspberry-pi.config = {
