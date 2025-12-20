@@ -18,19 +18,29 @@
     chmod 700 "$XDG_RUNTIME_DIR"
     echo "[kiosk] Created runtime directory"
 
-    # Display configuration
-    export WLR_DRM_DEVICES=/dev/dri/card2
+    # Display configuration - dynamically find ili9486 SPI display
     export WLR_RENDERER=pixman
     export WLR_NO_HARDWARE_CURSORS=1
-    echo "[kiosk] Display config: DRM=$WLR_DRM_DEVICES, RENDERER=$WLR_RENDERER"
 
-    # Verify DRM device exists
-    if [ ! -e "$WLR_DRM_DEVICES" ]; then
-      echo "[kiosk] ERROR: DRM device $WLR_DRM_DEVICES not found!"
-      ls -la /dev/dri/
+    echo "[kiosk] Searching for ili9486 DRM device..."
+    for driver_path in /sys/class/drm/card*/device/driver; do
+      driver_name=$(basename "$(readlink -f "$driver_path")" 2>/dev/null)
+      cardnum=$(echo "$driver_path" | grep -o 'card[0-9]*')
+      echo "[kiosk] Checking $cardnum: driver=$driver_name"
+      if [ "$driver_name" = "ili9486" ]; then
+        export WLR_DRM_DEVICES="/dev/dri/$cardnum"
+        echo "[kiosk] Found ili9486 display: $WLR_DRM_DEVICES"
+        break
+      fi
+    done
+
+    if [ -z "$WLR_DRM_DEVICES" ]; then
+      echo "[kiosk] ERROR: ili9486 DRM device not found!"
+      echo "[kiosk] No matching display driver. Check dtoverlay=piscreen,drm=1"
       exit 1
     fi
-    echo "[kiosk] DRM device verified"
+
+    echo "[kiosk] Display config: DRM=$WLR_DRM_DEVICES, RENDERER=$WLR_RENDERER"
 
     # Verify app exists
     if [ ! -x "${tauriApp}" ]; then
@@ -54,7 +64,7 @@ in {
 
   services.greetd = {
     enable = true;
-    restart = false; # Don't restart on failure for auto-login
+    # restart = false; # Don't restart on failure for auto-login
     settings = {
       default_session = {
         # Pipe all output to journalctl via systemd-cat
