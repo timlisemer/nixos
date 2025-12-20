@@ -22,6 +22,21 @@
     export WLR_RENDERER=pixman
     export WLR_NO_HARDWARE_CURSORS=1
 
+    # GTK/Wayland configuration for Tauri apps
+    export GDK_BACKEND=wayland
+    export XCURSOR_THEME=Adwaita
+    export XCURSOR_SIZE=24
+    export GTK_THEME=Adwaita
+
+    # Disable client-side decorations (no title bar, window controls)
+    export GTK_CSD=0
+
+    # GTK needs XDG_DATA_DIRS to find schemas, icons, themes
+    export XDG_DATA_DIRS="/run/current-system/sw/share''${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}"
+    export GSETTINGS_SCHEMA_DIR="/run/current-system/sw/share/glib-2.0/schemas"
+    echo "[kiosk] XDG_DATA_DIRS=$XDG_DATA_DIRS"
+    echo "[kiosk] GSETTINGS_SCHEMA_DIR=$GSETTINGS_SCHEMA_DIR"
+
     echo "[kiosk] Searching for ili9486 DRM device..."
     for driver_path in /sys/class/drm/card*/device/driver; do
       driver_name=$(basename "$(readlink -f "$driver_path")" 2>/dev/null)
@@ -57,9 +72,18 @@
     exec ${pkgs.dbus}/bin/dbus-run-session -- ${pkgs.cage}/bin/cage -d -s -- ${tauriApp}
   '';
 in {
+  # Enable dconf (GSettings backend) - required for GTK initialization
+  programs.dconf.enable = true;
+
   environment.systemPackages = with pkgs; [
     cage
     wvkbd
+    adwaita-icon-theme
+    gtk3
+    gsettings-desktop-schemas
+    glib
+    shared-mime-info
+    hicolor-icon-theme
   ];
 
   # Seat management daemon - required for cage/wlroots DRM access
