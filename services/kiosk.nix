@@ -51,7 +51,10 @@
 
     # Start cage with dbus session (needed for Tauri/GTK apps)
     echo "[kiosk] Launching cage..."
-    exec ${pkgs.dbus}/bin/dbus-run-session -- ${pkgs.cage}/bin/cage -s -- ${tauriApp}
+
+    # Use Firefox instead of Tauri app for testing
+    # exec ${pkgs.dbus}/bin/dbus-run-session -- ${pkgs.cage}/bin/cage -d -s -- ${pkgs.firefox}/bin/firefox
+    exec ${pkgs.dbus}/bin/dbus-run-session -- ${pkgs.cage}/bin/cage -d -s -- ${tauriApp}
   '';
 in {
   environment.systemPackages = with pkgs; [
