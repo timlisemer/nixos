@@ -483,10 +483,10 @@ in {
             echo "[home-structure] Setting up structure for ${name}"
 
             # Create Coding folder structure
-            mkdir -p "$home/Coding/nixos"
             mkdir -p "$home/Coding/iocto"
             mkdir -p "$home/Coding/public_repos"
             mkdir -p "$home/Coding/private_repos"
+            mkdir -p "$home/Coding/unreleased_repos"
 
             # Move FiraxisLive to hidden location (Civilization launcher folder)
             if [ -d "$home/FiraxisLive" ] && [ ! -d "$home/.FiraxisLive" ]; then
@@ -532,10 +532,22 @@ in {
         # Add openssh to PATH so git can find ssh
         export PATH="${pkgs.openssh}/bin:$PATH"
 
+        # Clone nixos config repo
+        TARGET="/home/tim/Coding/nixos"
+        if [ ! -d "$TARGET" ]; then
+          echo "[github-repos] Cloning nixos config"
+          ${pkgs.git}/bin/git clone "git@github.com:timlisemer/nixos.git" "$TARGET"
+          ${pkgs.coreutils}/bin/chown -R tim:users "$TARGET"
+        fi
+
         # Fetch repository list and clone
         REPOS=$(${pkgs.curl}/bin/curl -s "https://api.github.com/users/timlisemer/repos?per_page=100" | ${pkgs.jq}/bin/jq -r '.[].name')
 
         for repo in $REPOS; do
+          # Skip nixos - already cloned to /home/tim/Coding/nixos
+          if [ "$repo" = "nixos" ]; then
+            continue
+          fi
           TARGET="/home/tim/Coding/public_repos/$repo"
           if [ ! -d "$TARGET" ]; then
             echo "[github-repos] Cloning $repo"
@@ -546,7 +558,38 @@ in {
         # Chown parent recursively ONCE at the end
         ${pkgs.coreutils}/bin/chown -R tim:users /home/tim/Coding/public_repos
 
-        echo "[github-repos] Sync complete"
+        echo "[github-repos] Public repos sync complete"
+
+        # Clone private repositories if token is available
+        GITHUB_TOKEN_FILE="/run/secrets/github_token"
+        if [ -f "$GITHUB_TOKEN_FILE" ]; then
+          GITHUB_TOKEN=$(${pkgs.coreutils}/bin/cat "$GITHUB_TOKEN_FILE")
+          echo "[github-repos] Fetching private repositories..."
+
+          # Check private_repos directory exists
+          if [ ! -d /home/tim/Coding/private_repos ]; then
+            echo "[github-repos] ERROR: /home/tim/Coding/private_repos does not exist"
+            exit 1
+          fi
+
+          # Fetch private repos with authentication (get name and ssh_url)
+          ${pkgs.curl}/bin/curl -s -H "Authorization: token $GITHUB_TOKEN" \
+            "https://api.github.com/user/repos?visibility=private&per_page=100" | \
+            ${pkgs.jq}/bin/jq -r '.[] | "\(.name) \(.ssh_url)"' | \
+          while read -r repo ssh_url; do
+            TARGET="/home/tim/Coding/private_repos/$repo"
+            if [ ! -d "$TARGET" ]; then
+              echo "[github-repos] Cloning private repo: $repo"
+              ${pkgs.git}/bin/git clone "$ssh_url" "$TARGET"
+            fi
+          done
+
+          # Set ownership
+          ${pkgs.coreutils}/bin/chown -R tim:users /home/tim/Coding/private_repos
+          echo "[github-repos] Private repos sync complete"
+        else
+          echo "[github-repos] No GitHub token available, skipping private repos"
+        fi
       fi
     '';
     deps = ["setupHomeStructure"];
