@@ -54,6 +54,30 @@ in {
           };
         }
         // (lib.optionalAttrs (_name == "tim") {
+          # Create Coding folder structure and relocate game launcher folders to hidden locations
+          home.activation.setupHomeStructure = lib.hm.dag.entryAfter ["writeBoundary"] ''
+            # Create Coding folder structure if not exists
+            mkdir -p $HOME/Coding/Other/nixos
+            mkdir -p $HOME/Coding/iocto
+            echo "Ensured Coding folder structure exists"
+
+            # Move FiraxisLive to hidden location (Civilization launcher folder)
+            if [ -d "$HOME/FiraxisLive" ] && [ ! -d "$HOME/.FiraxisLive" ]; then
+              mv "$HOME/FiraxisLive" "$HOME/.FiraxisLive"
+              echo "Moved FiraxisLive to .FiraxisLive"
+            elif [ -d "$HOME/FiraxisLive" ] && [ -d "$HOME/.FiraxisLive" ]; then
+              echo "Warning: Both FiraxisLive and .FiraxisLive exist, skipping move"
+            fi
+
+            # Move PDX to hidden location (Paradox launcher folder)
+            if [ -d "$HOME/PDX" ] && [ ! -d "$HOME/.PDX" ]; then
+              mv "$HOME/PDX" "$HOME/.PDX"
+              echo "Moved PDX to .PDX"
+            elif [ -d "$HOME/PDX" ] && [ -d "$HOME/.PDX" ]; then
+              echo "Warning: Both PDX and .PDX exist, skipping move"
+            fi
+          '';
+
           home.activation.gameSaveSymlinks = lib.hm.dag.entryAfter ["writeBoundary"] ''
             # Create the SaveGames directory
             mkdir -p $HOME/Games/SaveGames
@@ -92,6 +116,15 @@ in {
               echo "Created symlink for Europa Universalis V saves"
             else
               echo "Europa Universalis V save directory not found, skipping symlink"
+            fi
+
+            # Civilization VI save game symlink
+            CIV6_TARGET="/home/tim/.local/share/Steam/steamapps/compatdata/289070/pfx/drive_c/users/steamuser/Documents/My Games/Sid Meier's Civilization VI/Saves"
+            if [ -d "$CIV6_TARGET" ]; then
+              ln -sfn "$CIV6_TARGET" "$HOME/Games/SaveGames/Sid Meier's Civilization VI"
+              echo "Created symlink for Civilization VI saves"
+            else
+              echo "Civilization VI save directory not found, skipping symlink"
             fi
 
             # Create the Extra directory
