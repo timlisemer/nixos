@@ -9,7 +9,7 @@ alias gitree='git ls-files --cached --others --exclude-standard | tree --fromfil
 alias gittree='git ls-files --cached --others --exclude-standard | tree --fromfile'
 alias term='ghostty'
 alias terminal='ghostty'
-alias nixos='cd ~/Coding/Other/nixos'
+alias nixos='cd ~/Coding/nixos'
 alias iocto='cd ~/Coding/iocto'
 alias install_tim_server='nix run nixpkgs#nixos-anywhere -- --flake /etc/nixos#tim-server root@142.132.234.128'
 alias install_homeassistant_yellow='nix run nixpkgs#nixos-anywhere -- --flake /etc/nixos#homeassistant-yellow nixos@homeassistant-yellow'
@@ -26,7 +26,7 @@ fi
 alias rebuild='
 stop_all_docker_containers &&
 	sudo find /etc/nixos -mindepth 1 -maxdepth 1 ! -name "flake.lock" -exec rm -rf {} + &&
-	sudo cp -a ~/Coding/Other/nixos/. /etc/nixos/ &&
+	sudo cp -a ~/Coding/nixos/. /etc/nixos/ &&
 	([ -d /etc/nixos/.git ] && git -C /etc/nixos status --short || true) &&
 	clear &&
 	sudo nixos-rebuild switch --flake /etc/nixos#$(cat /etc/hostname) &&
@@ -468,7 +468,7 @@ nixos_generate_image() {
 
 	local OUT="nixos_${FORMAT}_image_${HOST}_$(date +%Y%m%d_%H%M%S)"
 	local TMPDIR="/tmp/$OUT"
-	local DESTDIR=~/Coding/Other/nixos-images
+	local DESTDIR=~/Coding/public_repos/nixos-images
 
 	mkdir -p "$DESTDIR"
 
@@ -674,7 +674,7 @@ rebuild_remote() {
 	# ------------------------------------------------------------------------
 
 	nixos-rebuild switch \
-		--flake "/home/$USER/Coding/Other/nixos#$host" \
+		--flake "/home/$USER/Coding/nixos#$host" \
 		--target-host "$USER@$host" \
 		--build-host localhost \
 		--use-remote-sudo \

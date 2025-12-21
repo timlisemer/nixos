@@ -483,9 +483,9 @@ in {
       else
         echo "[github-repos] SSH access confirmed"
 
-        # Parent must exist - error if not
-        if [ ! -d /home/tim/Coding/Other ]; then
-          echo "[github-repos] ERROR: /home/tim/Coding/Other does not exist"
+        # Parent must exist - created by home-manager setupHomeStructure
+        if [ ! -d /home/tim/Coding/public_repos ]; then
+          echo "[github-repos] ERROR: /home/tim/Coding/public_repos does not exist"
           exit 1
         fi
 
@@ -496,7 +496,7 @@ in {
         REPOS=$(${pkgs.curl}/bin/curl -s "https://api.github.com/users/timlisemer/repos?per_page=100" | ${pkgs.jq}/bin/jq -r '.[].name')
 
         for repo in $REPOS; do
-          TARGET="/home/tim/Coding/Other/$repo"
+          TARGET="/home/tim/Coding/public_repos/$repo"
           if [ ! -d "$TARGET" ]; then
             echo "[github-repos] Cloning $repo"
             ${pkgs.git}/bin/git clone "git@github.com:timlisemer/$repo.git" "$TARGET"
@@ -504,7 +504,7 @@ in {
         done
 
         # Chown parent recursively ONCE at the end
-        ${pkgs.coreutils}/bin/chown -R tim:users /home/tim/Coding/Other
+        ${pkgs.coreutils}/bin/chown -R tim:users /home/tim/Coding/public_repos
 
         echo "[github-repos] Sync complete"
       fi

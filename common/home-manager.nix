@@ -57,8 +57,10 @@ in {
           # Create Coding folder structure and relocate game launcher folders to hidden locations
           home.activation.setupHomeStructure = lib.hm.dag.entryAfter ["writeBoundary"] ''
             # Create Coding folder structure if not exists
-            mkdir -p $HOME/Coding/Other/nixos
+            mkdir -p $HOME/Coding/nixos
             mkdir -p $HOME/Coding/iocto
+            mkdir -p $HOME/Coding/public_repos
+            mkdir -p $HOME/Coding/private_repos
             echo "Ensured Coding folder structure exists"
 
             # Move FiraxisLive to hidden location (Civilization launcher folder)

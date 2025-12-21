@@ -71,7 +71,7 @@
 
     restic-backup-service = {
       url = "git+ssh://git@github.com/timlisemer/restic-backup-service.git";
-      # url = "path:/home/tim/Coding/Other/restic-backup-service"; # for local development
+      # url = "path:/home/tim/Coding/public_repos/restic-backup-service"; # for local development
       inputs.nixpkgs.follows = "nixpkgs-stable";
     };
   };
