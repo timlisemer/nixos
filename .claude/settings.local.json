@@ -21,7 +21,11 @@
       "Bash(/tmp/restic_check/test_working_repos.sh)",
       "Bash(/tmp/restic_check/test_restic_issues.sh)",
       "Bash(./test_restic_issues.sh:*)",
-      "Bash(alejandra:*)"
+      "Bash(alejandra:*)",
+      "WebFetch(domain:forums.raspberrypi.com)",
+      "mcp__nixos-search__nixos_flakes_search",
+      "WebFetch(domain:wiki.nixos.org)",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ],
     "deny": [],
     "ask": [],

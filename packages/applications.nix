@@ -43,8 +43,8 @@ in {
     jetbrains.clion
     jetbrains.rider
     jetbrains.rust-rover
-    jetbrains.idea-community
-    jetbrains.pycharm-community
+    jetbrains.idea-oss
+    jetbrains.pycharm-oss
     kicad
   ];
 

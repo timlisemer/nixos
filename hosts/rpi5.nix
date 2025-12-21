@@ -14,6 +14,7 @@
     ../common/common.nix
     ../packages/system-packages.nix
     ../packages/dependencies.nix
+    ../services/kiosk.nix
     (import ../common/home-manager.nix {
       inherit config pkgs inputs home-manager lib users;
       isDesktop = false;
@@ -61,6 +62,11 @@
     };
 
     # SPI display configuration for 3.5" ILI9486 TFT
+    # piscreen overlay with all params on one line (required for driver to receive them)
+    raspberry-pi.extra-config = ''
+      dtoverlay=piscreen,speed=64000000,drm=1
+    '';
+
     raspberry-pi.config = {
       all = {
         # Enable SPI via dtparam
@@ -72,20 +78,6 @@
         };
         # Device tree overlays
         dt-overlays = {
-          # piscreen overlay for ILI9486 3.5" displays with DRM support
-          piscreen = {
-            enable = true;
-            params = {
-              drm = {
-                enable = true;
-                value = true;
-              };
-              speed = {
-                enable = true;
-                value = 16000000; # 16MHz SPI speed
-              };
-            };
-          };
           # Touch controller (XPT2046/ADS7846)
           # TODO: Touch not yet tested - cs/penirq pins may need adjustment
           ads7846 = {
@@ -104,5 +96,8 @@
         };
       };
     };
+
+    # Enable Mesa drivers for GPU rendering
+    graphics.enable = true;
   };
 }
