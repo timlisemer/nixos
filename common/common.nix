@@ -472,9 +472,49 @@ in {
     '';
   };
 
+  ##########################################################################
+  ## Clone all timlisemer GitHub repositories                            ##
+  ##########################################################################
+  system.activationScripts.cloneGitHubRepos = {
+    text = ''
+      echo "[github-repos] Checking SSH access to GitHub..."
+      if ! ${pkgs.openssh}/bin/ssh -T git@github.com 2>&1 | ${pkgs.gnugrep}/bin/grep -q "successfully authenticated"; then
+        echo "[github-repos] SSH access not available, skipping clone"
+      else
+        echo "[github-repos] SSH access confirmed"
+
+        # Parent must exist - error if not
+        if [ ! -d /home/tim/Coding/Other ]; then
+          echo "[github-repos] ERROR: /home/tim/Coding/Other does not exist"
+          exit 1
+        fi
+
+        # Add openssh to PATH so git can find ssh
+        export PATH="${pkgs.openssh}/bin:$PATH"
+
+        # Fetch repository list and clone
+        REPOS=$(${pkgs.curl}/bin/curl -s "https://api.github.com/users/timlisemer/repos?per_page=100" | ${pkgs.jq}/bin/jq -r '.[].name')
+
+        for repo in $REPOS; do
+          TARGET="/home/tim/Coding/Other/$repo"
+          if [ ! -d "$TARGET" ]; then
+            echo "[github-repos] Cloning $repo"
+            ${pkgs.git}/bin/git clone "git@github.com:timlisemer/$repo.git" "$TARGET"
+          fi
+        done
+
+        # Chown parent recursively ONCE at the end
+        ${pkgs.coreutils}/bin/chown -R tim:users /home/tim/Coding/Other
+
+        echo "[github-repos] Sync complete"
+      fi
+    '';
+    deps = [];
+  };
+
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
-  # on your system were taken. It’s perfectly fine and recommended to leave
+  # on your system were taken. It's perfectly fine and recommended to leave
   # this value at the release version of the first install of this system.
   # Before changing it read the docs (e.g. man configuration.nix or
   # https://nixos.org/nixos/options.html).
