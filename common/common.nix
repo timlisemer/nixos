@@ -473,6 +473,46 @@ in {
   };
 
   ##########################################################################
+  ## Setup home directory structure for all users                        ##
+  ##########################################################################
+  system.activationScripts.setupHomeStructure = {
+    text = ''
+      ${lib.concatStringsSep "\n" (lib.mapAttrsToList (name: user: ''
+          home="$(${pkgs.getent}/bin/getent passwd "${name}" | cut -d: -f6)"
+          if [ -n "$home" ] && [ -d "$home" ]; then
+            echo "[home-structure] Setting up structure for ${name}"
+
+            # Create Coding folder structure
+            mkdir -p "$home/Coding/nixos"
+            mkdir -p "$home/Coding/iocto"
+            mkdir -p "$home/Coding/public_repos"
+            mkdir -p "$home/Coding/private_repos"
+
+            # Move FiraxisLive to hidden location (Civilization launcher folder)
+            if [ -d "$home/FiraxisLive" ] && [ ! -d "$home/.FiraxisLive" ]; then
+              mv "$home/FiraxisLive" "$home/.FiraxisLive"
+              echo "Moved FiraxisLive to .FiraxisLive"
+            elif [ -d "$home/FiraxisLive" ] && [ -d "$home/.FiraxisLive" ]; then
+              echo "Warning: Both FiraxisLive and .FiraxisLive exist, skipping move"
+            fi
+
+            # Move PDX to hidden location (Paradox launcher folder)
+            if [ -d "$home/PDX" ] && [ ! -d "$home/.PDX" ]; then
+              mv "$home/PDX" "$home/.PDX"
+              echo "Moved PDX to .PDX"
+            elif [ -d "$home/PDX" ] && [ -d "$home/.PDX" ]; then
+              echo "Warning: Both PDX and .PDX exist, skipping move"
+            fi
+
+            ${pkgs.coreutils}/bin/chown -R "${name}:users" "$home/Coding"
+          fi
+        '')
+        users)}
+    '';
+    deps = [];
+  };
+
+  ##########################################################################
   ## Clone all timlisemer GitHub repositories                            ##
   ##########################################################################
   system.activationScripts.cloneGitHubRepos = {
@@ -483,7 +523,7 @@ in {
       else
         echo "[github-repos] SSH access confirmed"
 
-        # Parent must exist - created by home-manager setupHomeStructure
+        # Parent must exist - created by setupHomeStructure
         if [ ! -d /home/tim/Coding/public_repos ]; then
           echo "[github-repos] ERROR: /home/tim/Coding/public_repos does not exist"
           exit 1
@@ -509,7 +549,7 @@ in {
         echo "[github-repos] Sync complete"
       fi
     '';
-    deps = [];
+    deps = ["setupHomeStructure"];
   };
 
   # This value determines the NixOS release from which the default

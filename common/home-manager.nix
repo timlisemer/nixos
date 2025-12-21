@@ -54,32 +54,6 @@ in {
           };
         }
         // (lib.optionalAttrs (_name == "tim") {
-          # Create Coding folder structure and relocate game launcher folders to hidden locations
-          home.activation.setupHomeStructure = lib.hm.dag.entryAfter ["writeBoundary"] ''
-            # Create Coding folder structure if not exists
-            mkdir -p $HOME/Coding/nixos
-            mkdir -p $HOME/Coding/iocto
-            mkdir -p $HOME/Coding/public_repos
-            mkdir -p $HOME/Coding/private_repos
-            echo "Ensured Coding folder structure exists"
-
-            # Move FiraxisLive to hidden location (Civilization launcher folder)
-            if [ -d "$HOME/FiraxisLive" ] && [ ! -d "$HOME/.FiraxisLive" ]; then
-              mv "$HOME/FiraxisLive" "$HOME/.FiraxisLive"
-              echo "Moved FiraxisLive to .FiraxisLive"
-            elif [ -d "$HOME/FiraxisLive" ] && [ -d "$HOME/.FiraxisLive" ]; then
-              echo "Warning: Both FiraxisLive and .FiraxisLive exist, skipping move"
-            fi
-
-            # Move PDX to hidden location (Paradox launcher folder)
-            if [ -d "$HOME/PDX" ] && [ ! -d "$HOME/.PDX" ]; then
-              mv "$HOME/PDX" "$HOME/.PDX"
-              echo "Moved PDX to .PDX"
-            elif [ -d "$HOME/PDX" ] && [ -d "$HOME/.PDX" ]; then
-              echo "Warning: Both PDX and .PDX exist, skipping move"
-            fi
-          '';
-
           home.activation.gameSaveSymlinks = lib.hm.dag.entryAfter ["writeBoundary"] ''
             # Create the SaveGames directory
             mkdir -p $HOME/Games/SaveGames
