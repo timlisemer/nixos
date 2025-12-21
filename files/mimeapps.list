@@ -2,7 +2,7 @@
 
 [Default Applications]
 application/json=code.desktop
-application/pdf=evince.desktop
+application/pdf=org.gnome.Papers.desktop
 application/x-dockerfile=code.desktop
 application/x-toml=code.desktop
 application/x-yaml=code.desktop

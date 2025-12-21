@@ -19,6 +19,8 @@
     echo "[kiosk] Created runtime directory"
 
     # Display configuration - dynamically find ili9486 SPI display
+    # Note: SPI displays don't support GPU acceleration (EGL/GLES2)
+    # Must use software rendering (pixman) - GPU only works with HDMI/DSI
     export WLR_RENDERER=pixman
     export WLR_NO_HARDWARE_CURSORS=1
 
@@ -84,6 +86,10 @@ in {
     glib
     shared-mime-info
     hicolor-icon-theme
+
+    # GPU debugging tools
+    mesa-demos
+    libva-utils
   ];
 
   # Seat management daemon - required for cage/wlroots DRM access
