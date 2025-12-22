@@ -41,8 +41,7 @@ in {
     dos2unix
     libgcc
     jdk
-    python3
-    python3Packages.pip
+    (python3.withPackages (ps: with ps; [pip]))
     python3Packages.universal-silabs-flasher
     phpPackages.composer
     go
@@ -51,13 +50,13 @@ in {
     gtk4.dev
     gobject-introspection
     gjs
-    # julia
+    julia
     libadwaita
     libinput
     lld
     libllvm
-    luarocks
-    lua
+    luajit
+    luajitPackages.luarocks
     meson
     linux-pam
     openssl

@@ -25,7 +25,9 @@
       "WebFetch(domain:forums.raspberrypi.com)",
       "mcp__nixos-search__nixos_flakes_search",
       "WebFetch(domain:wiki.nixos.org)",
-      "WebFetch(domain:raw.githubusercontent.com)"
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "mcp__nixos-search__home_manager_search",
+      "WebFetch(domain:nixos.wiki)"
     ],
     "deny": [],
     "ask": [],
