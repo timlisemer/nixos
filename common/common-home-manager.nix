@@ -288,7 +288,7 @@ in {
 
         claude mcp add context7 --scope user -- ssh tim-server "docker exec -i mcp-server-host npx -y @upstash/context7-mcp"
 
-        claude mcp add agent-framework --scope user -- ssh tim-server "docker exec -i mcp-server-host node /app/servers/agent-framework/dist/index.js"
+        claude mcp add agent-framework --scope user -- ssh tim-server "docker exec -i mcp-server-host node /app/servers/agent-framework/dist/mcp/server.js"
       ''}";
     };
     Install = {
