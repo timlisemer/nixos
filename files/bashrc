@@ -677,8 +677,10 @@ rebuild_remote() {
 		--flake "/home/$USER/Coding/nixos#$host" \
 		--target-host "$USER@$host" \
 		--build-host localhost \
-		--ask-sudo-password \
-		--keep-going
+		--use-remote-sudo
+	# --ask-sudo-password \
+	# --sudo
+	--keep-going
 }
 alias remote_rebuild='rebuild_remote'
 # ---------------------------------------------------------------------------

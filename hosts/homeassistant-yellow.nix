@@ -390,6 +390,8 @@
         OT_THREAD_IF = "wpan0";
         OT_LOG_LEVEL = "7";
         OTBR_REST_LISTEN_ADDR = "0.0.0.0";
+        OTBR_VENDOR_NAME = "Tim Lisemer";
+        OTBR_MODEL_NAME = "Home Assistant Yellow";
       };
     };
 
