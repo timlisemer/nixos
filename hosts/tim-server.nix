@@ -289,39 +289,5 @@
         "POSTGRES_INITDB_ARGS" = "--data-checksums";
       };
     };
-
-    # -------------------------------------------------------------------------
-    # mcp-server-host
-    # -------------------------------------------------------------------------
-    mcp-server-host = {
-      image = "ghcr.io/timlisemer/mcp-server-host/mcp-server-host-linux-amd64:latest";
-      autoStart = true;
-
-      autoRemoveOnStop = false; # prevent implicit --rm
-      extraOptions = ["--network=docker-network" "--ip=172.18.0.15"];
-
-      volumes = [
-        "/mnt/docker-data/volumes/mcp-server-host/workspace:/workspace:rw"
-        "/mnt/docker-data/volumes/mcp-server-host/data:/app/data:rw"
-        "/mnt/docker-data/volumes/mcp-server-host/logs:/var/log:rw"
-        "/mnt/docker-data/volumes/mcp-server-host/config:/app/config:ro"
-      ];
-
-      environmentFiles = [
-        "/run/secrets/mcpServerHostENV"
-      ];
-
-      environment = {
-        LOG_LEVEL = "info";
-        WORKSPACE_PATH = "/workspace";
-        MCP_SERVERS_CONFIG = "/app/config/servers.json";
-      };
-    };
   };
-
-  system.activationScripts.copyMcpServerConfig = lib.stringAfter ["var"] ''
-    mkdir -p /mnt/docker-data/volumes/mcp-server-host/config
-    cp ${./../files/mcp-server-host/servers.json} /mnt/docker-data/volumes/mcp-server-host/config/servers.json
-    chmod 644 /mnt/docker-data/volumes/mcp-server-host/config/servers.json
-  '';
 }
