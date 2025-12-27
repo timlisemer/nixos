@@ -10,10 +10,10 @@
   ...
 }: let
   dockerBin = "${pkgs.docker}/bin/docker";
-  mcpServerHostImage =
+  mcpToolboxImage =
     if pkgs.stdenv.hostPlatform.system == "aarch64-linux"
-    then "ghcr.io/timlisemer/mcp-server-host/mcp-server-host-linux-arm64:latest"
-    else "ghcr.io/timlisemer/mcp-server-host/mcp-server-host-linux-amd64:latest";
+    then "ghcr.io/timlisemer/mcp-toolbox/mcp-toolbox-linux-arm64:latest"
+    else "ghcr.io/timlisemer/mcp-toolbox/mcp-toolbox-linux-amd64:latest";
 in {
   nixpkgs.overlays = [inputs.rust-overlay.overlays.default];
 
@@ -393,39 +393,20 @@ in {
     };
 
     # -------------------------------------------------------------------------
-    # mcp-server-host - MCP servers for Claude Code
+    # mcp-toolbox - MCP servers for Claude Code
     # -------------------------------------------------------------------------
-    mcp-server-host = {
-      image = mcpServerHostImage;
+    mcp-toolbox = {
+      image = mcpToolboxImage;
       autoStart = true;
 
       autoRemoveOnStop = true;
       extraOptions = ["--network=docker-network" "--ip=172.18.0.15"];
 
-      volumes = [
-        "/mnt/docker-data/volumes/mcp-server-host/workspace:/workspace:rw"
-        "/mnt/docker-data/volumes/mcp-server-host/data:/app/data:rw"
-        "/mnt/docker-data/volumes/mcp-server-host/logs:/var/log:rw"
-        "/mnt/docker-data/volumes/mcp-server-host/config:/app/config:ro"
-      ];
-
       environmentFiles = [
-        "/run/secrets/mcpServerHostENV"
+        "/run/secrets/mcpToolboxENV"
       ];
-
-      environment = {
-        LOG_LEVEL = "info";
-        WORKSPACE_PATH = "/workspace";
-        MCP_SERVERS_CONFIG = "/app/config/servers.json";
-      };
     };
   };
-
-  system.activationScripts.copyMcpServerConfig = lib.stringAfter ["var"] ''
-    mkdir -p /mnt/docker-data/volumes/mcp-server-host/config
-    cp ${../files/mcp-server-host/servers.json} /mnt/docker-data/volumes/mcp-server-host/config/servers.json
-    chmod 644 /mnt/docker-data/volumes/mcp-server-host/config/servers.json
-  '';
 
   ##########################################################################
   ## Watchtower immediate startup check service                           ##

@@ -281,19 +281,19 @@ in {
     Service = {
       Type = "oneshot";
       ExecStart = "${pkgs.writeShellScript "claude-mcp-setup" ''
-        # Remove all existing user-scoped MCP servers
-        claude mcp list --scope user 2>/dev/null | grep -E '^\s+\w' | awk '{print $1}' | while read -r server; do
+        # Remove all existing user-scoped MCP servers dynamically
+        claude mcp list 2>/dev/null | awk -F: '/^[a-zA-Z0-9_-]+:/ {print $1}' | while read -r server; do
           claude mcp remove --scope user "$server" 2>/dev/null || true
         done
 
         # Add servers with user scope for global access (using local docker)
-        claude mcp add nixos-search --scope user -- ${pkgs.docker}/bin/docker exec -i mcp-server-host sh -c 'exec 2>/dev/null; /app/servers/mcp-nixos/venv/bin/python3 -m mcp_nixos.server'
+        claude mcp add nixos-search --scope user -- ${pkgs.docker}/bin/docker exec -i mcp-toolbox sh -c 'exec 2>/dev/null; /app/tools/mcp-nixos/venv/bin/python3 -m mcp_nixos.server'
 
-        claude mcp add tailwind-svelte --scope user -- ${pkgs.docker}/bin/docker exec -i mcp-server-host node /app/servers/tailwind-svelte-assistant/dist/index.js
+        claude mcp add tailwind-svelte --scope user -- ${pkgs.docker}/bin/docker exec -i mcp-toolbox node /app/tools/tailwind-svelte-assistant/dist/index.js
 
-        claude mcp add context7 --scope user -- ${pkgs.docker}/bin/docker exec -i mcp-server-host npx -y @upstash/context7-mcp
+        claude mcp add context7 --scope user -- ${pkgs.docker}/bin/docker exec -i mcp-toolbox npx -y @upstash/context7-mcp
 
-        claude mcp add agent-framework --scope user -- ${pkgs.docker}/bin/docker exec -i mcp-server-host node /app/servers/agent-framework/dist/mcp/server.js
+        claude mcp add agent-framework --scope user -- ${pkgs.docker}/bin/docker exec -i mcp-toolbox node /app/tools/agent-framework/dist/mcp/server.js
       ''}";
     };
     Install = {
