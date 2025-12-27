@@ -19,6 +19,7 @@
   sops.secrets.yakweideENV = {};
   sops.secrets.piholePWD = {};
   sops.secrets.immichENV = {};
+  sops.secrets.mcpServerHostENV = {};
   sops.secrets.wifiENV = {};
   sops.secrets.amazon_client_id = {};
   sops.secrets.amazon_client_secret = {};

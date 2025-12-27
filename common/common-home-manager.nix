@@ -287,6 +287,8 @@ in {
         claude mcp add tailwind-svelte --scope user -- ssh tim-server "docker exec -i mcp-server-host node /app/servers/tailwind-svelte-assistant/dist/index.js"
 
         claude mcp add context7 --scope user -- ssh tim-server "docker exec -i mcp-server-host npx -y @upstash/context7-mcp"
+
+        claude mcp add agent-framework --scope user -- ssh tim-server "docker exec -i mcp-server-host node /app/servers/agent-framework/dist/index.js"
       ''}";
     };
     Install = {

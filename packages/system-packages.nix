@@ -24,6 +24,7 @@ in {
     bat
     cliphist
     dejavu_fonts
+    docker-buildx
     dracut
     elfutils
     ethtool

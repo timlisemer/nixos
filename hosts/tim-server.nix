@@ -307,6 +307,10 @@
         "/mnt/docker-data/volumes/mcp-server-host/config:/app/config:ro"
       ];
 
+      environmentFiles = [
+        "/run/secrets/mcpServerHostENV"
+      ];
+
       environment = {
         LOG_LEVEL = "info";
         WORKSPACE_PATH = "/workspace";
