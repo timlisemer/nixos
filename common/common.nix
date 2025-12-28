@@ -14,6 +14,10 @@
     if pkgs.stdenv.hostPlatform.system == "aarch64-linux"
     then "ghcr.io/timlisemer/mcp-toolbox/mcp-toolbox-linux-arm64:latest"
     else "ghcr.io/timlisemer/mcp-toolbox/mcp-toolbox-linux-amd64:latest";
+  unstable = import inputs.nixpkgs-unstable {
+    config = {allowUnfree = true;};
+    system = pkgs.stdenv.hostPlatform.system;
+  };
 in {
   nixpkgs.overlays = [inputs.rust-overlay.overlays.default];
 
@@ -155,14 +159,19 @@ in {
   virtualisation.oci-containers.backend = "docker";
   virtualisation.docker = {
     enable = true;
-    rootless.enable = true;
-    rootless.setSocketVariable = true;
+    rootless.enable = false;
+    rootless.setSocketVariable = false;
     daemon.settings = {
       ipv6 = true;
       fixed-cidr-v6 = "fd00::/64";
       data-root = "/mnt/docker-data";
     };
   };
+
+  # Ensure docker socket has correct permissions for group access
+  systemd.services.docker.serviceConfig.ExecStartPost = [
+    "${pkgs.coreutils}/bin/chmod 0660 /var/run/docker.sock"
+  ];
 
   # Kernel sysctl settings
   boot.kernel.sysctl = {
@@ -612,6 +621,35 @@ in {
       fi
     '';
     deps = ["setupHomeStructure"];
+  };
+
+  ##########################################################################
+  ## Setup Claude MCP servers                                             ##
+  ##########################################################################
+  system.activationScripts.claudeMcpSetup = {
+    text = ''
+      echo "[claude-mcp] Setting up MCP servers..."
+
+      # Run as tim user since claude config is per-user
+      ${pkgs.sudo}/bin/sudo -u tim ${unstable.claude-code}/bin/claude mcp list 2>/dev/null | ${pkgs.gawk}/bin/awk -F: '/^[a-zA-Z0-9_-]+:/ {print $1}' | while read -r server; do
+        echo "[claude-mcp] Removing server: $server"
+        ${pkgs.sudo}/bin/sudo -u tim ${unstable.claude-code}/bin/claude mcp remove --scope user "$server" 2>/dev/null || true
+      done
+
+      echo "[claude-mcp] Adding nixos-search server..."
+      ${pkgs.sudo}/bin/sudo -u tim ${unstable.claude-code}/bin/claude mcp add nixos-search --scope user -- ${dockerBin} exec -i mcp-toolbox sh -c 'exec 2>/dev/null; /app/tools/mcp-nixos/venv/bin/python3 -m mcp_nixos.server'
+
+      echo "[claude-mcp] Adding tailwind-svelte server..."
+      ${pkgs.sudo}/bin/sudo -u tim ${unstable.claude-code}/bin/claude mcp add tailwind-svelte --scope user -- ${dockerBin} exec -i mcp-toolbox node /app/tools/tailwind-svelte-assistant/run.mjs
+
+      echo "[claude-mcp] Adding context7 server..."
+      ${pkgs.sudo}/bin/sudo -u tim ${unstable.claude-code}/bin/claude mcp add context7 --scope user -- ${dockerBin} exec -i mcp-toolbox npx -y @upstash/context7-mcp
+
+      echo "[claude-mcp] Adding agent-framework server..."
+      ${pkgs.sudo}/bin/sudo -u tim ${unstable.claude-code}/bin/claude mcp add agent-framework --scope user -- ${dockerBin} exec -i mcp-toolbox node /app/tools/agent-framework/dist/mcp/server.js
+
+      echo "[claude-mcp] MCP servers setup complete"
+    '';
   };
 
   # This value determines the NixOS release from which the default

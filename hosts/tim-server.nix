@@ -87,16 +87,6 @@
 
   virtualisation.docker.storageDriver = "btrfs";
 
-  # Override the common.nix docker configuration for the server
-  # Disable rootless mode so containers run as root but are accessible by docker group
-  virtualisation.docker.rootless.enable = lib.mkForce false;
-  virtualisation.docker.rootless.setSocketVariable = lib.mkForce false;
-
-  # Ensure docker socket has correct permissions for group access
-  systemd.services.docker.serviceConfig.ExecStartPost = [
-    "${pkgs.coreutils}/bin/chmod 0660 /var/run/docker.sock"
-  ];
-
   virtualisation.oci-containers.containers = {
     # -------------------------------------------------------------------------
     # traefik  (uses a secret file for the Cloudflare token)
