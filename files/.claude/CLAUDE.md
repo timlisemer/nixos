@@ -16,9 +16,8 @@
 ## Development Workflow
 
 1. **Diagnostics:** Always check `mcp__ide__getDiagnostics` first.
-2. **Checks:** Run individual checks (`cargo check`, `npm run check`) using flags (e.g., `--manifest`, `--prefix`) rather than `cd`. Never use `cd`.
-3. **Formatting:** Always run `alejandra` for Nix files. Ensure no formatting errors exist before presenting solutions.
-4. **Final Step:** Always run `make check` when available.
+2. **Formatting:** Always run `alejandra` for Nix files. Ensure no formatting errors exist before presenting solutions.
+3. **Final Step:** Always run `check` mcp server.
 
 ## Documentation & Tools
 
