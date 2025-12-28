@@ -455,6 +455,43 @@ in {
   };
 
   ##########################################################################
+  ## MCP Toolbox volume permissions - make accessible to users            ##
+  ##########################################################################
+  systemd.services.mcp-toolbox-permissions = {
+    description = "Set permissions on mcp-toolbox volume for user access";
+    after = ["docker.service" "docker-mcp-toolbox.service"];
+    wantedBy = ["multi-user.target"];
+
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+
+    script = ''
+      set -euo pipefail
+
+      VOLUME_PATH="/mnt/docker-data/volumes/mcp-toolbox"
+
+      if [ -d "$VOLUME_PATH" ]; then
+        echo "Setting permissions on $VOLUME_PATH..."
+
+        # Set execute-only ACL on parent directories for traversal (no read access)
+        ${pkgs.acl}/bin/setfacl -m u:tim:x /mnt/docker-data
+        ${pkgs.acl}/bin/setfacl -m u:tim:x /mnt/docker-data/volumes
+
+        # Set full access on the volume directory and contents
+        ${pkgs.acl}/bin/setfacl -R -m u:tim:rwX "$VOLUME_PATH"
+        # Set default ACL so new files inherit permissions
+        ${pkgs.acl}/bin/setfacl -R -d -m u:tim:rwX "$VOLUME_PATH"
+
+        echo "MCP Toolbox volume permissions set successfully"
+      else
+        echo "Warning: $VOLUME_PATH does not exist yet"
+      fi
+    '';
+  };
+
+  ##########################################################################
   ## Home directory ownership correction service                          ##
   ##########################################################################
   systemd.services.fix-home-ownership = {
@@ -651,7 +688,7 @@ in {
 
       echo "[claude-mcp] Adding agent-framework server..."
       ${pkgs.sudo}/bin/sudo -u tim ${unstable.claude-code}/bin/claude mcp add agent-framework --scope user -- \
-        ${pkgs.nodejs}/bin/node /mnt/docker-data/volumes/mcp-toolbox/servers/agent-framework/dist/mcp/server.js
+        ${pkgs.nodejs}/bin/node /mnt/docker-data/volumes/mcp-toolbox/agent-framework/dist/mcp/server.js
 
 
       echo "[claude-mcp] MCP servers setup complete"
