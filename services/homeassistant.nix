@@ -312,4 +312,16 @@ in {
       [config.sops.placeholder.webhook_id_audio_receiver]
       (builtins.readFile ../files/homeassistant/automations/audio_receiver_control.yaml);
   };
+
+  sops.templates."tool_approve_ingestor.yaml" = {
+    owner = "hass";
+    group = "hass";
+    mode = "0644";
+    path = "/var/lib/homeassistant/automations/tool_approve_ingestor.yaml";
+    content =
+      builtins.replaceStrings
+      ["@webhook_id_tool-approve@"]
+      [config.sops.placeholder.webhook_id_tool-approve]
+      (builtins.readFile ../files/homeassistant/automations/tool_approve_ingestor.yaml);
+  };
 }

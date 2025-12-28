@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
-# Shared environment setup for all Claude Code hooks
-# Source this in hook wrappers: source "$(dirname "$0")/env.sh"
+# Shared environment setup for Claude Code hooks and commands
+# Source this in hook/command wrappers: source "$(dirname "$0")/../env.sh"
 
 # Source API keys from SOPS secrets (with auto-export)
 if [[ -f /run/secrets/mcpToolboxENV ]]; then
   set -a  # Enable auto-export
   source /run/secrets/mcpToolboxENV
   set +a  # Disable auto-export
+fi
+
+# Export webhook secrets for hook scripts
+if [[ -f /run/secrets/webhook_id_tool-approve ]]; then
+  export WEBHOOK_ID_TOOL_APPROVE=$(cat /run/secrets/webhook_id_tool-approve)
 fi
 
 # Agent framework paths

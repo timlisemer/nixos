@@ -356,14 +356,21 @@ in {
           source = builtins.toPath ../files/starship.toml;
           force = true;
         };
-        # Claude Code hooks
-        ".claude/hooks/env.sh" = {
-          source = builtins.toPath ../files/.claude/hooks/env.sh;
+        # Claude Code shared environment
+        ".claude/env.sh" = {
+          source = builtins.toPath ../files/.claude/env.sh;
           executable = true;
         };
         ".claude/hooks/pre-tool-use.sh" = {
           source = builtins.toPath ../files/.claude/hooks/pre-tool-use.sh;
           executable = true;
+        };
+        # Claude Code commands
+        ".claude/commands/commit.md" = {
+          source = builtins.toPath ../files/.claude/commands/commit.md;
+        };
+        ".claude/commands/push.md" = {
+          source = builtins.toPath ../files/.claude/commands/push.md;
         };
       };
 

@@ -29,6 +29,9 @@
   sops.secrets.webhook_id_audio_receiver = {
     mode = "0444"; # Readable by GNOME extension
   };
+  sops.secrets.webhook_id_tool-approve = {
+    mode = "0444"; # Readable by hooks
+  };
   sops.secrets.cloudflare_rclone = {};
   sops.secrets.google-sa = {
     sopsFile = ./secrets.yaml;
