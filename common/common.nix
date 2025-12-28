@@ -356,6 +356,15 @@ in {
           source = builtins.toPath ../files/starship.toml;
           force = true;
         };
+        # Claude Code hooks
+        ".claude/hooks/env.sh" = {
+          source = builtins.toPath ../files/.claude/hooks/env.sh;
+          executable = true;
+        };
+        ".claude/hooks/pre-tool-use.sh" = {
+          source = builtins.toPath ../files/.claude/hooks/pre-tool-use.sh;
+          executable = true;
+        };
       };
 
       programs.atuin = {
