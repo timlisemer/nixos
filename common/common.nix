@@ -411,6 +411,10 @@ in {
       autoRemoveOnStop = true;
       extraOptions = ["--network=docker-network" "--ip=172.18.0.15"];
 
+      volumes = [
+        "/mnt/docker-data/volumes/mcp-toolbox:/app/servers:rw"
+      ];
+
       environmentFiles = [
         "/run/secrets/mcpToolboxENV"
       ];
@@ -646,7 +650,9 @@ in {
       ${pkgs.sudo}/bin/sudo -u tim ${unstable.claude-code}/bin/claude mcp add context7 --scope user -- ${dockerBin} exec -i mcp-toolbox npx -y @upstash/context7-mcp
 
       echo "[claude-mcp] Adding agent-framework server..."
-      ${pkgs.sudo}/bin/sudo -u tim ${unstable.claude-code}/bin/claude mcp add agent-framework --scope user -- ${dockerBin} exec -i mcp-toolbox node /app/tools/agent-framework/dist/mcp/server.js
+      ${pkgs.sudo}/bin/sudo -u tim ${unstable.claude-code}/bin/claude mcp add agent-framework --scope user -- \
+        ${pkgs.nodejs}/bin/node /mnt/docker-volume/mcp-tools/servers/agent-framework/dist/mcp/server.js
+
 
       echo "[claude-mcp] MCP servers setup complete"
     '';
