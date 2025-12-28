@@ -19,7 +19,10 @@
   sops.secrets.yakweideENV = {};
   sops.secrets.piholePWD = {};
   sops.secrets.immichENV = {};
-  sops.secrets.mcpToolboxENV = {};
+  sops.secrets.mcpToolboxENV = {
+    group = "users"; # Readable by all users for Claude Code hooks
+    mode = "0440";
+  };
   sops.secrets.wifiENV = {};
   sops.secrets.amazon_client_id = {};
   sops.secrets.amazon_client_secret = {};
