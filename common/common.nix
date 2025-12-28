@@ -651,7 +651,7 @@ in {
 
       echo "[claude-mcp] Adding agent-framework server..."
       ${pkgs.sudo}/bin/sudo -u tim ${unstable.claude-code}/bin/claude mcp add agent-framework --scope user -- \
-        ${pkgs.nodejs}/bin/node /mnt/docker-volume/mcp-tools/servers/agent-framework/dist/mcp/server.js
+        ${pkgs.nodejs}/bin/node /mnt/docker-data/volumes/mcp-toolbox/servers/agent-framework/dist/mcp/server.js
 
 
       echo "[claude-mcp] MCP servers setup complete"
