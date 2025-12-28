@@ -313,15 +313,15 @@ in {
       (builtins.readFile ../files/homeassistant/automations/audio_receiver_control.yaml);
   };
 
-  sops.templates."tool_approve_ingestor.yaml" = {
+  sops.templates."claude_code_agent_logs.yaml" = {
     owner = "hass";
     group = "hass";
     mode = "0644";
-    path = "/var/lib/homeassistant/automations/tool_approve_ingestor.yaml";
+    path = "/var/lib/homeassistant/automations/claude_code_agent_logs.yaml";
     content =
       builtins.replaceStrings
-      ["@webhook_id_tool-approve@"]
-      [config.sops.placeholder.webhook_id_tool-approve]
-      (builtins.readFile ../files/homeassistant/automations/tool_approve_ingestor.yaml);
+      ["@webhook_id_agent_logs@"]
+      [config.sops.placeholder.webhook_id_agent_logs]
+      (builtins.readFile ../files/homeassistant/automations/claude_code_agent_logs.yaml);
   };
 }

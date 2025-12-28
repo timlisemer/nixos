@@ -4,14 +4,14 @@
 
 # Source API keys from SOPS secrets (with auto-export)
 if [[ -f /run/secrets/mcpToolboxENV ]]; then
-  set -a  # Enable auto-export
+  set -a # Enable auto-export
   source /run/secrets/mcpToolboxENV
-  set +a  # Disable auto-export
+  set +a # Disable auto-export
 fi
 
 # Export webhook secrets for hook scripts
-if [[ -f /run/secrets/webhook_id_tool-approve ]]; then
-  export WEBHOOK_ID_TOOL_APPROVE=$(cat /run/secrets/webhook_id_tool-approve)
+if [[ -f /run/secrets/webhook_id_agent_logs ]]; then
+  export WEBHOOK_ID_AGENT_LOGS=$(cat /run/secrets/webhook_id_agent_logs)
 fi
 
 # Agent framework paths
