@@ -17,21 +17,22 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Bash",
+        "matcher": "(Bash|Edit|Write|Read|NotebookEdit)",
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/pre-tool-use.sh"
+            "command": "node /path/to/agent-framework/dist/hooks/pre-tool-use.js"
           }
         ]
       }
     ],
     "Stop": [
       {
+        "matcher": "",
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/stop-off-topic-check.sh",
+            "command": "node /path/to/agent-framework/dist/hooks/stop-off-topic-check.js",
             "timeout": 30
           }
         ]
