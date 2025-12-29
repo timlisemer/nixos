@@ -365,6 +365,10 @@ in {
           source = builtins.toPath ../files/.claude/hooks/pre-tool-use.sh;
           executable = true;
         };
+        ".claude/hooks/stop-off-topic-check.sh" = {
+          source = builtins.toPath ../files/.claude/hooks/stop-off-topic-check.sh;
+          executable = true;
+        };
         # Claude Code commands
         ".claude/commands/commit.md" = {
           source = builtins.toPath ../files/.claude/commands/commit.md;

@@ -25,6 +25,17 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/stop-off-topic-check.sh",
+            "timeout": 30
+          }
+        ]
+      }
     ]
   }
 }
