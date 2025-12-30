@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Shared environment setup for Claude Code hooks and commands
-# Source this in hook/command wrappers: source "$(dirname "$0")/../env.sh"
+# Shared environment setup for Claude Code hooks, MCP servers, and commands
+# Called via run-with-env.sh wrapper
 
 # Source API keys from SOPS secrets (with auto-export)
 if [[ -f /run/secrets/mcpToolboxENV ]]; then
@@ -13,7 +13,3 @@ fi
 if [[ -f /run/secrets/webhook_id_agent_logs ]]; then
   export WEBHOOK_ID_AGENT_LOGS=$(cat /run/secrets/webhook_id_agent_logs)
 fi
-
-# Agent framework paths
-export AGENT_FRAMEWORK_DIR="/mnt/docker-data/volumes/mcp-toolbox/agent-framework"
-export AGENT_FRAMEWORK_HOOKS="$AGENT_FRAMEWORK_DIR/dist/hooks"
