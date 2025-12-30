@@ -17,11 +17,11 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "(Bash|Edit|Write|Read|NotebookEdit)",
+        "matcher": ".*",
         "hooks": [
           {
             "type": "command",
-            "command": "node /path/to/agent-framework/dist/hooks/pre-tool-use.js"
+            "command": "node /mnt/docker-data/volumes/mcp-toolbox/agent-framework/dist/hooks/pre-tool-use.js"
           }
         ]
       }
@@ -32,7 +32,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node /path/to/agent-framework/dist/hooks/stop-off-topic-check.js",
+            "command": "node /mnt/docker-data/volumes/mcp-toolbox/agent-framework/dist/hooks/stop-off-topic-check.js",
             "timeout": 30
           }
         ]
