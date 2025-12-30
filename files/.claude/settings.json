@@ -21,7 +21,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node /mnt/docker-data/volumes/mcp-toolbox/agent-framework/dist/hooks/pre-tool-use.js"
+            "command": "$HOME/.claude/hooks/pre-tool-use.sh",
+            "timeout": 30
           }
         ]
       }
@@ -32,7 +33,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node /mnt/docker-data/volumes/mcp-toolbox/agent-framework/dist/hooks/stop-off-topic-check.js",
+            "command": "$HOME/.claude/hooks/stop-off-topic-check.sh",
             "timeout": 30
           }
         ]
