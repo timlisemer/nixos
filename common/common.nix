@@ -369,6 +369,10 @@ in {
           source = builtins.toPath ../files/.claude/hooks/stop-off-topic-check.sh;
           executable = true;
         };
+        ".claude/run-with-env.sh" = {
+          source = builtins.toPath ../files/.claude/run-with-env.sh;
+          executable = true;
+        };
         # Claude Code commands
         ".claude/commands/commit.md" = {
           source = builtins.toPath ../files/.claude/commands/commit.md;
@@ -708,7 +712,7 @@ in {
 
       echo "[claude-mcp] Adding agent-framework server..."
       ${pkgs.sudo}/bin/sudo -u tim ${unstable.claude-code}/bin/claude mcp add agent-framework --scope user -- \
-        ${pkgs.nodejs}/bin/node /mnt/docker-data/volumes/mcp-toolbox/agent-framework/dist/mcp/server.js
+        /home/tim/.claude/run-with-env.sh ${pkgs.nodejs}/bin/node /mnt/docker-data/volumes/mcp-toolbox/agent-framework/dist/mcp/server.js
 
 
       echo "[claude-mcp] MCP servers setup complete"
