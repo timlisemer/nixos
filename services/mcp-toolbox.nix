@@ -99,6 +99,11 @@ in {
 
 
       echo "[claude-mcp] MCP servers setup complete"
+
+      # Create symlink for claude commands
+      rm -rf /home/tim/.claude/commands
+      ln -sfn /mnt/docker-data/volumes/mcp-toolbox/agent-framework/commands /home/tim/.claude/commands
+      chown -h tim:users /home/tim/.claude/commands
     '';
   };
 
@@ -128,13 +133,6 @@ in {
         ".claude/run-with-env.sh" = {
           source = builtins.toPath ../files/.claude/run-with-env.sh;
           executable = true;
-        };
-        # Claude Code commands
-        ".claude/commands/commit.md" = {
-          source = builtins.toPath ../files/.claude/commands/commit.md;
-        };
-        ".claude/commands/push.md" = {
-          source = builtins.toPath ../files/.claude/commands/push.md;
         };
       };
     }
