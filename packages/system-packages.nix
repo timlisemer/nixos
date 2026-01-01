@@ -22,6 +22,7 @@ in {
     comfortaa
     pciutils
     bat
+    bun
     cliphist
     dejavu_fonts
     docker-buildx
@@ -60,7 +61,7 @@ in {
     i2c-tools
     # unstable.gemini-cli
     unstable.claude-code
-    unstable.qwen-code
+    # unstable.qwen-code
     unstable.cursor-cli
     unstable.codex
     unstable.code-cursor
