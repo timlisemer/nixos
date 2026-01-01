@@ -12,6 +12,7 @@
 in {
   environment.systemPackages = with pkgs; [
     actionlint
+    act
     coder
     haskellPackages.cabal-install
     glib-networking

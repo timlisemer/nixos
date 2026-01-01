@@ -29,21 +29,18 @@ in {
       "/mnt/docker-data/volumes/mcp-toolbox:/app/servers:rw"
     ];
 
-    environmentFiles = [
-      "/run/secrets/mcpToolboxENV"
-    ];
-
     environment = {
       TELEMETRY_HOST_ID = config.networking.hostName;
       TELEMETRY_ENDPOINT = "https://telemetry.yakweide.de";
+      AGENT_FRAMEWORK_ROOT = "/mnt/docker-data/volumes/mcp-toolbox/agent-framework";
     };
   };
 
   ##########################################################################
-  ## Sync telemetryENV secret to agent-framework .env file                ##
+  ## Sync secrets to agent-framework .env file                            ##
   ##########################################################################
   systemd.services.agent-framework-env-sync = {
-    description = "Sync telemetryENV secret to agent-framework .env file";
+    description = "Sync secrets to agent-framework .env file";
     after = ["sops-nix.service"];
     wantedBy = ["multi-user.target"];
 
@@ -55,18 +52,38 @@ in {
     script = ''
       set -euo pipefail
 
-      SECRET_FILE="/run/secrets/telemetryENV"
+      TELEMETRY_SECRET="/run/secrets/telemetryENV"
+      MCP_TOOLBOX_SECRET="/run/secrets/mcpToolboxENV"
       ENV_FILE="/mnt/docker-data/volumes/mcp-toolbox/agent-framework/.env"
 
-      if [ -f "$SECRET_FILE" ]; then
-        echo "Syncing telemetryENV to $ENV_FILE..."
-        mkdir -p "$(dirname "$ENV_FILE")"
-        cp "$SECRET_FILE" "$ENV_FILE"
-        chmod 644 "$ENV_FILE"
-        echo "agent-framework .env file updated successfully"
+      echo "Creating $ENV_FILE..."
+      mkdir -p "$(dirname "$ENV_FILE")"
+
+      # Start with empty file
+      : > "$ENV_FILE"
+
+      # Append telemetryENV if exists
+      if [ -f "$TELEMETRY_SECRET" ]; then
+        cat "$TELEMETRY_SECRET" >> "$ENV_FILE"
+        echo "" >> "$ENV_FILE"
       else
-        echo "Warning: $SECRET_FILE does not exist yet"
+        echo "Warning: $TELEMETRY_SECRET does not exist"
       fi
+
+      # Append mcpToolboxENV if exists
+      if [ -f "$MCP_TOOLBOX_SECRET" ]; then
+        cat "$MCP_TOOLBOX_SECRET" >> "$ENV_FILE"
+        echo "" >> "$ENV_FILE"
+      else
+        echo "Warning: $MCP_TOOLBOX_SECRET does not exist"
+      fi
+
+      # Append host-specific telemetry config
+      echo "TELEMETRY_HOST_ID=${config.networking.hostName}" >> "$ENV_FILE"
+      echo "TELEMETRY_ENDPOINT=https://telemetry.yakweide.de" >> "$ENV_FILE"
+
+      chmod 644 "$ENV_FILE"
+      echo "agent-framework .env file updated successfully"
     '';
   };
 
@@ -131,8 +148,7 @@ in {
 
       echo "[claude-mcp] Adding agent-framework server..."
       ${pkgs.sudo}/bin/sudo -u tim ${unstable.claude-code}/bin/claude mcp add agent-framework --scope user -- \
-        /home/tim/.claude/run-with-env.sh ${pkgs.nodejs}/bin/node /mnt/docker-data/volumes/mcp-toolbox/agent-framework/dist/mcp/server.js
-
+      ${pkgs.nodejs}/bin/node /mnt/docker-data/volumes/mcp-toolbox/agent-framework/dist/mcp/server.js
 
       echo "[claude-mcp] MCP servers setup complete"
 
