@@ -61,10 +61,6 @@ The repository follows a modular structure:
 # Test configuration without making permanent changes
 sudo nixos-rebuild test
 sudo nixos-rebuild dry-run
-
-# Validation commands
-nix flake check
-alejandra --check .
 ```
 
 ### FORBIDDEN Commands
@@ -140,24 +136,11 @@ If you encounter build errors like "The system library `xyz` required by crate `
 
 **No manual PKG_CONFIG_PATH configuration needed** - the system automatically detects all `.dev` packages.
 
-## Code Formatting with Alejandra
+## Validation with Check MCP
 
-**IMPORTANT: Always run alejandra to check and format Nix files before presenting any solution to the user.**
+**IMPORTANT: Always use the `mcp__agent-framework__check` tool before presenting any solution to the user.**
 
-Alejandra is the Nix code formatter used in this project. It ensures consistent formatting across all Nix files.
-
-### Usage
-
-```bash
-# Format all Nix files in the current directory and subdirectories
-alejandra .
-
-# Check formatting without modifying files (use this before presenting solutions)
-alejandra --check .
-
-# Format a specific file
-alejandra <file>
-```
+This MCP tool runs linting and formatting checks (including Alejandra for Nix files) and returns a summarized result. Use this instead of running build/lint commands directly.
 
 ## Host-Specific Configuration
 

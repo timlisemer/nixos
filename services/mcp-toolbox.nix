@@ -15,6 +15,11 @@
     system = pkgs.stdenv.hostPlatform.system;
   };
 in {
+  # Environment Variables
+  environment.sessionVariables = {
+    AGENT_FRAMEWORK_ROOT = "/mnt/docker-data/volumes/mcp-toolbox/agent-framework";
+  };
+
   ##########################################################################
   ## MCP Toolbox Docker Container                                         ##
   ##########################################################################
@@ -32,7 +37,6 @@ in {
     environment = {
       TELEMETRY_HOST_ID = config.networking.hostName;
       TELEMETRY_ENDPOINT = "https://telemetry.yakweide.de";
-      AGENT_FRAMEWORK_ROOT = "/mnt/docker-data/volumes/mcp-toolbox/agent-framework";
     };
   };
 
