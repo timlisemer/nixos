@@ -116,6 +116,8 @@
       8085 # Server Traefik dashboard
       8123 # HomeAssistant
       9001 # Mosquitto WebSocket
+      9471 # Agent Framework Telemetry Collector
+      9472 # Agent Framework Telemetry Grafana
     ];
 
     # UDP ports to open
@@ -444,6 +446,32 @@
         "/mnt/docker-data/volumes/mosquitto/data:/mosquitto/data:rw"
         "/mnt/docker-data/volumes/mosquitto/log:/mosquitto/log:rw"
       ];
+
+      environment = {
+        TZ = "Europe/Berlin";
+      };
+    };
+
+    # -------------------------------------------------------------------------
+    # agent-framework-telemetry (All-in-One: Postgres + Grafana + Collector)
+    # -------------------------------------------------------------------------
+    agent-framework-telemetry = {
+      image = "ghcr.io/timlisemer/agent-framework-telemetry/telemetry-aio:latest";
+      autoStart = true;
+      autoRemoveOnStop = false;
+      extraOptions = ["--network=docker-network" "--ip=172.18.0.21"];
+
+      ports = [
+        "9471:3001" # Telemetry Collector API
+        "9472:3000" # Grafana Dashboard
+      ];
+
+      volumes = [
+        "/mnt/docker-data/volumes/telemetry/postgres:/var/lib/postgresql/data:rw"
+        "/mnt/docker-data/volumes/telemetry/grafana:/var/lib/grafana:rw"
+      ];
+
+      environmentFiles = ["/run/secrets/telemetryENV"];
 
       environment = {
         TZ = "Europe/Berlin";

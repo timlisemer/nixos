@@ -29,9 +29,6 @@
   sops.secrets.webhook_id_audio_receiver = {
     mode = "0444"; # Readable by GNOME extension
   };
-  sops.secrets.webhook_id_agent_logs = {
-    mode = "0444"; # Readable by hooks
-  };
   sops.secrets.cloudflare_rclone = {};
   sops.secrets.google-sa = {
     sopsFile = ./secrets.yaml;
@@ -40,6 +37,7 @@
     # restartUnits = ["rclone-gdrive.mount"]; # auto-reload after key rotation
   };
   sops.secrets.resticENV = {};
+  sops.secrets.telemetryENV = {};
 
   sops.secrets.openvpn_ca = {owner = "nm-openvpn";};
   sops.secrets.openvpn_extra_certs = {group = "nm-openvpn";};

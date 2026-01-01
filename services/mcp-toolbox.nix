@@ -32,6 +32,42 @@ in {
     environmentFiles = [
       "/run/secrets/mcpToolboxENV"
     ];
+
+    environment = {
+      TELEMETRY_HOST_ID = config.networking.hostName;
+      TELEMETRY_ENDPOINT = "https://telemetry.yakweide.de";
+    };
+  };
+
+  ##########################################################################
+  ## Sync telemetryENV secret to agent-framework .env file                ##
+  ##########################################################################
+  systemd.services.agent-framework-env-sync = {
+    description = "Sync telemetryENV secret to agent-framework .env file";
+    after = ["sops-nix.service"];
+    wantedBy = ["multi-user.target"];
+
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+
+    script = ''
+      set -euo pipefail
+
+      SECRET_FILE="/run/secrets/telemetryENV"
+      ENV_FILE="/mnt/docker-data/volumes/mcp-toolbox/agent-framework/.env"
+
+      if [ -f "$SECRET_FILE" ]; then
+        echo "Syncing telemetryENV to $ENV_FILE..."
+        mkdir -p "$(dirname "$ENV_FILE")"
+        cp "$SECRET_FILE" "$ENV_FILE"
+        chmod 644 "$ENV_FILE"
+        echo "agent-framework .env file updated successfully"
+      else
+        echo "Warning: $SECRET_FILE does not exist yet"
+      fi
+    '';
   };
 
   ##########################################################################
@@ -104,37 +140,16 @@ in {
       rm -rf /home/tim/.claude/commands
       ln -sfn /mnt/docker-data/volumes/mcp-toolbox/agent-framework/commands /home/tim/.claude/commands
       chown -h tim:users /home/tim/.claude/commands
+
+      # Create symlink for claude settings
+      rm -rf /home/tim/.claude/settings.json
+      ln -sfn /mnt/docker-data/volumes/mcp-toolbox/agent-framework/claude-integration/settings.json /home/tim/.claude/settings.json
+      chown -h tim:users /home/tim/.claude/settings.json
+
+      # Create symlink for claude hooks
+      rm -rf /home/tim/.claude/hooks
+      ln -sfn /mnt/docker-data/volumes/mcp-toolbox/agent-framework/dist/hooks /home/tim/.claude/hooks
+      chown -h tim:users /home/tim/.claude/hooks
     '';
   };
-
-  ##########################################################################
-  ## Claude Code shared environment and hooks                             ##
-  ##########################################################################
-  home-manager.sharedModules = [
-    {
-      home.file = {
-        # Claude Code shared environment
-        ".claude/env.sh" = {
-          source = builtins.toPath ../files/.claude/env.sh;
-          executable = true;
-        };
-        ".claude/hooks/pre-tool-use.sh" = {
-          source = builtins.toPath ../files/.claude/hooks/pre-tool-use.sh;
-          executable = true;
-        };
-        ".claude/hooks/stop-off-topic-check.sh" = {
-          source = builtins.toPath ../files/.claude/hooks/stop-off-topic-check.sh;
-          executable = true;
-        };
-        ".claude/hooks/post-tool-use.sh" = {
-          source = builtins.toPath ../files/.claude/hooks/post-tool-use.sh;
-          executable = true;
-        };
-        ".claude/run-with-env.sh" = {
-          source = builtins.toPath ../files/.claude/run-with-env.sh;
-          executable = true;
-        };
-      };
-    }
-  ];
 }

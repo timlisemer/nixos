@@ -11,6 +11,7 @@
   rustAnalyzer = pkgs.rust-bin.stable.latest.rust-analyzer;
 in {
   environment.systemPackages = with pkgs; [
+    actionlint
     coder
     haskellPackages.cabal-install
     glib-networking

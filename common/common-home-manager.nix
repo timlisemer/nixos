@@ -237,10 +237,6 @@ in {
       source = builtins.toPath ../files/.claude/CLAUDE.md;
       force = true;
     };
-    ".claude/settings.json" = {
-      source = builtins.toPath ../files/.claude/settings.json;
-      force = true;
-    };
   };
 
   # Steam adwaita theme
