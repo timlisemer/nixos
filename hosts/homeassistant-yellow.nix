@@ -456,7 +456,7 @@
     # agent-framework-telemetry (All-in-One: Postgres + Grafana + Collector)
     # -------------------------------------------------------------------------
     agent-framework-telemetry = {
-      image = "ghcr.io/timlisemer/agent-framework-telemetry/telemetry-aio:latest";
+      image = "ghcr.io/timlisemer/agent-framework-telemetry:latest";
       autoStart = true;
       autoRemoveOnStop = false;
       extraOptions = ["--network=docker-network" "--ip=172.18.0.21"];

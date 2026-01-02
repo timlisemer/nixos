@@ -312,16 +312,4 @@ in {
       [config.sops.placeholder.webhook_id_audio_receiver]
       (builtins.readFile ../files/homeassistant/automations/audio_receiver_control.yaml);
   };
-
-  sops.templates."claude_code_agent_logs.yaml" = {
-    owner = "hass";
-    group = "hass";
-    mode = "0644";
-    path = "/var/lib/homeassistant/automations/claude_code_agent_logs.yaml";
-    content =
-      builtins.replaceStrings
-      ["@webhook_id_agent_logs@"]
-      [config.sops.placeholder.webhook_id_agent_logs]
-      (builtins.readFile ../files/homeassistant/automations/claude_code_agent_logs.yaml);
-  };
 }

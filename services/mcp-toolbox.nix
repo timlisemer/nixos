@@ -36,7 +36,7 @@ in {
 
     environment = {
       TELEMETRY_HOST_ID = config.networking.hostName;
-      TELEMETRY_ENDPOINT = "https://telemetry.yakweide.de";
+      TELEMETRY_ENDPOINT = "https://agent-framework.yakweide.de";
     };
   };
 
@@ -84,7 +84,7 @@ in {
 
       # Append host-specific telemetry config
       echo "TELEMETRY_HOST_ID=${config.networking.hostName}" >> "$ENV_FILE"
-      echo "TELEMETRY_ENDPOINT=https://telemetry.yakweide.de" >> "$ENV_FILE"
+      echo "TELEMETRY_ENDPOINT=https://agent-framework.yakweide.de" >> "$ENV_FILE"
 
       chmod 644 "$ENV_FILE"
       echo "agent-framework .env file updated successfully"
