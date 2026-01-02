@@ -158,18 +158,13 @@ in {
 
       # Create symlink for claude commands
       rm -rf /home/tim/.claude/commands
-      ln -sfn /mnt/docker-data/volumes/mcp-toolbox/agent-framework/commands /home/tim/.claude/commands
+      ln -sfn /mnt/docker-data/volumes/mcp-toolbox/agent-framework/claude/commands /home/tim/.claude/commands
       chown -h tim:users /home/tim/.claude/commands
 
-      # Create symlink for claude settings
+      # Create symlink for claude settings (includes hooks configuration)
       rm -rf /home/tim/.claude/settings.json
-      ln -sfn /mnt/docker-data/volumes/mcp-toolbox/agent-framework/claude-integration/settings.json /home/tim/.claude/settings.json
+      ln -sfn /mnt/docker-data/volumes/mcp-toolbox/agent-framework/claude/settings.json /home/tim/.claude/settings.json
       chown -h tim:users /home/tim/.claude/settings.json
-
-      # Create symlink for claude hooks
-      rm -rf /home/tim/.claude/hooks
-      ln -sfn /mnt/docker-data/volumes/mcp-toolbox/agent-framework/dist/hooks /home/tim/.claude/hooks
-      chown -h tim:users /home/tim/.claude/hooks
     '';
   };
 }
