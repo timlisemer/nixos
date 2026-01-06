@@ -467,8 +467,8 @@
       ];
 
       volumes = [
-        "/mnt/docker-data/volumes/telemetry/postgres:/var/lib/postgresql/data:rw"
-        "/mnt/docker-data/volumes/telemetry/grafana:/var/lib/grafana:rw"
+        "/mnt/docker-data/volumes/agent-framework-telemetry/postgres:/var/lib/postgresql/data:rw"
+        "/mnt/docker-data/volumes/agent-framework-telemetry/grafana:/var/lib/grafana:rw"
       ];
 
       environmentFiles = ["/run/secrets/telemetryENV"];
