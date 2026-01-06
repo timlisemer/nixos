@@ -128,6 +128,8 @@
     "*.rs": "${capture}_test.rs"
   },
   "workbench.startupEditor": "none",
+  "window.restoreWindows": "none",
+  "workbench.secondarySideBar.defaultVisibility": "hidden",
   "database-client.autoSync": true,
   "window.commandCenter": true,
   "cursor.cpp.disabledLanguages": ["plaintext", "markdown", "scminput"],
