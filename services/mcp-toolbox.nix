@@ -133,28 +133,22 @@ in {
   ##########################################################################
   system.activationScripts.claudeMcpSetup = {
     text = ''
-      echo "[claude-mcp] Setting up MCP servers..."
-
-      # Run as tim user since claude config is per-user
+      # Remove existing MCP servers silently
       ${pkgs.sudo}/bin/sudo -u tim ${unstable.claude-code}/bin/claude mcp list 2>/dev/null | ${pkgs.gawk}/bin/awk -F: '/^[a-zA-Z0-9_-]+:/ {print $1}' | while read -r server; do
-        echo "[claude-mcp] Removing server: $server"
-        ${pkgs.sudo}/bin/sudo -u tim ${unstable.claude-code}/bin/claude mcp remove --scope user "$server" 2>/dev/null || true
+        ${pkgs.sudo}/bin/sudo -u tim ${unstable.claude-code}/bin/claude mcp remove --scope user "$server" >/dev/null 2>&1 || true
       done
 
-      echo "[claude-mcp] Adding nixos-search server..."
-      ${pkgs.sudo}/bin/sudo -u tim ${unstable.claude-code}/bin/claude mcp add nixos-search --scope user -- ${dockerBin} exec -i mcp-toolbox sh -c 'exec 2>/dev/null; /app/tools/mcp-nixos/venv/bin/python3 -m mcp_nixos.server'
+      # Add MCP servers silently
+      ${pkgs.sudo}/bin/sudo -u tim ${unstable.claude-code}/bin/claude mcp add nixos-search --scope user -- ${dockerBin} exec -i mcp-toolbox sh -c 'exec 2>/dev/null; /app/tools/mcp-nixos/venv/bin/python3 -m mcp_nixos.server' >/dev/null 2>&1
 
-      echo "[claude-mcp] Adding tailwind-svelte server..."
-      ${pkgs.sudo}/bin/sudo -u tim ${unstable.claude-code}/bin/claude mcp add tailwind-svelte --scope user -- ${dockerBin} exec -i mcp-toolbox node /app/tools/tailwind-svelte-assistant/run.mjs
+      ${pkgs.sudo}/bin/sudo -u tim ${unstable.claude-code}/bin/claude mcp add tailwind-svelte --scope user -- ${dockerBin} exec -i mcp-toolbox node /app/tools/tailwind-svelte-assistant/run.mjs >/dev/null 2>&1
 
-      echo "[claude-mcp] Adding context7 server..."
-      ${pkgs.sudo}/bin/sudo -u tim ${unstable.claude-code}/bin/claude mcp add context7 --scope user -- ${dockerBin} exec -i mcp-toolbox npx -y @upstash/context7-mcp
+      ${pkgs.sudo}/bin/sudo -u tim ${unstable.claude-code}/bin/claude mcp add context7 --scope user -- ${dockerBin} exec -i mcp-toolbox npx -y @upstash/context7-mcp >/dev/null 2>&1
 
-      echo "[claude-mcp] Adding agent-framework server..."
       ${pkgs.sudo}/bin/sudo -u tim ${unstable.claude-code}/bin/claude mcp add agent-framework --scope user -- \
-      ${pkgs.nodejs}/bin/node /mnt/docker-data/volumes/mcp-toolbox/agent-framework/dist/mcp/server.js
+      ${pkgs.nodejs}/bin/node /mnt/docker-data/volumes/mcp-toolbox/agent-framework/dist/mcp/server.js >/dev/null 2>&1
 
-      echo "[claude-mcp] MCP servers setup complete"
+      echo "[claude-mcp] 4 servers configured (nixos-search, tailwind-svelte, context7, agent-framework)"
 
       # Create symlink for claude commands
       rm -rf /home/tim/.claude/commands

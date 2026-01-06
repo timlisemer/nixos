@@ -523,12 +523,9 @@ in {
   ##########################################################################
   system.activationScripts.cloneGitHubRepos = {
     text = ''
-      echo "[github-repos] Checking SSH access to GitHub..."
       if ! ${pkgs.openssh}/bin/ssh -T git@github.com 2>&1 | ${pkgs.gnugrep}/bin/grep -q "successfully authenticated"; then
-        echo "[github-repos] SSH access not available, skipping clone"
+        echo "[github-repos] SSH not available"
       else
-        echo "[github-repos] SSH access confirmed"
-
         # Parent must exist - created by setupHomeStructure
         if [ ! -d /home/tim/Coding/public_repos ]; then
           echo "[github-repos] ERROR: /home/tim/Coding/public_repos does not exist"
@@ -538,10 +535,13 @@ in {
         # Add openssh to PATH so git can find ssh
         export PATH="${pkgs.openssh}/bin:$PATH"
 
+        PUBLIC_COUNT=0
+        PRIVATE_COUNT=0
+
         # Clone nixos config repo
         TARGET="/home/tim/Coding/nixos"
         if [ ! -d "$TARGET" ]; then
-          echo "[github-repos] Cloning nixos config"
+          echo "[github-repos] Cloning nixos"
           ${pkgs.git}/bin/git clone "git@github.com:timlisemer/nixos.git" "$TARGET"
           ${pkgs.coreutils}/bin/chown -R tim:users "$TARGET"
         fi
@@ -554,6 +554,7 @@ in {
           if [ "$repo" = "nixos" ]; then
             continue
           fi
+          PUBLIC_COUNT=$((PUBLIC_COUNT + 1))
           TARGET="/home/tim/Coding/public_repos/$repo"
           if [ ! -d "$TARGET" ]; then
             echo "[github-repos] Cloning $repo"
@@ -564,13 +565,10 @@ in {
         # Chown parent recursively ONCE at the end
         ${pkgs.coreutils}/bin/chown -R tim:users /home/tim/Coding/public_repos
 
-        echo "[github-repos] Public repos sync complete"
-
         # Clone private repositories if token is available
         GITHUB_TOKEN_FILE="/run/secrets/github_token"
         if [ -f "$GITHUB_TOKEN_FILE" ]; then
           GITHUB_TOKEN=$(${pkgs.coreutils}/bin/cat "$GITHUB_TOKEN_FILE")
-          echo "[github-repos] Fetching private repositories..."
 
           # Check private_repos directory exists
           if [ ! -d /home/tim/Coding/private_repos ]; then
@@ -578,23 +576,26 @@ in {
             exit 1
           fi
 
-          # Fetch private repos with authentication (get name and ssh_url)
-          ${pkgs.curl}/bin/curl -s -H "Authorization: token $GITHUB_TOKEN" \
+          # Fetch private repos with authentication
+          PRIVATE_REPOS=$(${pkgs.curl}/bin/curl -s -H "Authorization: token $GITHUB_TOKEN" \
             "https://api.github.com/user/repos?visibility=private&per_page=100" | \
-            ${pkgs.jq}/bin/jq -r '.[] | "\(.name) \(.ssh_url)"' | \
+            ${pkgs.jq}/bin/jq -r '.[] | "\(.name) \(.ssh_url)"')
+
           while read -r repo ssh_url; do
+            [ -z "$repo" ] && continue
+            PRIVATE_COUNT=$((PRIVATE_COUNT + 1))
             TARGET="/home/tim/Coding/private_repos/$repo"
             if [ ! -d "$TARGET" ]; then
-              echo "[github-repos] Cloning private repo: $repo"
+              echo "[github-repos] Cloning private: $repo"
               ${pkgs.git}/bin/git clone "$ssh_url" "$TARGET"
             fi
-          done
+          done <<< "$PRIVATE_REPOS"
 
           # Set ownership
           ${pkgs.coreutils}/bin/chown -R tim:users /home/tim/Coding/private_repos
-          echo "[github-repos] Private repos sync complete"
+          echo "[github-repos] SSH ok | public: $PUBLIC_COUNT repos | private: $PRIVATE_COUNT repos"
         else
-          echo "[github-repos] No GitHub token available, skipping private repos"
+          echo "[github-repos] SSH ok | public: $PUBLIC_COUNT repos | private: skipped"
         fi
       fi
     '';
