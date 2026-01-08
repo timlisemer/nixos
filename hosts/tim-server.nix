@@ -56,7 +56,6 @@
   # SSH server configuration
   # Enable GatewayPorts to allow reverse SSH tunnels to bind to all interfaces (0.0.0.0)
   # This is required for the Home Assistant tunnel from homeassistant-yellow
-  # See: common/home-manager.nix tim-server-tunnel service with "-R 0.0.0.0:8123:localhost:8123"
   services.openssh.settings.GatewayPorts = "yes";
 
   networking.firewall = lib.mkForce {
@@ -71,6 +70,8 @@
       4743 # Vaultwarden
       8085 # Traefik dashboard
       8123 # Home Assistant (tunneled from homeassistant-yellow)
+      9471 # Agent Framework Telemetry Collector
+      9472 # Agent Framework Telemetry Grafana
       25565 # Minecraft server
     ];
 

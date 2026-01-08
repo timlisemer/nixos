@@ -47,6 +47,7 @@ in {
     nix-prefetch-git
     qemu
     inetutils
+    net-tools
     nmap
     ripgrep
     openvpn

@@ -1,7 +1,7 @@
 .PHONY: check update
 
 check:
-	alejandra --check .
+	alejandra .
 
 update:
 	nix flake update ~/Coding/nixos

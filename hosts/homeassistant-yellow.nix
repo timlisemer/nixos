@@ -185,13 +185,29 @@
       ExecStart = lib.concatStringsSep " " [
         "${pkgs.autossh}/bin/autossh"
         "-M 0"
-        "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -N -i /home/tim/.ssh/id_ed25519"
-        "-o ExitOnForwardFailure=yes"
-        "-o ServerAliveInterval=30"
-        "-o ServerAliveCountMax=3"
-        "-R 0.0.0.0:8123:localhost:8123"
-        "-L 0.0.0.0:8085:tim-server:8085"
-        "-L 0.0.0.0:4743:tim-server:4743"
+        "-o"
+        "StrictHostKeyChecking=no"
+        "-o"
+        "UserKnownHostsFile=/dev/null"
+        "-N"
+        "-i"
+        "/home/tim/.ssh/id_ed25519"
+        "-o"
+        "ExitOnForwardFailure=yes"
+        "-o"
+        "ServerAliveInterval=30"
+        "-o"
+        "ServerAliveCountMax=3"
+        "-R"
+        "0.0.0.0:8123:localhost:8123"
+        "-R"
+        "0.0.0.0:9471:localhost:9471"
+        "-R"
+        "0.0.0.0:9472:localhost:9472"
+        "-L"
+        "0.0.0.0:8085:tim-server:8085"
+        "-L"
+        "0.0.0.0:4743:tim-server:4743"
         "tim@tim-server"
       ];
       Environment = [
@@ -475,6 +491,7 @@
 
       environment = {
         TZ = "Europe/Berlin";
+        GF_SERVER_ROOT_URL = https://agent-framework.yakweide.de/;
       };
     };
   };
