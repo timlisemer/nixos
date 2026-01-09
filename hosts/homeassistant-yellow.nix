@@ -113,6 +113,7 @@
       8081 # OpenThread Border Router
       8082 # Filebrowser UI
       8083 # Pi-hole web UI
+      8084 # Zigbee2MQTT frontend
       8085 # Server Traefik dashboard
       8123 # HomeAssistant
       9001 # Mosquitto WebSocket
@@ -376,42 +377,43 @@
 
     # -------------------------------------------------------------------------
     # openthread-border-router
+    # DISABLED: Conflicts with Zigbee2MQTT for /dev/ttyUSB0 access
     # -------------------------------------------------------------------------
-    openthread-border-router = {
-      image = "openthread/border-router:latest";
-      autoStart = true;
-
-      autoRemoveOnStop = false; # prevent implicit --rm
-      extraOptions = [
-        "--network=host"
-        "--cap-add=NET_ADMIN"
-        "--device=/dev/ttyUSB0:/dev/ttyUSB0"
-        "--device=/dev/net/tun:/dev/net/tun"
-      ];
-
-      volumes = [
-        "/mnt/docker-data/volumes/openthread-border-router:/data"
-      ];
-
-      ports = [
-        "8081:8081"
-        "19788:19788/udp" # Thread MLE (Mesh Link Establishment)
-        "5353:5353/udp" # Multicast DNS (mDNS)
-        "49154:49154/udp" # "docker exec -it openthread-border-router ot-ctl ba port" -> "49154"
-        "45963:45963/udp" # TREL (Thread Radio Encapsulation Link)
-        "61631:61631/udp" # Backbone Border Router (BBR) for the Thread Management Framework (TMF)
-      ];
-
-      environment = {
-        OT_RCP_DEVICE = "spinel+hdlc+uart:///dev/ttyUSB0?uart-baudrate=460800";
-        OT_INFRA_IF = "end0";
-        OT_THREAD_IF = "wpan0";
-        OT_LOG_LEVEL = "7";
-        OTBR_REST_LISTEN_ADDR = "0.0.0.0";
-        OTBR_VENDOR_NAME = "Tim Lisemer";
-        OTBR_MODEL_NAME = "Home Assistant Yellow";
-      };
-    };
+    # openthread-border-router = {
+    #   image = "openthread/border-router:latest";
+    #   autoStart = true;
+    #
+    #   autoRemoveOnStop = false; # prevent implicit --rm
+    #   extraOptions = [
+    #     "--network=host"
+    #     "--cap-add=NET_ADMIN"
+    #     "--device=/dev/ttyUSB0:/dev/ttyUSB0"
+    #     "--device=/dev/net/tun:/dev/net/tun"
+    #   ];
+    #
+    #   volumes = [
+    #     "/mnt/docker-data/volumes/openthread-border-router:/data"
+    #   ];
+    #
+    #   ports = [
+    #     "8081:8081"
+    #     "19788:19788/udp" # Thread MLE (Mesh Link Establishment)
+    #     "5353:5353/udp" # Multicast DNS (mDNS)
+    #     "49154:49154/udp" # "docker exec -it openthread-border-router ot-ctl ba port" -> "49154"
+    #     "45963:45963/udp" # TREL (Thread Radio Encapsulation Link)
+    #     "61631:61631/udp" # Backbone Border Router (BBR) for the Thread Management Framework (TMF)
+    #   ];
+    #
+    #   environment = {
+    #     OT_RCP_DEVICE = "spinel+hdlc+uart:///dev/ttyUSB0?uart-baudrate=460800";
+    #     OT_INFRA_IF = "end0";
+    #     OT_THREAD_IF = "wpan0";
+    #     OT_LOG_LEVEL = "7";
+    #     OTBR_REST_LISTEN_ADDR = "0.0.0.0";
+    #     OTBR_VENDOR_NAME = "Tim Lisemer";
+    #     OTBR_MODEL_NAME = "Home Assistant Yellow";
+    #   };
+    # };
 
     # -------------------------------------------------------------------------
     # python-matter-server

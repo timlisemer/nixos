@@ -34,33 +34,31 @@
   # We can make this a redirect to our other dashboards or a simple landing page
   ui-lovelace = pkgs.writeText "ui-lovelace.yaml" (builtins.readFile ../files/homeassistant/overview.yaml);
 in {
+  # Zigbee2MQTT user needs dialout group for serial port access
+  users.users.zigbee2mqtt.extraGroups = ["dialout"];
+
   # Zigbee2MQTT service
   services.zigbee2mqtt = {
     enable = true;
     settings = {
       permit_join = false;
-      frontend = {
-        port = 8080;
-      };
-      mqtt = {
-        server = "mqtt://localhost:1883";
-      };
+      frontend.port = 8084;
+      mqtt.server = "mqtt://localhost:1883";
       serial = {
-        port = "/dev/ttyAMA1";
+        port = "/dev/ttyUSB0";
         adapter = "ember";
+        rtscts = false;
       };
-      advanced = {
-        log_level = "info";
-        network_key = "!secret.yaml network_key";
-      };
+      advanced.log_level = "info";
     };
   };
 
   services.home-assistant = {
     enable = true;
 
-    # Use unstable package for latest features
-    package = stable.home-assistant;
+    # Use unstable package for latest features and MQTT keepalive fix
+    # See: https://github.com/home-assistant/core/issues/159610
+    package = unstable.home-assistant;
 
     # Extra Python packages for performance optimizations
     # Resolves: aiohttp_fast_zlib warning about zlib_ng and isal not being available
@@ -280,7 +278,6 @@ in {
       # Matter/Thread support
       "matter"
       "thread"
-      "otbr"
 
       # Climate control integrations
       "tado"
