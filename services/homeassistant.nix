@@ -34,6 +34,28 @@
   # We can make this a redirect to our other dashboards or a simple landing page
   ui-lovelace = pkgs.writeText "ui-lovelace.yaml" (builtins.readFile ../files/homeassistant/overview.yaml);
 in {
+  # Zigbee2MQTT service
+  services.zigbee2mqtt = {
+    enable = true;
+    settings = {
+      permit_join = false;
+      frontend = {
+        port = 8080;
+      };
+      mqtt = {
+        server = "mqtt://localhost:1883";
+      };
+      serial = {
+        port = "/dev/ttyAMA1";
+        adapter = "ember";
+      };
+      advanced = {
+        log_level = "info";
+        network_key = "!secret.yaml network_key";
+      };
+    };
+  };
+
   services.home-assistant = {
     enable = true;
 
@@ -259,9 +281,6 @@ in {
       "matter"
       "thread"
       "otbr"
-
-      # Zigbee support
-      "zha"
 
       # Climate control integrations
       "tado"
