@@ -106,7 +106,6 @@ in {
       # HTTP configuration for external access and reverse proxy support
       http = {
         server_port = 8123;
-        server_host = "0.0.0.0";
         cors_allowed_origins = [
           "https://google.com"
           "https://www.home-assistant.io"
@@ -117,6 +116,7 @@ in {
         trusted_proxies = [
           "172.18.0.2"
           "127.0.0.1"
+          "::1"
           # Cloudflare IPv4 ranges
           "103.21.244.0/22"
           "103.22.200.0/22"
@@ -307,7 +307,7 @@ in {
     "d /var/lib/homeassistant/dashboards 0755 hass hass"
     "L+ /var/lib/homeassistant/dashboards/heizung.yaml - - - - ${heizung-dashboard}"
     "L+ /var/lib/homeassistant/ui-lovelace.yaml - - - - ${ui-lovelace}"
-    "L+ /var/lib/homeassistant/scripts.yaml - - - - ${scripts-yaml}"
+    # "L+ /var/lib/homeassistant/scripts.yaml - - - - ${scripts-yaml}"
     "L+ /var/lib/homeassistant/helper.yaml - - - - ${helper-yaml}"
     "d /var/lib/homeassistant/automations 0755 hass hass"
     "L+ /var/lib/homeassistant/automations/climate_control.yaml - - - - ${climate-control-yaml}"

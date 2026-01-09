@@ -13,12 +13,10 @@
       webhook_id: '@webhook_id_audio_receiver@'
   conditions: []
   actions:
-    - type: toggle
-      device_id: 441987f6059dab787eecbf0bb4ab8772
-      entity_id: 163cf491ca723c4c3fae0276b9b44941
-      domain: switch
-    - type: toggle
-      device_id: 59dfe98b78d38430e8dac97b563135db
-      entity_id: 47dc605081e46b9e576e2a8bb9c39ee1
-      domain: switch
+    - action: switch.toggle
+      target:
+        entity_id: switch.audio_receiver
+    - action: switch.toggle
+      target:
+        entity_id: switch.subwoofer
   mode: single
