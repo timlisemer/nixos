@@ -85,19 +85,19 @@ binary_sensor:
     unique_id: kuche_wohnzimmer_fenster_sensoren
     device_class: window
     entities:
-      - binary_sensor.terrassentur
-      - binary_sensor.wohnzimmer_fenster
-      - binary_sensor.kuche_fenster_1
-      - binary_sensor.kuche_fenster_2
+      - binary_sensor.terrassentur_door
+      - binary_sensor.wohnzimmer_fenster_door
+      - binary_sensor.kuche_fenster_1_door
+      - binary_sensor.kuche_fenster_2_door
 
   - platform: group
     name: 'Tim Büro & Schlafzimmer Fenster Sensoren'
     unique_id: tim_buro_schlafzimmer_fenster_sensoren
     device_class: window
     entities:
-      - binary_sensor.balkontur
-      - binary_sensor.buro_fenster
-      - binary_sensor.tim_schlafzimmer_fenster
+      - binary_sensor.balkontur_door
+      - binary_sensor.buro_fenster_door
+      - binary_sensor.tim_schlafzimmer_fenster_door
 
 # Template Binary Sensors
 template:
