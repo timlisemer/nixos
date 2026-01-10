@@ -14,6 +14,7 @@ sensor:
     entities:
       - sensor.kuche_thermostat_1_temperature
       - sensor.kuche_thermostat_2_temperature
+      - sensor.kuche_thermometer_temperature
 
   - platform: group
     name: 'Wohnzimmer Temperatur'
@@ -26,6 +27,7 @@ sensor:
     entities:
       # - sensor.wohnzimmer_thermostat_1_temperature
       - sensor.wohnzimmer_thermost_2_temperature
+      - sensor.wohnzimmer_thermometer_temperature
 
   - platform: group
     name: 'Tim Büro & Schlafzimmer Temperatur'
@@ -52,6 +54,7 @@ sensor:
     entities:
       - sensor.kuche_thermostat_1_humidity
       - sensor.kuche_thermostat_2_humidity
+      - sensor.kuche_thermometer_humidity
 
   - platform: group
     name: 'Wohnzimmer Luftfeuchtigkeit'
@@ -64,6 +67,7 @@ sensor:
     entities:
       - sensor.wohnzimmer_thermostat_1_humidity
       - sensor.wohnzimmer_thermost_2_humidity
+      - sensor.wohnzimmer_thermometer_humidity
 
   - platform: group
     name: 'Tim Büro & Schlafzimmer Luftfeuchtigkeit'
