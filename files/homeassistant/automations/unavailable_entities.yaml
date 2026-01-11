@@ -10,7 +10,7 @@
       time: '14:00:00'
       actions:
         - condition: template
-          value_template: '{{ entities | length > 0 }}'
+          value_template: '{{ entities is defined and entities | trim | length > 0 }}'
         - action: notify.persistent_notification
           metadata: {}
           data:
