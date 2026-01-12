@@ -1,6 +1,27 @@
 # Home Assistant Helper Groups Configuration
 # Documentation: https://www.home-assistant.io/integrations/group/
 
+# Target Temperature Helpers (input_number)
+# These can be modified by automations and persist across restarts
+input_number:
+  wohnzimmer_kuche_zieltemperatur:
+    name: 'Wohnzimmer & Küche Zieltemperatur'
+    min: 15
+    max: 25
+    step: 0.5
+    initial: 22
+    unit_of_measurement: '°C'
+    icon: mdi:thermometer
+
+  tim_buro_schlafzimmer_zieltemperatur:
+    name: 'Tim Büro & Schlafzimmer Zieltemperatur'
+    min: 15
+    max: 25
+    step: 0.5
+    initial: 22
+    unit_of_measurement: '°C'
+    icon: mdi:thermometer
+
 # Temperature Sensor Groups (arithmetic mean)
 sensor:
   - platform: group
