@@ -1,10 +1,9 @@
 # Climate Control Automations
 # Uses helper binary sensors for cleaner trigger logic
-# Respects thermostat modes: off (do nothing), eco (18°C, switch to heat when person home), heat (normal)
 
 - id: 'tim_buro_schlafzimmer_heizung'
   alias: 'Tim Büro & Schlafzimmer Heizung'
-  description: "Control Tim's office/bedroom heating based on thermostat mode, Tim's presence, room activity, and time of day"
+  description: "Control Tim's office/bedroom heating based on Tim's presence, room activity, and time of day"
   triggers:
     - trigger: state
       entity_id: binary_sensor.tim_home
@@ -12,59 +11,25 @@
       entity_id: binary_sensor.buro_tim_schlafzimmer_in_use
     - trigger: state
       entity_id: binary_sensor.tim_daytime_heating_period
-    - trigger: state
-      entity_id: climate.tim_buro_schlafzimmer_heizung
     - trigger: time_pattern
       hours: '/1'
   conditions: []
   actions:
     - variables:
-        hvac_mode: "{{ states('climate.tim_buro_schlafzimmer_heizung') }}"
-        preset_mode: "{{ state_attr('climate.tim_buro_schlafzimmer_heizung', 'preset_mode') }}"
-        is_off: "{{ hvac_mode == 'off' }}"
-        is_eco: "{{ preset_mode == 'eco' }}"
         is_daytime: "{{ is_state('binary_sensor.tim_daytime_heating_period', 'on') }}"
         room_in_use: "{{ is_state('binary_sensor.buro_tim_schlafzimmer_in_use', 'on') }}"
         tim_home: "{{ is_state('binary_sensor.tim_home', 'on') }}"
-        should_heat: "{{ room_in_use or (is_daytime and tim_home) }}"
-        target_temp: "{{ states('input_number.tim_buro_schlafzimmer_zieltemperatur') | float(22) }}"
-    - choose:
-        # Off mode - respect completely, do nothing
-        - conditions: "{{ is_off }}"
-          sequence: []
-        # Eco mode - 18°C unless Tim comes home, then switch to heat
-        - conditions: "{{ is_eco }}"
-          sequence:
-            - if: "{{ tim_home }}"
-              then:
-                - action: climate.set_preset_mode
-                  target:
-                    entity_id: climate.tim_buro_schlafzimmer_heizung
-                  data:
-                    preset_mode: none
-                - action: climate.set_temperature
-                  target:
-                    entity_id: climate.tim_buro_schlafzimmer_heizung
-                  data:
-                    temperature: "{{ target_temp if should_heat else 18 }}"
-              else:
-                - action: climate.set_temperature
-                  target:
-                    entity_id: climate.tim_buro_schlafzimmer_heizung
-                  data:
-                    temperature: 18
-      # Default (heat mode) - current behavior
-      default:
-        - action: climate.set_temperature
-          target:
-            entity_id: climate.tim_buro_schlafzimmer_heizung
-          data:
-            temperature: "{{ target_temp if should_heat else 18 }}"
+        should_heat: '{{ room_in_use or (is_daytime and tim_home) }}'
+    - action: climate.set_temperature
+      target:
+        entity_id: climate.tim_buro_schlafzimmer_heizung
+      data:
+        temperature: "{{ states('input_number.tim_buro_schlafzimmer_zieltemperatur') | float(22) if should_heat else 18 }}"
   mode: single
 
 - id: 'kuche_wohnzimmer_heizung'
   alias: 'Küche & Wohnzimmer Heizung'
-  description: 'Control kitchen/living room heating based on thermostat mode, presence, room activity, and time of day'
+  description: 'Control kitchen/living room heating based on presence, room activity, and time of day'
   triggers:
     - trigger: state
       entity_id: binary_sensor.somebody_home
@@ -72,83 +37,25 @@
       entity_id: binary_sensor.kuche_wohnzimmer_in_use
     - trigger: state
       entity_id: binary_sensor.wohnzimmer_kuche_daytime_heating_period
-    - trigger: state
-      entity_id: climate.wohnzimmer_heizung
-    - trigger: state
-      entity_id: climate.kuche_heizung
     - trigger: time_pattern
       hours: '/1'
   conditions: []
   actions:
     - variables:
-        # Check modes for both climate entities
-        wohnzimmer_hvac: "{{ states('climate.wohnzimmer_heizung') }}"
-        wohnzimmer_preset: "{{ state_attr('climate.wohnzimmer_heizung', 'preset_mode') }}"
-        kuche_hvac: "{{ states('climate.kuche_heizung') }}"
-        kuche_preset: "{{ state_attr('climate.kuche_heizung', 'preset_mode') }}"
         is_daytime: "{{ is_state('binary_sensor.wohnzimmer_kuche_daytime_heating_period', 'on') }}"
         room_in_use: "{{ is_state('binary_sensor.kuche_wohnzimmer_in_use', 'on') }}"
         someone_home: "{{ is_state('binary_sensor.somebody_home', 'on') }}"
-        should_heat: "{{ room_in_use or (is_daytime and someone_home) }}"
+        should_heat: '{{ room_in_use or (is_daytime and someone_home) }}'
+    - variables:
         target_temp: "{{ states('input_number.wohnzimmer_kuche_zieltemperatur') | float(22) }}"
-    # Handle Wohnzimmer
-    - choose:
-        - conditions: "{{ wohnzimmer_hvac == 'off' }}"
-          sequence: []
-        - conditions: "{{ wohnzimmer_preset == 'eco' }}"
-          sequence:
-            - if: "{{ someone_home }}"
-              then:
-                - action: climate.set_preset_mode
-                  target:
-                    entity_id: climate.wohnzimmer_heizung
-                  data:
-                    preset_mode: none
-                - action: climate.set_temperature
-                  target:
-                    entity_id: climate.wohnzimmer_heizung
-                  data:
-                    temperature: "{{ target_temp if should_heat else 18 }}"
-              else:
-                - action: climate.set_temperature
-                  target:
-                    entity_id: climate.wohnzimmer_heizung
-                  data:
-                    temperature: 18
-      default:
-        - action: climate.set_temperature
-          target:
-            entity_id: climate.wohnzimmer_heizung
-          data:
-            temperature: "{{ target_temp if should_heat else 18 }}"
-    # Handle Küche
-    - choose:
-        - conditions: "{{ kuche_hvac == 'off' }}"
-          sequence: []
-        - conditions: "{{ kuche_preset == 'eco' }}"
-          sequence:
-            - if: "{{ someone_home }}"
-              then:
-                - action: climate.set_preset_mode
-                  target:
-                    entity_id: climate.kuche_heizung
-                  data:
-                    preset_mode: none
-                - action: climate.set_temperature
-                  target:
-                    entity_id: climate.kuche_heizung
-                  data:
-                    temperature: "{{ (target_temp - 2) if should_heat else 18 }}"
-              else:
-                - action: climate.set_temperature
-                  target:
-                    entity_id: climate.kuche_heizung
-                  data:
-                    temperature: 18
-      default:
-        - action: climate.set_temperature
-          target:
-            entity_id: climate.kuche_heizung
-          data:
-            temperature: "{{ (target_temp - 2) if should_heat else 18 }}"
+    - action: climate.set_temperature
+      target:
+        entity_id: climate.wohnzimmer_heizung
+      data:
+        temperature: "{{ target_temp if should_heat else 18 }}"
+    - action: climate.set_temperature
+      target:
+        entity_id: climate.kuche_heizung
+      data:
+        temperature: "{{ (target_temp - 2) if should_heat else 18 }}"
   mode: single

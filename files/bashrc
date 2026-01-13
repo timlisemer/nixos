@@ -340,9 +340,11 @@ git_update_fork() {
 
 function git() {
 	# Custom 'git clone': always clone with submodules.
+	# Note: --remote-submodules is NOT used because it breaks when submodules
+	# are pinned to specific commits rather than tracking a branch.
 	if [ "$1" = "clone" ]; then
 		shift
-		command git clone --recurse-submodules --remote-submodules "$@"
+		command git clone --recurse-submodules "$@"
 
 	# Custom 'git pull': always pull with submodules and update them
 	elif [ "$1" = "pull" ]; then
