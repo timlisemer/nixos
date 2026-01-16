@@ -34,7 +34,6 @@ in {
     libfido2
     yubikey-personalization
     pam_u2f
-    chromium
     pcsclite
     # pcsc-tools
     nss

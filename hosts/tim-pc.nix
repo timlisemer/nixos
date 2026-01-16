@@ -65,6 +65,30 @@
     allowPing = true;
   };
 
+  # Enable Avahi for Matter/chip-tool (overrides desktop-only.nix mkForce false)
+  services.avahi.enable = lib.mkOverride 49 true;
+
+  # chip-tool via Docker wrapper (Matter/CHIP commissioning tool)
+  environment.systemPackages = [
+    (pkgs.writeShellScriptBin "chip-tool" ''
+      IMAGE="ghcr.io/matter-js/chip:latest"
+      if ! ${pkgs.docker}/bin/docker image inspect "$IMAGE" &>/dev/null; then
+        echo "chip-tool: Docker image not found, pulling $IMAGE..." >&2
+        ${pkgs.docker}/bin/docker pull "$IMAGE"
+        echo "chip-tool: Image pulled successfully" >&2
+      fi
+      echo "chip-tool: Starting Matter controller via Docker..." >&2
+      exec ${pkgs.docker}/bin/docker run --rm -it \
+        --network=host \
+        --ipc=host \
+        -v /tmp:/tmp \
+        -v /run/dbus:/run/dbus:ro \
+        -v "$HOME/.chip-tool:/root/.chip-tool" \
+        "$IMAGE" \
+        chip-tool "$@"
+    '')
+  ];
+
   # environment.systemPackages = with pkgs; [openrgb-with-all-plugins];
   # services.hardware.openrgb.enable = true;
   # systemd.user.services.openrgb = {
