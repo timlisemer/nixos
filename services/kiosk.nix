@@ -1,5 +1,8 @@
 # Kiosk configuration for Tauri app on SPI display
 #
+# Deployment: The Tauri app must be manually deployed to /opt/rpi5-ui/rpi5-ui
+# (cross-compile for aarch64-linux and copy to the Pi)
+#
 # Debugging:
 #   journalctl -t kiosk -n 50 --no-pager        # View kiosk script logs
 #   systemctl status greetd -n 50 --no-pager    # Check greetd service
@@ -77,6 +80,12 @@ in {
   # Enable dconf (GSettings backend) - required for GTK initialization
   programs.dconf.enable = true;
 
+  # dconf profile for GTK apps - prevents "failed to commit changes" warnings
+  environment.etc."dconf/profile/user".text = ''
+    user-db:user
+    system-db:local
+  '';
+
   environment.systemPackages = with pkgs; [
     cage
     wvkbd
@@ -86,6 +95,9 @@ in {
     glib
     shared-mime-info
     hicolor-icon-theme
+
+    # WebKitGTK (used by Tauri) probes for GL even with software rendering
+    libGL
 
     # GPU debugging tools
     mesa-demos
