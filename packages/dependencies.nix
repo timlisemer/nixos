@@ -84,6 +84,8 @@ in {
     python3Packages.pylint
     isort
     python3Packages.isort
+    ruff
+    mypy
     stylua
     nodePackages.typescript-language-server
     nodePackages.vscode-langservers-extracted
