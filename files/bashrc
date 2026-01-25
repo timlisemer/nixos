@@ -183,7 +183,7 @@ alias rebootsafe='sudo shutdown -r now'
 alias rebootforce='sudo shutdown -r -n now'
 
 # Alias's to show disk space and space used in a folder
-alias diskspace="du -S | sort -n -r |more"
+# diskspace function defined below (after print_drives)
 alias folders='du -h --max-depth=1'
 alias folderssort='find . -maxdepth 1 -type d -print0 | xargs -0 du -sk | sort -rn'
 alias tree='tree -CAhF --dirsfirst'
@@ -534,6 +534,118 @@ print_drives() {
 	df -hT | grep -E 'nfs|cifs' || echo "No NFS or CIFS network drives found."
 	echo ""
 	echo "--------------------------------------------------------"
+}
+# -----------------------------------------------------------------------
+
+# --- diskspace: show all drives with usage bars and details ---
+diskspace() {
+	local bar_width=20
+
+	# Function to create progress bar
+	_progress_bar() {
+		local percent=$1
+		local filled=$((percent * bar_width / 100))
+		local empty=$((bar_width - filled))
+		printf "["
+		printf '%0.s█' $(seq 1 $filled 2>/dev/null)
+		printf '%0.s░' $(seq 1 $empty 2>/dev/null)
+		printf "] %3d%%" "$percent"
+	}
+
+	# Function to format and print drive info
+	_print_drive() {
+		local name="$1" mount="$2" size="$3" used="$4" avail="$5" percent="$6" type="$7" primary="$8"
+		local percent_num=${percent%\%}
+		local label=""
+		[[ "$primary" == "yes" ]] && label=" [PRIMARY]"
+
+		printf "  %-12s %-25s %8s %8s %8s  " "$name" "$mount" "$size" "$used" "$avail"
+		_progress_bar "$percent_num"
+		printf "  %-12s%s\n" "$type" "$label"
+	}
+
+	local local_count=0 network_count=0 cloud_count=0
+
+	# Count drives by type
+	while IFS= read -r line; do
+		fstype=$(echo "$line" | awk '{print $2}')
+		case "$fstype" in
+		nfs* | cifs | smb*) ((network_count++)) ;;
+		fuse.rclone) ((cloud_count++)) ;;
+		ext* | btrfs | xfs | ntfs | vfat | f2fs | zfs) ((local_count++)) ;;
+		esac
+	done < <(df -hT 2>/dev/null | tail -n +2 | grep -v "tmpfs\|devtmpfs\|efivarfs\|overlay")
+
+	echo "════════════════════════════════════════════════════════════════════════════════════════════════════"
+	printf "  DISK SPACE OVERVIEW │ Local: %d │ Network: %d │ Cloud: %d │ Total: %d\n" \
+		"$local_count" "$network_count" "$cloud_count" "$((local_count + network_count + cloud_count))"
+	echo "════════════════════════════════════════════════════════════════════════════════════════════════════"
+
+	# Header
+	printf "  %-12s %-25s %8s %8s %8s  %-24s  %-12s\n" \
+		"DEVICE" "MOUNT POINT" "SIZE" "USED" "AVAIL" "USAGE" "TYPE"
+	echo "────────────────────────────────────────────────────────────────────────────────────────────────────"
+
+	# Local drives
+	if [[ $local_count -gt 0 ]]; then
+		echo "  ▸ LOCAL DRIVES"
+		while IFS= read -r line; do
+			fstype=$(echo "$line" | awk '{print $2}')
+			case "$fstype" in
+			ext* | btrfs | xfs | ntfs | vfat | f2fs | zfs)
+				name=$(echo "$line" | awk '{print $1}' | sed 's|/dev/||')
+				mount=$(echo "$line" | awk '{print $7}')
+				size=$(echo "$line" | awk '{print $3}')
+				used=$(echo "$line" | awk '{print $4}')
+				avail=$(echo "$line" | awk '{print $5}')
+				percent=$(echo "$line" | awk '{print $6}')
+				primary="no"
+				[[ "$mount" == "/" ]] && primary="yes"
+				_print_drive "$name" "$mount" "$size" "$used" "$avail" "$percent" "$fstype" "$primary"
+				;;
+			esac
+		done < <(df -hT 2>/dev/null | tail -n +2)
+	fi
+
+	# Network drives
+	if [[ $network_count -gt 0 ]]; then
+		echo "  ▸ NETWORK DRIVES"
+		while IFS= read -r line; do
+			fstype=$(echo "$line" | awk '{print $2}')
+			case "$fstype" in
+			nfs* | cifs | smb*)
+				name=$(echo "$line" | awk '{print $1}' | awk -F: '{print $1}' | awk -F/ '{print $NF}')
+				mount=$(echo "$line" | awk '{print $7}')
+				size=$(echo "$line" | awk '{print $3}')
+				used=$(echo "$line" | awk '{print $4}')
+				avail=$(echo "$line" | awk '{print $5}')
+				percent=$(echo "$line" | awk '{print $6}')
+				_print_drive "$name" "$mount" "$size" "$used" "$avail" "$percent" "$fstype" "no"
+				;;
+			esac
+		done < <(df -hT 2>/dev/null | tail -n +2)
+	fi
+
+	# Cloud drives (rclone)
+	if [[ $cloud_count -gt 0 ]]; then
+		echo "  ▸ CLOUD DRIVES"
+		while IFS= read -r line; do
+			fstype=$(echo "$line" | awk '{print $2}')
+			case "$fstype" in
+			fuse.rclone)
+				name=$(echo "$line" | awk '{print $1}' | awk -F: '{print $1}')
+				mount=$(echo "$line" | awk '{print $7}')
+				size=$(echo "$line" | awk '{print $3}')
+				used=$(echo "$line" | awk '{print $4}')
+				avail=$(echo "$line" | awk '{print $5}')
+				percent=$(echo "$line" | awk '{print $6}')
+				_print_drive "$name" "$mount" "$size" "$used" "$avail" "$percent" "rclone" "no"
+				;;
+			esac
+		done < <(df -hT 2>/dev/null | tail -n +2)
+	fi
+
+	echo "════════════════════════════════════════════════════════════════════════════════════════════════════"
 }
 # -----------------------------------------------------------------------
 
