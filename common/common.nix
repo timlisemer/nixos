@@ -106,29 +106,6 @@ in {
     options = "--delete-older-than 7d";
   };
 
-  # Docker garbage collection
-  # Removes unused images, containers, networks, and build cache weekly
-  # This prevents disk space issues from accumulating unused docker images
-  # Uses -a to remove all unused images (not just dangling ones)
-  # Uses -f to skip confirmation prompt
-  systemd.services.docker-prune = {
-    description = "Docker system prune";
-    after = ["docker.service"];
-    serviceConfig = {
-      Type = "oneshot";
-      ExecStart = "${dockerBin} system prune -a -f";
-    };
-  };
-
-  systemd.timers.docker-prune = {
-    description = "Run docker system prune weekly";
-    wantedBy = ["timers.target"];
-    timerConfig = {
-      OnCalendar = "weekly";
-      Persistent = true;
-    };
-  };
-
   # Load the kernel module for Silicon Labs USB-to-UART bridges. For the homeassistant yellow
   boot.kernelModules = ["cp210x"];
 
@@ -179,6 +156,11 @@ in {
     enable = true;
     rootless.enable = false;
     rootless.setSocketVariable = false;
+    autoPrune = {
+      enable = true;
+      dates = "weekly";
+      flags = ["--all"];
+    };
     daemon.settings = {
       ipv6 = true;
       fixed-cidr-v6 = "fd00::/64";

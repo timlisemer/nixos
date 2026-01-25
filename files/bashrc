@@ -539,7 +539,14 @@ print_drives() {
 
 # --- diskspace: show all drives with usage bars and details ---
 diskspace() {
+	local target_dir="${1:-.}"
 	local bar_width=20
+
+	# Validate path exists
+	if [[ ! -d "$target_dir" ]]; then
+		echo "Error: '$target_dir' is not a valid directory"
+		return 1
+	fi
 
 	# Function to create progress bar
 	_progress_bar() {
@@ -564,17 +571,20 @@ diskspace() {
 		printf "  %-12s%s\n" "$type" "$label"
 	}
 
-	local local_count=0 network_count=0 cloud_count=0
+	local network_count=0 cloud_count=0
+	declare -A local_devices_seen
 
-	# Count drives by type
+	# Count drives by type (unique devices for local drives)
 	while IFS= read -r line; do
 		fstype=$(echo "$line" | awk '{print $2}')
+		device=$(echo "$line" | awk '{print $1}')
 		case "$fstype" in
 		nfs* | cifs | smb*) ((network_count++)) ;;
 		fuse.rclone) ((cloud_count++)) ;;
-		ext* | btrfs | xfs | ntfs | vfat | f2fs | zfs) ((local_count++)) ;;
+		ext* | btrfs | xfs | ntfs | vfat | f2fs | zfs) local_devices_seen["$device"]=1 ;;
 		esac
 	done < <(df -hT 2>/dev/null | tail -n +2 | grep -v "tmpfs\|devtmpfs\|efivarfs\|overlay")
+	local local_count=${#local_devices_seen[@]}
 
 	echo "════════════════════════════════════════════════════════════════════════════════════════════════════"
 	printf "  DISK SPACE OVERVIEW │ Local: %d │ Network: %d │ Cloud: %d │ Total: %d\n" \
@@ -586,25 +596,68 @@ diskspace() {
 		"DEVICE" "MOUNT POINT" "SIZE" "USED" "AVAIL" "USAGE" "TYPE"
 	echo "────────────────────────────────────────────────────────────────────────────────────────────────────"
 
-	# Local drives
+	# Local drives - group btrfs subvolumes under their device
 	if [[ $local_count -gt 0 ]]; then
 		echo "  ▸ LOCAL DRIVES"
+
+		# Collect drives into associative arrays keyed by device name
+		declare -A device_info   # device -> "size|used|avail|percent|fstype"
+		declare -A device_mounts # device -> "mount1|mount2|mount3"
+		declare -a device_order  # preserve insertion order
+
 		while IFS= read -r line; do
 			fstype=$(echo "$line" | awk '{print $2}')
 			case "$fstype" in
 			ext* | btrfs | xfs | ntfs | vfat | f2fs | zfs)
-				name=$(echo "$line" | awk '{print $1}' | sed 's|/dev/||')
+				device=$(echo "$line" | awk '{print $1}' | sed 's|/dev/||')
 				mount=$(echo "$line" | awk '{print $7}')
 				size=$(echo "$line" | awk '{print $3}')
 				used=$(echo "$line" | awk '{print $4}')
 				avail=$(echo "$line" | awk '{print $5}')
 				percent=$(echo "$line" | awk '{print $6}')
-				primary="no"
-				[[ "$mount" == "/" ]] && primary="yes"
-				_print_drive "$name" "$mount" "$size" "$used" "$avail" "$percent" "$fstype" "$primary"
+
+				# Store first occurrence info for the device
+				if [[ -z "${device_info[$device]}" ]]; then
+					device_info[$device]="$size|$used|$avail|$percent|$fstype"
+					device_order+=("$device")
+				fi
+				# Append mount point
+				if [[ -z "${device_mounts[$device]}" ]]; then
+					device_mounts[$device]="$mount"
+				else
+					device_mounts[$device]="${device_mounts[$device]}|$mount"
+				fi
 				;;
 			esac
 		done < <(df -hT 2>/dev/null | tail -n +2)
+
+		# Print each device, grouping mounts
+		for device in "${device_order[@]}"; do
+			IFS='|' read -r size used avail percent fstype <<<"${device_info[$device]}"
+			IFS='|' read -ra mounts <<<"${device_mounts[$device]}"
+			local percent_num=${percent%\%}
+
+			if [[ ${#mounts[@]} -eq 1 ]]; then
+				# Single mount - print normally
+				local primary="no"
+				[[ "${mounts[0]}" == "/" ]] && primary="yes"
+				_print_drive "$device" "${mounts[0]}" "$size" "$used" "$avail" "$percent" "$fstype" "$primary"
+			else
+				# Multiple mounts (btrfs subvolumes) - print device once, then list mounts
+				printf "  %-12s %-25s %8s %8s %8s  " "$device" "" "$size" "$used" "$avail"
+				_progress_bar "$percent_num"
+				printf "  %-12s\n" "$fstype"
+				# Print mount points as tree
+				local mount_count=${#mounts[@]}
+				for ((i = 0; i < mount_count; i++)); do
+					local prefix="├─"
+					[[ $i -eq $((mount_count - 1)) ]] && prefix="└─"
+					local label=""
+					[[ "${mounts[i]}" == "/" ]] && label=" [PRIMARY]"
+					printf "      %s %-30s%s\n" "$prefix" "${mounts[i]}" "$label"
+				done
+			fi
+		done
 	fi
 
 	# Network drives
@@ -644,6 +697,22 @@ diskspace() {
 			esac
 		done < <(df -hT 2>/dev/null | tail -n +2)
 	fi
+
+	echo "════════════════════════════════════════════════════════════════════════════════════════════════════"
+
+	# Directory analysis section
+	echo ""
+	echo "════════════════════════════════════════════════════════════════════════════════════════════════════"
+	printf "  DIRECTORY ANALYSIS: %s\n" "$(realpath "$target_dir")"
+	echo "────────────────────────────────────────────────────────────────────────────────────────────────────"
+	printf "  %-10s  %s\n" "SIZE" "DIRECTORY"
+
+	# Get top 15 largest files and directories
+	du -ah --max-depth=1 "$target_dir" 2>/dev/null | sort -rh | while read -r size path; do
+		# Skip the total line (the directory itself)
+		[[ "$path" == "$target_dir" || "$path" == "${target_dir%/}" ]] && continue
+		printf "  %-10s  %s\n" "$size" "$path"
+	done | head -15
 
 	echo "════════════════════════════════════════════════════════════════════════════════════════════════════"
 }
