@@ -152,10 +152,9 @@ in {
         # Clean up old symlinks in CachedExtensionVSIXs
         find /home/tim/.config/Code/CachedExtensionVSIXs -type l -delete 2>/dev/null || true
 
-        # Clean up old extensions in .vscode-server/extensions
-        # Remove both symlinks and directories that match our naming pattern
-        find /home/tim/.vscode-server/extensions -type l -delete 2>/dev/null || true
-        find /home/tim/.vscode-server/extensions -maxdepth 1 -name "*vscode-extension-*" -type d -exec rm -rf {} \; 2>/dev/null || true
+        # Clean ALL old extensions in .vscode-server/extensions (they will be recreated)
+        rm -rf /home/tim/.vscode-server/extensions
+        mkdir -p /home/tim/.vscode-server/extensions
 
         # Copy VS Code extensions from Nix store to .vscode-server using known paths
         # We copy instead of symlink because VS Code needs to write to these files
@@ -167,7 +166,8 @@ in {
               ext_name=$(basename "$ext_dir")
               target_dir="/home/tim/.vscode-server/extensions/$ext_name"
 
-              # Always override existing extensions
+              # Remove existing and copy fresh (prevents nesting)
+              rm -rf "$target_dir" 2>/dev/null || true
               cp -r "$ext_dir" "$target_dir" 2>/dev/null || true
               # Make the copied files writable for VS Code
               chmod -R u+w "$target_dir" 2>/dev/null || true
@@ -194,7 +194,8 @@ in {
               ext_name=$(basename "$ext_dir")
               target_dir="/home/tim/.cursor/extensions/$ext_name"
 
-              # Always override existing extensions
+              # Remove existing and copy fresh (prevents nesting)
+              rm -rf "$target_dir" 2>/dev/null || true
               cp -r "$ext_dir" "$target_dir" 2>/dev/null || true
               # Make the copied files writable for Cursor
               chmod -R u+w "$target_dir" 2>/dev/null || true
