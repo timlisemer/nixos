@@ -1,14 +1,14 @@
 format = """
-[](#3B4252)\
+[](#3B4252)\
 $python\
 $username\
 $hostname\
-[](bg:#434C5E fg:#3B4252)\
+[](bg:#434C5E fg:#3B4252)\
 $directory\
-[](fg:#434C5E bg:#4C566A)\
+[](fg:#434C5E bg:#4C566A)\
 $git_branch\
 $git_status\
-[](fg:#4C566A bg:#86BBD8)\
+[](fg:#4C566A bg:#86BBD8)\
 $c\
 $elixir\
 $elm\
@@ -21,11 +21,11 @@ $bun\
 $dotnet\
 $nim\
 $rust\
-[](fg:#86BBD8 bg:#06969A)\
+[](fg:#86BBD8 bg:#06969A)\
 $docker_context\
-[](fg:#06969A bg:#33658A)\
+[](fg:#06969A bg:#33658A)\
 $time\
-[ ](fg:#33658A)\
+[ ](fg:#33658A)\
 """
 
 command_timeout = 500
@@ -33,7 +33,7 @@ scan_timeout = 30
 # Disable the blank line at the start of the prompt
 # add_newline = false
 
-# You can also replace your username with a neat symbol like  to save some space
+# You can also replace your username with a neat symbol like  to save some space
 [username]
 show_always = true
 style_user = "bg:#3B4252"
@@ -55,41 +55,41 @@ truncation_symbol = "…/"
 # Here is how you can shorten some long paths by text replacement
 # similar to mapped_locations in Oh My Posh:
 [directory.substitutions]
-"Documents" = "󰈙 "
-"Downloads" = " "
-"Music" = " "
-"Pictures" = " "
+"Documents" = " "
+"Downloads" = " "
+"Music" = " "
+"Pictures" = " "
 # Keep in mind that the order matters. For example:
-# "Important Documents" = " 󰈙󰉋 "
+# "Important Documents" = "  "
 # will not be replaced, because "Documents" was already substituted before.
 # So either put "Important Documents" before "Documents" or use the substituted version:
-# "Important 󰈙 " = " 󰈙󰉋 "
+# "Important  " = "  "
 
 [c]
-symbol = " "
+symbol = " "
 style = "bg:#86BBD8"
 format = '[ $symbol ($version) ]($style)'
 
 [docker_context]
-symbol = " "
+symbol = " "
 style = "bg:#06969A"
 format = '[ $symbol $context ]($style) $path'
 disabled = true
 
 [elixir]
-symbol = " "
+symbol = " "
 style = "bg:#86BBD8"
 format = '[ $symbol ($version) ]($style)'
 disabled = true
 
 [elm]
-symbol = " "
+symbol = " "
 style = "bg:#86BBD8"
 format = '[ $symbol ($version) ]($style)'
 disabled = true
 
 [git_branch]
-symbol = ""
+symbol = ""
 style = "bg:#4C566A"
 format = '[ $symbol $branch ]($style)'
 
@@ -99,29 +99,29 @@ format = '[$all_status$ahead_behind ]($style)'
 ignore_submodules = true
 
 [golang]
-symbol = " "
+symbol = " "
 style = "bg:#86BBD8"
 format = '[ $symbol ($version) ]($style)'
 
 [haskell]
-symbol = " "
+symbol = " "
 style = "bg:#86BBD8"
 format = '[ $symbol ($version) ]($style)'
 disabled = true
 
 [java]
-symbol = " "
+symbol = " "
 style = "bg:#86BBD8"
 format = '[ $symbol ($version) ]($style)'
 
 [julia]
-symbol = " "
+symbol = " "
 style = "bg:#86BBD8"
 format = '[ $symbol ($version) ]($style)'
 disabled = true
 
 [nodejs]
-symbol = ""
+symbol = ""
 style = "bg:#86BBD8"
 format = '[ $symbol ($version) ]($style)'
 
@@ -136,7 +136,7 @@ style = "bg:#86BBD8"
 format = '[ $symbol ($version) ]($style)'
 
 [nim]
-symbol = " "
+symbol = " "
 style = "bg:#86BBD8"
 format = '[ $symbol ($version) ]($style)'
 disabled = true
@@ -146,7 +146,7 @@ style = "bg:#3B4252"
 format = '[(\($virtualenv\) )]($style)'
 
 [rust]
-symbol = ""
+symbol = ""
 style = "bg:#86BBD8"
 format = '[ $symbol ($version) ]($style)'
 
