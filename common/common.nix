@@ -137,6 +137,8 @@ in {
       PermitRootLogin = "no";
       PasswordAuthentication = false;
       UseDns = false;
+      ClientAliveInterval = 20; # Send keepalive every 20 seconds
+      ClientAliveCountMax = 3; # Drop connection after 3 missed keepalives (60 seconds max)
     };
   };
 
