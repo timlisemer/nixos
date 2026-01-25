@@ -548,7 +548,7 @@ in {
           ${pkgs.coreutils}/bin/chown -R tim:users "$TARGET"
         fi
 
-        # Fetch repository list and clone
+        # Fetch repository list and clone (or register for tim-server)
         REPOS=$(${pkgs.curl}/bin/curl -s "https://api.github.com/users/timlisemer/repos?per_page=100" | ${pkgs.jq}/bin/jq -r '.[].name')
 
         for repo in $REPOS; do
@@ -559,8 +559,16 @@ in {
           PUBLIC_COUNT=$((PUBLIC_COUNT + 1))
           TARGET="/home/tim/Coding/public_repos/$repo"
           if [ ! -d "$TARGET" ]; then
-            echo "[github-repos] Cloning $repo"
-            ${pkgs.git}/bin/git clone "git@github.com:timlisemer/$repo.git" "$TARGET"
+            if [ "${hostName}" = "tim-server" ]; then
+              # Register only: init empty repo with remote configured
+              echo "[github-repos] Registering $repo (lazy)"
+              ${pkgs.coreutils}/bin/mkdir -p "$TARGET"
+              ${pkgs.git}/bin/git -C "$TARGET" init -q
+              ${pkgs.git}/bin/git -C "$TARGET" remote add origin "git@github.com:timlisemer/$repo.git"
+            else
+              echo "[github-repos] Cloning $repo"
+              ${pkgs.git}/bin/git clone "git@github.com:timlisemer/$repo.git" "$TARGET"
+            fi
           fi
         done
 
@@ -588,8 +596,16 @@ in {
             PRIVATE_COUNT=$((PRIVATE_COUNT + 1))
             TARGET="/home/tim/Coding/private_repos/$repo"
             if [ ! -d "$TARGET" ]; then
-              echo "[github-repos] Cloning private: $repo"
-              ${pkgs.git}/bin/git clone "$ssh_url" "$TARGET"
+              if [ "${hostName}" = "tim-server" ]; then
+                # Register only: init empty repo with remote configured
+                echo "[github-repos] Registering private: $repo (lazy)"
+                ${pkgs.coreutils}/bin/mkdir -p "$TARGET"
+                ${pkgs.git}/bin/git -C "$TARGET" init -q
+                ${pkgs.git}/bin/git -C "$TARGET" remote add origin "$ssh_url"
+              else
+                echo "[github-repos] Cloning private: $repo"
+                ${pkgs.git}/bin/git clone "$ssh_url" "$TARGET"
+              fi
             fi
           done <<< "$PRIVATE_REPOS"
 
