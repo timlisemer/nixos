@@ -46,6 +46,7 @@
 
   # Migrate to new bootloader (kernelboot is deprecated)
   # See: https://github.com/nvmd/nixos-raspberrypi/pull/61
+  # Also: evaluation warning: The option `boot.loader.raspberryPi' defined in `/nix/store/6k89i7y05a4ss41lz7ahbakrjxdpbhg3-source/hosts/homeassistant-yellow.nix' has been renamed to `boot.loader.raspberry-pi'.
   boot.loader.raspberryPi.bootloader = "kernel";
 
   # Disable power management - this is a 24/7 server
@@ -303,7 +304,9 @@
           + "2606:4700:4700::1111;2606:4700:4700::1001";
         FTLCONF_webserver_port = "10.0.0.2:8083o,[::]:8083o";
         FTLCONF_webserver_webhome = "/";
+        FTLCONF_webserver_domain = "pihole.local.yakweide.de";
         FTLCONF_dns_domainNeeded = "true";
+        FTLCONF_webserver_prettyJson = "true";
         FTLCONF_dns_dnssec = "true";
         FTLCONF_dns_listeningMode = "all";
         FTLCONF_dns_revServers = "true,10.0.0.0/8,10.0.0.1,fritz.box";
