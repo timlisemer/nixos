@@ -315,6 +315,49 @@ in {
     # audio_receiver_control.yaml is created by sops.templates below
   ];
 
+  # =============================================================================
+  # WORKAROUND: paho-mqtt 2.1.0 + Python 3.13 compatibility issue
+  # =============================================================================
+  #
+  # PROBLEM:
+  # Home Assistant's MQTT integration times out when connecting to Mosquitto.
+  # The issue is NOT with the broker (Zigbee2MQTT connects fine).
+  #
+  # ROOT CAUSE:
+  # paho-mqtt 2.1.0 only officially supports Python 3.7-3.12, but NixOS unstable
+  # uses Python 3.13. The _socketpair_compat() function in paho-mqtt hangs
+  # indefinitely on socket.accept() when running inside HA's sandboxed systemd
+  # service.
+  #
+  # The _socketpair_compat() function creates a TCP socket pair for internal
+  # thread communication by:
+  #   1. Creating a listening socket on 127.0.0.1:random_port
+  #   2. Creating a second socket and connecting (non-blocking)
+  #   3. Calling accept() on the listening socket
+  #
+  # With Python 3.13 + systemd sandboxing, the non-blocking connect() doesn't
+  # complete properly, causing accept() to block forever.
+  #
+  # RELATED ISSUES:
+  # - https://github.com/home-assistant/core/issues/159610
+  # - https://github.com/eclipse-paho/paho.mqtt.python/issues/819
+  #
+  # FIX:
+  # Relax systemd sandboxing to allow paho-mqtt's socket operations to work.
+  # This is a temporary workaround until paho-mqtt adds Python 3.13 support.
+  #
+  # =============================================================================
+  systemd.services.home-assistant.serviceConfig = {
+    # Downgrade from "strict" to "full" protection
+    # "strict" makes the entire filesystem read-only except explicit paths
+    # "full" only protects /usr, /boot, /efi - gives more flexibility
+    ProtectSystem = lib.mkForce "full";
+
+    # Disable private /tmp namespace
+    # paho-mqtt's _socketpair_compat() may need shared tmp access for socket ops
+    PrivateTmp = lib.mkForce false;
+  };
+
   # SOPS template for automation files with secrets
   # Reads the YAML file and substitutes @placeholder@ with actual secrets at runtime
   sops.templates."audio_receiver_control.yaml" = {
