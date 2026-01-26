@@ -40,11 +40,6 @@ in {
     # inputs.claude.packages.${system}.claude-desktop-with-fhs
     arduino-ide
     qtcreator
-    jetbrains.clion
-    jetbrains.rider
-    jetbrains.rust-rover
-    jetbrains.idea-oss
-    jetbrains.pycharm-oss
     kicad
   ];
 
