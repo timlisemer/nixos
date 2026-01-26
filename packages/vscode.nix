@@ -69,8 +69,8 @@
 
   # Get all extension paths
   allExtensionPaths = getExtensionPaths extensionList;
-  settingsSrc = builtins.toPath ../files/vscode/settings.json;
-  keybindingsSrc = builtins.toPath ../files/vscode/keybindings.json;
+  settingsSrc = ../files/vscode/settings.json;
+  keybindingsSrc = ../files/vscode/keybindings.json;
 in {
   environment.systemPackages = with stable;
     lib.mkAfter [

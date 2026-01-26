@@ -860,6 +860,7 @@ rebuild_remote() {
 		--flake "/home/$USER/Coding/nixos#$host" \
 		--target-host "$USER@$host" \
 		--build-host localhost \
+		--use-substitutes \
 		--ask-sudo-password \
 		--keep-going
 	#--use-remote-sudo
@@ -868,6 +869,7 @@ rebuild_remote() {
 	#--keep-going
 }
 alias remote_rebuild='rebuild_remote'
+
 # ---------------------------------------------------------------------------
 
 # --- ssh helper: wake tim-pc via WoL and SSH in when reachable ---------------
