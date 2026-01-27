@@ -179,8 +179,8 @@ in {
     # VM XML definition service
     systemd.services.windows-vm-define = vmXmlModule.defineService;
 
-    # Windows ISO download service
-    systemd.services.windows-iso-download = windowsIsoModule.downloadService;
+    # Windows ISO download activation script (non-blocking background download)
+    system.activationScripts.windows-iso-download = windowsIsoModule.activationScript;
 
     # Create the GDM session entry
     environment.etc."share/wayland-sessions/windows-vm.desktop".text = ''

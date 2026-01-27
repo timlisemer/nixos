@@ -208,6 +208,7 @@
     AUTOUNATTEND_ISO="${autounattendIso}"
 
     log() {
+      echo "[windows-iso] $1" | ${pkgs.systemd}/bin/systemd-cat -t windows-iso -p info
       echo "[windows-iso] $1"
     }
 
@@ -277,24 +278,50 @@
     fi
   '';
 in {
-  # Systemd service for ISO download
-  downloadService = {
-    description = "Download Windows 11 ISO and prepare VirtIO drivers";
-    wantedBy = ["multi-user.target"];
-    after = ["network-online.target"];
-    wants = ["network-online.target"];
+  # Activation script for ISO download (non-blocking)
+  activationScript = {
+    text = ''
+      LOCK_FILE="${isoDir}/.windows-iso-download.lock"
 
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-      ExecStart = "${uupDumpScript}";
-      TimeoutStartSec = "3600"; # 1 hour timeout for download
-    };
+      # Skip if all ISOs present
+      if [ -f "${windowsIso}" ] && [ -f "${virtioIso}" ] && [ -f "${autounattendIso}" ]; then
+        echo "[windows-iso] All ISOs present - skipping"
+        exit 0
+      fi
 
-    # Only run if ISOs are missing
-    unitConfig = {
-      ConditionPathExists = "!${windowsIso}";
-    };
+      # Check for in-progress download (lock file with live PID)
+      if [ -f "$LOCK_FILE" ]; then
+        PID=$(${pkgs.coreutils}/bin/cat "$LOCK_FILE" 2>/dev/null)
+        if [ -n "$PID" ] && ${pkgs.coreutils}/bin/kill -0 "$PID" 2>/dev/null; then
+          echo "[windows-iso] Download already in progress (PID $PID)"
+          exit 0
+        fi
+        ${pkgs.coreutils}/bin/rm -f "$LOCK_FILE"
+      fi
+
+      echo "[windows-iso] Starting download in background..."
+      echo "[windows-iso] Monitor: journalctl -t windows-iso -f"
+
+      # Spawn detached background process
+      (
+        echo $$ > "$LOCK_FILE"
+        trap '${pkgs.coreutils}/bin/rm -f "$LOCK_FILE"' EXIT
+
+        # Redirect to journal
+        exec > >(${pkgs.systemd}/bin/systemd-cat -t windows-iso -p info)
+        exec 2> >(${pkgs.systemd}/bin/systemd-cat -t windows-iso -p err)
+
+        # Wait for network before downloading
+        ${pkgs.systemd}/bin/systemctl is-active --quiet network-online.target || \
+          ${pkgs.systemd}/bin/systemctl start --wait network-online.target 2>/dev/null || true
+
+        ${uupDumpScript}
+
+        echo "[windows-iso] Download complete"
+      ) &
+      ${pkgs.coreutils}/bin/disown
+    '';
+    deps = [];
   };
 
   # Export paths for use in VM XML
