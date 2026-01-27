@@ -198,7 +198,8 @@
       "$WORK_DIR"
   '';
 
-  # Windows ISO download script using Microsoft's direct download API
+  # Windows ISO download script using Microsoft's JSON API
+  # Adapted from quickemu/quickget: https://github.com/quickemu-project/quickemu
   windowsDownloadScript = pkgs.writeShellScript "download-windows-iso" ''
     set -u  # Only error on unset variables, not on command failures
 
@@ -244,111 +245,105 @@
 
     log "Windows 11 ISO not found. Starting download from Microsoft..."
 
-    WORK_DIR=$(mktemp -d)
-    trap "rm -rf $WORK_DIR" EXIT
-    cd "$WORK_DIR"
-
-    # Fido-style download using Microsoft's official API
-    # Reference: https://github.com/pbatard/Fido
     USER_AGENT="Mozilla/5.0 (X11; Linux x86_64; rv:100.0) Gecko/20100101 Firefox/100.0"
-    DOWNLOAD_URL=""
-
-    log "Using Microsoft's official download API (Fido method)..."
-
-    # Windows 11 product info
-    WINDOWS_VERSION="11"
-    LANG_CODE="English"
-    ARCH="x64"
-
-    # Step 1: Get the download page and extract session data
-    log "Step 1: Fetching download page..."
     DOWNLOAD_PAGE_URL="https://www.microsoft.com/en-us/software-download/windows11"
+    PROFILE="606624d44113"
 
-    # Get initial page to establish session
-    COOKIES=$(mktemp)
-    trap "rm -f $COOKIES" EXIT
+    # Step 1: Generate session UUID
+    SESSION_ID=$(${pkgs.util-linux}/bin/uuidgen)
+    log "Generated session ID: $SESSION_ID"
 
-    ${pkgs.curl}/bin/curl -s -L -c "$COOKIES" -b "$COOKIES" \
-      -H "User-Agent: $USER_AGENT" \
-      -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" \
-      -o /dev/null \
-      "$DOWNLOAD_PAGE_URL" || true
+    # Step 2: Fetch download page to get product edition ID dynamically
+    log "Step 1: Parsing download page..."
+    PAGE_HTML=$(${pkgs.curl}/bin/curl --disable --silent \
+      --user-agent "$USER_AGENT" \
+      --header "Accept:" \
+      --max-filesize 1M \
+      --fail \
+      --proto =https --tlsv1.2 --http1.1 \
+      -- "$DOWNLOAD_PAGE_URL") || {
+      err "Failed to fetch download page"
+      exit 1
+    }
 
-    # Step 2: Request the download with product ID for Windows 11
-    log "Step 2: Requesting product download..."
+    # Extract product edition ID from HTML (e.g., <option value="3113">Windows 11...)
+    PRODUCT_EDITION_ID=$(echo "$PAGE_HTML" | ${pkgs.gnugrep}/bin/grep -oE '<option value="[0-9]+">Windows' | ${pkgs.coreutils}/bin/cut -d '"' -f 2 | ${pkgs.coreutils}/bin/head -n 1 | ${pkgs.coreutils}/bin/tr -cd '0-9' | ${pkgs.coreutils}/bin/head -c 16)
 
-    # Windows 11 multi-edition ISO
-    PRODUCT_EDITION_ID="2935"
-
-    LANG_RESPONSE=$(${pkgs.curl}/bin/curl -s -L -c "$COOKIES" -b "$COOKIES" \
-      -H "User-Agent: $USER_AGENT" \
-      -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" \
-      -H "Referer: $DOWNLOAD_PAGE_URL" \
-      -X POST \
-      -d "profile=retail" \
-      -d "productEditionId=$PRODUCT_EDITION_ID" \
-      -d "SKU=professional" \
-      "https://www.microsoft.com/en-us/api/controls/contentinclude/html?pageId=a8f8f489-4c7f-463a-9ca6-5cff94d8d041&host=www.microsoft.com&segments=software-download,windows11&query=&action=getskuinformationbyproductedition" 2>&1) || true
-
-    log "Language response length: ''${#LANG_RESPONSE} bytes"
-
-    # Extract SKU ID for English
-    SKU_ID=$(echo "$LANG_RESPONSE" | ${pkgs.gnugrep}/bin/grep -oP 'value="\K[0-9]+' | ${pkgs.coreutils}/bin/tail -1) || true
-
-    if [ -z "$SKU_ID" ]; then
-      log "Could not extract SKU ID from Microsoft response, trying alternative..."
-      # Fallback: Use known SKU ID for Windows 11 English
-      SKU_ID="2936"
+    if [ -z "$PRODUCT_EDITION_ID" ]; then
+      err "Could not extract product edition ID from download page"
+      err "Manual download instructions:"
+      err "  1. Visit: https://www.microsoft.com/software-download/windows11"
+      err "  2. Select 'Windows 11 (multi-edition ISO for x64 devices)'"
+      err "  3. Select 'English' and click Download"
+      err "  4. Move the downloaded ISO to: $WINDOWS_ISO"
+      exit 1
     fi
-    log "Using SKU ID: $SKU_ID"
+    log "Product edition ID: $PRODUCT_EDITION_ID"
 
-    # Step 3: Get the actual download link
-    log "Step 3: Requesting download link..."
+    # Step 3: Permit session ID with Microsoft
+    log "Step 2: Validating session..."
+    ${pkgs.curl}/bin/curl --disable --silent --output /dev/null \
+      --user-agent "$USER_AGENT" \
+      --header "Accept:" \
+      --max-filesize 100K \
+      --fail \
+      --proto =https --tlsv1.2 --http1.1 \
+      -- "https://vlscppe.microsoft.com/tags?org_id=y6jn8c31&session_id=$SESSION_ID" || {
+      err "Session validation failed"
+      exit 1
+    }
 
-    DOWNLOAD_RESPONSE=$(${pkgs.curl}/bin/curl -s -L -c "$COOKIES" -b "$COOKIES" \
-      -H "User-Agent: $USER_AGENT" \
-      -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" \
-      -H "Referer: $DOWNLOAD_PAGE_URL" \
-      -X POST \
-      -d "profile=retail" \
-      -d "SKU=$SKU_ID" \
-      -d "Language=English" \
-      "https://www.microsoft.com/en-us/api/controls/contentinclude/html?pageId=cfa9e580-a81e-4a4b-a846-7b21bf4e2e5b&host=www.microsoft.com&segments=software-download,windows11&query=&action=GetProductDownloadLinksBySku" 2>&1) || true
+    # Step 4: Get SKU ID for English
+    log "Step 3: Getting language SKU ID..."
+    SKU_RESPONSE=$(${pkgs.curl}/bin/curl --disable -s \
+      --fail \
+      --max-filesize 100K \
+      --proto =https --tlsv1.2 --http1.1 \
+      "https://www.microsoft.com/software-download-connector/api/getskuinformationbyproductedition?profile=$PROFILE&ProductEditionId=$PRODUCT_EDITION_ID&SKU=undefined&friendlyFileName=undefined&Locale=en-US&sessionID=$SESSION_ID") || {
+      err "Failed to get SKU information from Microsoft"
+      err "Manual download instructions:"
+      err "  1. Visit: https://www.microsoft.com/software-download/windows11"
+      err "  2. Select 'Windows 11 (multi-edition ISO for x64 devices)'"
+      err "  3. Select 'English' and click Download"
+      err "  4. Move the downloaded ISO to: $WINDOWS_ISO"
+      exit 1
+    }
+
+    log "SKU response: $SKU_RESPONSE"
+
+    # Extract SKU ID for English (United States) or any English variant
+    SKU_ID=$(echo "$SKU_RESPONSE" | ${pkgs.jq}/bin/jq -r '.Skus[] | select(.LocalizedLanguage=="English (United States)" or .Language=="English (United States)") | .Id' 2>/dev/null) || true
+
+    if [ -z "$SKU_ID" ] || [ "$SKU_ID" = "null" ]; then
+      # Try to get any English variant
+      SKU_ID=$(echo "$SKU_RESPONSE" | ${pkgs.jq}/bin/jq -r '.Skus[] | select(.LocalizedLanguage | contains("English")) | .Id' 2>/dev/null | ${pkgs.coreutils}/bin/head -1) || true
+    fi
+
+    if [ -z "$SKU_ID" ] || [ "$SKU_ID" = "null" ]; then
+      err "Could not extract SKU ID from Microsoft response"
+      err "Response: $SKU_RESPONSE"
+      err ""
+      err "Manual download instructions:"
+      err "  1. Visit: https://www.microsoft.com/software-download/windows11"
+      err "  2. Select 'Windows 11 (multi-edition ISO for x64 devices)'"
+      err "  3. Select 'English' and click Download"
+      err "  4. Move the downloaded ISO to: $WINDOWS_ISO"
+      exit 1
+    fi
+    log "Found SKU ID: $SKU_ID"
+
+    # Step 5: Get download URL (referer header is required!)
+    log "Step 4: Getting ISO download link..."
+    DOWNLOAD_RESPONSE=$(${pkgs.curl}/bin/curl --disable -s \
+      --fail \
+      --referer "$DOWNLOAD_PAGE_URL" \
+      "https://www.microsoft.com/software-download-connector/api/GetProductDownloadLinksBySku?profile=$PROFILE&productEditionId=undefined&SKU=$SKU_ID&friendlyFileName=undefined&Locale=en-US&sessionID=$SESSION_ID") || true
 
     log "Download response length: ''${#DOWNLOAD_RESPONSE} bytes"
 
-    # Extract the ISO download URL (look for 64-bit)
-    DOWNLOAD_URL=$(echo "$DOWNLOAD_RESPONSE" | ${pkgs.gnugrep}/bin/grep -oP 'https://software[^"]+x64[^"]+\.iso' | ${pkgs.coreutils}/bin/tail -1) || true
-
-    if [ -z "$DOWNLOAD_URL" ]; then
-      # Try alternative pattern
-      DOWNLOAD_URL=$(echo "$DOWNLOAD_RESPONSE" | ${pkgs.gnugrep}/bin/grep -oP 'https://software\.download\.prss\.microsoft\.com/[^"]+\.iso' | ${pkgs.coreutils}/bin/tail -1) || true
-    fi
-
-    # Fallback: Try UUP dump API
-    if [ -z "$DOWNLOAD_URL" ]; then
-      log "Microsoft API failed, trying UUP dump API..."
-
-      # UUP dump provides pre-built download packages
-      UUP_RESPONSE=$(${pkgs.curl}/bin/curl -s \
-        -H "User-Agent: $USER_AGENT" \
-        "https://api.uupdump.net/listid.php" 2>&1) || true
-
-      # Get latest Windows 11 build ID
-      BUILD_ID=$(echo "$UUP_RESPONSE" | ${pkgs.jq}/bin/jq -r '.response.builds[] | select(.title | contains("Windows 11")) | .uuid' 2>/dev/null | ${pkgs.coreutils}/bin/tail -1) || true
-
-      if [ -n "$BUILD_ID" ]; then
-        log "Found UUP build ID: $BUILD_ID"
-        err "UUP dump requires manual ISO creation. Run the following:"
-        err "  Visit: https://uupdump.net/selectlang.php?id=$BUILD_ID"
-        err "  Download and run the conversion script"
-        err "  Place ISO at: $WINDOWS_ISO"
-      fi
-    fi
-
-    if [ -z "$DOWNLOAD_URL" ]; then
-      err "Could not obtain Windows 11 download URL"
-      err "Microsoft's download API may have changed or be rate-limited."
+    # Check for blocked request
+    if echo "$DOWNLOAD_RESPONSE" | ${pkgs.gnugrep}/bin/grep -q "Sentinel marked this request as rejected"; then
+      err "Microsoft blocked the automated download request based on your IP address"
       err ""
       err "Manual download instructions:"
       err "  1. Visit: https://www.microsoft.com/software-download/windows11"
@@ -358,7 +353,22 @@
       exit 1
     fi
 
-    log "Download URL obtained: $DOWNLOAD_URL"
+    # Extract the x64 ISO download URL
+    DOWNLOAD_URL=$(echo "$DOWNLOAD_RESPONSE" | ${pkgs.jq}/bin/jq -r '.ProductDownloadOptions[].Uri' 2>/dev/null | ${pkgs.gnugrep}/bin/grep -i x64 | ${pkgs.coreutils}/bin/head -1) || true
+
+    if [ -z "$DOWNLOAD_URL" ] || [ "$DOWNLOAD_URL" = "null" ]; then
+      err "Could not obtain Windows 11 download URL"
+      err "Response: $DOWNLOAD_RESPONSE"
+      err ""
+      err "Manual download instructions:"
+      err "  1. Visit: https://www.microsoft.com/software-download/windows11"
+      err "  2. Select 'Windows 11 (multi-edition ISO for x64 devices)'"
+      err "  3. Select 'English' and click Download"
+      err "  4. Move the downloaded ISO to: $WINDOWS_ISO"
+      exit 1
+    fi
+
+    log "Download URL obtained: ''${DOWNLOAD_URL%%\?*}"
     log "Starting download (this will take a while for ~6GB)..."
 
     # Download with aria2 for speed (16 connections)
