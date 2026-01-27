@@ -126,14 +126,6 @@
       <vcpu placement='static'>VM_VCPU_PLACEHOLDER</vcpu>
       <os firmware='efi'>
         <type arch='x86_64' machine='q35'>hvm</type>
-        <firmware>
-          <feature enabled='yes' name='enrolled-keys'/>
-          <feature enabled='yes' name='secure-boot'/>
-        </firmware>
-        <loader readonly='yes' secure='yes' type='pflash'>/run/libvirt/nix-ovmf/OVMF_CODE.ms.fd</loader>
-        <nvram template='/run/libvirt/nix-ovmf/OVMF_VARS.ms.fd'>/var/lib/libvirt/qemu/nvram/${cfg.vmName}_VARS.fd</nvram>
-        <boot dev='cdrom'/>
-        <boot dev='hd'/>
       </os>
       <features>
         <acpi/>

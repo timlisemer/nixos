@@ -6,29 +6,8 @@
 }: let
   cfg = config.services.windows-vm;
 
-  # Windows 11 icon for the desktop entry
-  windowsIcon = pkgs.fetchurl {
-    url = "https://raw.githubusercontent.com/AdisonCavani/distro-grub-themes/master/assets/Windows-11/icon.png";
-    sha256 = "sha256-wXO/kMj1M0Lp5FJz0zTXkFI2G4JXgxKqgBQqJBrE8H0=";
-    name = "windows11-icon.png";
-  };
-
-  # Fallback icon if fetch fails (embedded base64 PNG)
-  fallbackIcon = pkgs.runCommand "windows11-fallback-icon" {} ''
-    mkdir -p $out
-    # Create a simple placeholder icon
-    echo "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlz
-    AAAAdgAAAHYBTnsmCAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAHeSURB
-    VFiF7ZdNTsJQFIW/V0FFI24AN+AGdOBMHDhw4sAhKzFxA25AF4ALcAG4AFegRlQU/2jBgkJKX+/t
-    fZS48yZNyO17T0/Pe+2FP/7R0MoJSqlmCYRhGO5USq0FQbA5Go3wPM9aa8MwDN+EYbhBKdVkjH1T
-    St2MRqPj8XhsrbVhGIYbARCG4aCU2quU+j6dTk+m0+lK07SmYRgGpRRC6baq6xrP8wjDEMdxSNOU
-    wWDAeDymqiqiKKJt25haMFxrrWeMYYyhqiqqqiLLMvI8J89zkiQhjmPyPCdJEsqypK5rlFKE4Xqh
-    tCYIAuI4Js9zkiQhz3OKoiCKIoqiII5j4jimLEuUUkgpUUohhMBa+7swDDeklBellH+UUsIYgzEG
-    rbU0TUNd19R1TdM0ZLNZPM9Da00URVhrsdaSkJxLaa4JKSVSSrTWOI6D7/t4nofneYRhiJQSYwxF
-    UZAkCUVRkGUZZVkSRRFKKZRSaK3p9/v0ej0ODw/Z3t7+FdJxHKSUSCnpdDp0u13CMGRhYYF+v8/J
-    yQmbm5ssLS0hhPjpQAixKaVU0lq7nKbp8ng8VtZagiBAa02SJLiui7UWa+2TlPIuTdM7KeVqEASk
-    aepJKfV3MMZIKY+UUttSyluttf/zP/0PTWPHgbHDsF0AAAAASUVORK5CYII=" | base64 -d > $out/windows11-icon.png
-  '';
+  # Windows 11 icon from local files
+  windowsIcon = ../files/icons/windows11-48.png;
 in
   lib.mkIf cfg.enable {
     # Install Windows icon
@@ -38,16 +17,9 @@ in
         mkdir -p $out/share/icons/hicolor/64x64/apps
         mkdir -p $out/share/icons/hicolor/128x128/apps
 
-        # Try to use the fetched icon, fallback to placeholder
-        if [ -f "${windowsIcon}" ]; then
-          cp "${windowsIcon}" $out/share/icons/hicolor/48x48/apps/windows-vm.png
-          cp "${windowsIcon}" $out/share/icons/hicolor/64x64/apps/windows-vm.png
-          cp "${windowsIcon}" $out/share/icons/hicolor/128x128/apps/windows-vm.png
-        else
-          cp "${fallbackIcon}/windows11-icon.png" $out/share/icons/hicolor/48x48/apps/windows-vm.png
-          cp "${fallbackIcon}/windows11-icon.png" $out/share/icons/hicolor/64x64/apps/windows-vm.png
-          cp "${fallbackIcon}/windows11-icon.png" $out/share/icons/hicolor/128x128/apps/windows-vm.png
-        fi
+        cp ${windowsIcon} $out/share/icons/hicolor/48x48/apps/windows-vm.png
+        cp ${windowsIcon} $out/share/icons/hicolor/64x64/apps/windows-vm.png
+        cp ${windowsIcon} $out/share/icons/hicolor/128x128/apps/windows-vm.png
       '')
     ];
 

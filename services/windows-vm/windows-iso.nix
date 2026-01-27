@@ -198,9 +198,9 @@
       "$WORK_DIR"
   '';
 
-  # UUP dump download script
-  uupDumpScript = pkgs.writeShellScript "download-windows-iso" ''
-    set -euo pipefail
+  # Windows ISO download script using Microsoft's direct download API
+  windowsDownloadScript = pkgs.writeShellScript "download-windows-iso" ''
+    set -u  # Only error on unset variables, not on command failures
 
     ISO_DIR="${isoDir}"
     WINDOWS_ISO="${windowsIso}"
@@ -208,8 +208,11 @@
     AUTOUNATTEND_ISO="${autounattendIso}"
 
     log() {
-      echo "[windows-iso] $1" | ${pkgs.systemd}/bin/systemd-cat -t windows-iso -p info
       echo "[windows-iso] $1"
+    }
+
+    err() {
+      echo "[windows-iso] ERROR: $1" >&2
     }
 
     # Create directory
@@ -218,14 +221,20 @@
     # Download VirtIO drivers if not present
     if [ ! -f "$VIRTIO_ISO" ]; then
       log "Downloading VirtIO drivers..."
-      ${pkgs.aria2}/bin/aria2c -x 16 -s 16 -d "$ISO_DIR" -o "virtio-win.iso" "${virtioUrl}"
+      ${pkgs.aria2}/bin/aria2c -x 16 -s 16 -d "$ISO_DIR" -o "virtio-win.iso" "${virtioUrl}" || {
+        err "Failed to download VirtIO drivers"
+        exit 1
+      }
     else
       log "VirtIO drivers ISO already exists."
     fi
 
     # Create autounattend ISO
     log "Creating autounattend ISO..."
-    ${createAutounattendIso}
+    ${createAutounattendIso} || {
+      err "Failed to create autounattend ISO"
+      exit 1
+    }
 
     # Check if Windows ISO already exists
     if [ -f "$WINDOWS_ISO" ]; then
@@ -233,93 +242,192 @@
       exit 0
     fi
 
-    # Download Windows 11 ISO using UUP dump
-    log "Windows 11 ISO not found. Starting download via UUP dump..."
+    log "Windows 11 ISO not found. Starting download from Microsoft..."
 
     WORK_DIR=$(mktemp -d)
     trap "rm -rf $WORK_DIR" EXIT
     cd "$WORK_DIR"
 
-    # Download UUP dump converter script
-    log "Downloading UUP dump converter..."
-    ${pkgs.curl}/bin/curl -sL "https://uupdump.net/get.php?id=aadb9ec7-e8a6-4f89-ad16-caa0ec60cef0&pack=en-us&edition=professional" -o uup_download_linux.sh 2>/dev/null || {
-      # Fallback: Direct download from MediaCreationTool
-      log "UUP dump failed, using direct Microsoft download..."
+    # Fido-style download using Microsoft's official API
+    # Reference: https://github.com/pbatard/Fido
+    USER_AGENT="Mozilla/5.0 (X11; Linux x86_64; rv:100.0) Gecko/20100101 Firefox/100.0"
+    DOWNLOAD_URL=""
 
-      # Use the Windows 11 download page API
-      ${pkgs.curl}/bin/curl -sL \
-        "https://www.microsoft.com/en-us/software-download/windows11" \
-        -H "User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:100.0) Gecko/20100101 Firefox/100.0" \
-        -o download_page.html
+    log "Using Microsoft's official download API (Fido method)..."
 
-      log "Please manually download Windows 11 ISO from:"
-      log "https://www.microsoft.com/en-us/software-download/windows11"
-      log "And place it at: $WINDOWS_ISO"
+    # Windows 11 product info
+    WINDOWS_VERSION="11"
+    LANG_CODE="English"
+    ARCH="x64"
+
+    # Step 1: Get the download page and extract session data
+    log "Step 1: Fetching download page..."
+    DOWNLOAD_PAGE_URL="https://www.microsoft.com/en-us/software-download/windows11"
+
+    # Get initial page to establish session
+    COOKIES=$(mktemp)
+    trap "rm -f $COOKIES" EXIT
+
+    ${pkgs.curl}/bin/curl -s -L -c "$COOKIES" -b "$COOKIES" \
+      -H "User-Agent: $USER_AGENT" \
+      -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" \
+      -o /dev/null \
+      "$DOWNLOAD_PAGE_URL" || true
+
+    # Step 2: Request the download with product ID for Windows 11
+    log "Step 2: Requesting product download..."
+
+    # Windows 11 multi-edition ISO
+    PRODUCT_EDITION_ID="2935"
+
+    LANG_RESPONSE=$(${pkgs.curl}/bin/curl -s -L -c "$COOKIES" -b "$COOKIES" \
+      -H "User-Agent: $USER_AGENT" \
+      -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" \
+      -H "Referer: $DOWNLOAD_PAGE_URL" \
+      -X POST \
+      -d "profile=retail" \
+      -d "productEditionId=$PRODUCT_EDITION_ID" \
+      -d "SKU=professional" \
+      "https://www.microsoft.com/en-us/api/controls/contentinclude/html?pageId=a8f8f489-4c7f-463a-9ca6-5cff94d8d041&host=www.microsoft.com&segments=software-download,windows11&query=&action=getskuinformationbyproductedition" 2>&1) || true
+
+    log "Language response length: ''${#LANG_RESPONSE} bytes"
+
+    # Extract SKU ID for English
+    SKU_ID=$(echo "$LANG_RESPONSE" | ${pkgs.gnugrep}/bin/grep -oP 'value="\K[0-9]+' | ${pkgs.coreutils}/bin/tail -1) || true
+
+    if [ -z "$SKU_ID" ]; then
+      log "Could not extract SKU ID from Microsoft response, trying alternative..."
+      # Fallback: Use known SKU ID for Windows 11 English
+      SKU_ID="2936"
+    fi
+    log "Using SKU ID: $SKU_ID"
+
+    # Step 3: Get the actual download link
+    log "Step 3: Requesting download link..."
+
+    DOWNLOAD_RESPONSE=$(${pkgs.curl}/bin/curl -s -L -c "$COOKIES" -b "$COOKIES" \
+      -H "User-Agent: $USER_AGENT" \
+      -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" \
+      -H "Referer: $DOWNLOAD_PAGE_URL" \
+      -X POST \
+      -d "profile=retail" \
+      -d "SKU=$SKU_ID" \
+      -d "Language=English" \
+      "https://www.microsoft.com/en-us/api/controls/contentinclude/html?pageId=cfa9e580-a81e-4a4b-a846-7b21bf4e2e5b&host=www.microsoft.com&segments=software-download,windows11&query=&action=GetProductDownloadLinksBySku" 2>&1) || true
+
+    log "Download response length: ''${#DOWNLOAD_RESPONSE} bytes"
+
+    # Extract the ISO download URL (look for 64-bit)
+    DOWNLOAD_URL=$(echo "$DOWNLOAD_RESPONSE" | ${pkgs.gnugrep}/bin/grep -oP 'https://software[^"]+x64[^"]+\.iso' | ${pkgs.coreutils}/bin/tail -1) || true
+
+    if [ -z "$DOWNLOAD_URL" ]; then
+      # Try alternative pattern
+      DOWNLOAD_URL=$(echo "$DOWNLOAD_RESPONSE" | ${pkgs.gnugrep}/bin/grep -oP 'https://software\.download\.prss\.microsoft\.com/[^"]+\.iso' | ${pkgs.coreutils}/bin/tail -1) || true
+    fi
+
+    # Fallback: Try UUP dump API
+    if [ -z "$DOWNLOAD_URL" ]; then
+      log "Microsoft API failed, trying UUP dump API..."
+
+      # UUP dump provides pre-built download packages
+      UUP_RESPONSE=$(${pkgs.curl}/bin/curl -s \
+        -H "User-Agent: $USER_AGENT" \
+        "https://api.uupdump.net/listid.php" 2>&1) || true
+
+      # Get latest Windows 11 build ID
+      BUILD_ID=$(echo "$UUP_RESPONSE" | ${pkgs.jq}/bin/jq -r '.response.builds[] | select(.title | contains("Windows 11")) | .uuid' 2>/dev/null | ${pkgs.coreutils}/bin/tail -1) || true
+
+      if [ -n "$BUILD_ID" ]; then
+        log "Found UUP build ID: $BUILD_ID"
+        err "UUP dump requires manual ISO creation. Run the following:"
+        err "  Visit: https://uupdump.net/selectlang.php?id=$BUILD_ID"
+        err "  Download and run the conversion script"
+        err "  Place ISO at: $WINDOWS_ISO"
+      fi
+    fi
+
+    if [ -z "$DOWNLOAD_URL" ]; then
+      err "Could not obtain Windows 11 download URL"
+      err "Microsoft's download API may have changed or be rate-limited."
+      err ""
+      err "Manual download instructions:"
+      err "  1. Visit: https://www.microsoft.com/software-download/windows11"
+      err "  2. Select 'Windows 11 (multi-edition ISO for x64 devices)'"
+      err "  3. Select 'English' and click Download"
+      err "  4. Move the downloaded ISO to: $WINDOWS_ISO"
       exit 1
-    }
+    fi
 
-    # Run the download script
-    chmod +x uup_download_linux.sh
-    ./uup_download_linux.sh || {
-      log "Download script failed. Manual download required."
-      log "Visit: https://uupdump.net/"
-      log "Place the ISO at: $WINDOWS_ISO"
-      exit 1
-    }
+    log "Download URL obtained: $DOWNLOAD_URL"
+    log "Starting download (this will take a while for ~6GB)..."
 
-    # Move the generated ISO
-    ISO_FILE=$(find . -name "*.iso" -type f | head -1)
-    if [ -n "$ISO_FILE" ]; then
-      mv "$ISO_FILE" "$WINDOWS_ISO"
-      log "Windows 11 ISO downloaded successfully to $WINDOWS_ISO"
+    # Download with aria2 for speed (16 connections)
+    ${pkgs.aria2}/bin/aria2c -x 16 -s 16 \
+      --user-agent="$USER_AGENT" \
+      --continue=true \
+      --max-tries=5 \
+      --retry-wait=10 \
+      --file-allocation=none \
+      -d "$ISO_DIR" -o "windows11.iso.tmp" \
+      "$DOWNLOAD_URL"
+
+    ARIA_EXIT=$?
+    if [ $ARIA_EXIT -ne 0 ]; then
+      err "aria2 download failed with exit code $ARIA_EXIT"
+      err "Trying curl as fallback..."
+      ${pkgs.curl}/bin/curl -L -# -o "$ISO_DIR/windows11.iso.tmp" \
+        -H "User-Agent: $USER_AGENT" \
+        "$DOWNLOAD_URL"
+      CURL_EXIT=$?
+      if [ $CURL_EXIT -ne 0 ]; then
+        err "curl also failed with exit code $CURL_EXIT"
+        exit 1
+      fi
+    fi
+
+    # Verify the download is actually an ISO (should be > 4GB)
+    if [ -f "$ISO_DIR/windows11.iso.tmp" ]; then
+      SIZE=$(${pkgs.coreutils}/bin/stat -c%s "$ISO_DIR/windows11.iso.tmp")
+      log "Downloaded file size: $SIZE bytes"
+
+      # Windows 11 ISO should be at least 4GB
+      MIN_SIZE=4000000000
+      if [ "$SIZE" -lt "$MIN_SIZE" ]; then
+        err "Downloaded file is too small ($SIZE bytes). Expected > 4GB."
+        err "This is likely an error page, not the ISO."
+        rm -f "$ISO_DIR/windows11.iso.tmp"
+        exit 1
+      fi
+
+      # Rename to final name
+      mv "$ISO_DIR/windows11.iso.tmp" "$WINDOWS_ISO"
+      log "Windows 11 ISO downloaded successfully: $WINDOWS_ISO ($SIZE bytes)"
     else
-      log "No ISO file generated. Check UUP dump logs."
+      err "Download failed - file not created"
       exit 1
     fi
   '';
 in {
-  # Activation script for ISO download (non-blocking)
+  # Activation script for ISO download (blocking, runs during activation)
   activationScript = {
     text = ''
-      LOCK_FILE="${isoDir}/.windows-iso-download.lock"
+      # Ensure directory exists first
+      ${pkgs.coreutils}/bin/mkdir -p "${isoDir}"
 
       # Skip if all ISOs present
       if [ -f "${windowsIso}" ] && [ -f "${virtioIso}" ] && [ -f "${autounattendIso}" ]; then
         echo "[windows-iso] All ISOs present - skipping"
-        exit 0
-      fi
+      else
+        echo "[windows-iso] Starting Windows ISO download..."
 
-      # Check for in-progress download (lock file with live PID)
-      if [ -f "$LOCK_FILE" ]; then
-        PID=$(${pkgs.coreutils}/bin/cat "$LOCK_FILE" 2>/dev/null)
-        if [ -n "$PID" ] && ${pkgs.coreutils}/bin/kill -0 "$PID" 2>/dev/null; then
-          echo "[windows-iso] Download already in progress (PID $PID)"
-          exit 0
+        # Run the download script directly (blocking)
+        if ${windowsDownloadScript}; then
+          echo "[windows-iso] Download completed successfully"
+        else
+          echo "[windows-iso] Download failed"
+          # Don't fail activation, just warn
         fi
-        ${pkgs.coreutils}/bin/rm -f "$LOCK_FILE"
       fi
-
-      echo "[windows-iso] Starting download in background..."
-      echo "[windows-iso] Monitor: journalctl -t windows-iso -f"
-
-      # Spawn detached background process
-      (
-        echo $$ > "$LOCK_FILE"
-        trap '${pkgs.coreutils}/bin/rm -f "$LOCK_FILE"' EXIT
-
-        # Redirect to journal
-        exec > >(${pkgs.systemd}/bin/systemd-cat -t windows-iso -p info)
-        exec 2> >(${pkgs.systemd}/bin/systemd-cat -t windows-iso -p err)
-
-        # Wait for network before downloading
-        ${pkgs.systemd}/bin/systemctl is-active --quiet network-online.target || \
-          ${pkgs.systemd}/bin/systemctl start --wait network-online.target 2>/dev/null || true
-
-        ${uupDumpScript}
-
-        echo "[windows-iso] Download complete"
-      ) &
-      ${pkgs.coreutils}/bin/disown
     '';
     deps = [];
   };
