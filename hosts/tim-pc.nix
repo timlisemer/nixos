@@ -11,7 +11,34 @@
     ./desktop-only-imports.nix
     ./tim-pc-hardware-configuration.nix
     ../common/amdgpu.nix
+    ../services/windows-vm
   ];
+
+  # Windows VM with GPU passthrough (appears as GDM session)
+  # Resources are auto-detected at runtime: RAM - 2GB, CPU threads - 2
+  services.windows-vm = {
+    enable = true;
+    vmName = "windows-vm";
+    username = "tim";
+    password = "changeme"; # TODO: Move to SOPS
+
+    # Storage: dedicated NVMe drive
+    storage = {
+      type = "raw";
+      device = "/dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_2TB_S4J4NZ0R302042B";
+    };
+
+    # PCI passthrough devices (isolated IOMMU groups)
+    passthrough = {
+      gpu = ["03:00.0" "03:00.1"]; # GPU + GPU audio (groups 15, 16)
+      usb = ["7b:00.3" "7b:00.4"]; # USB controllers (groups 34, 35)
+      audio = ["7b:00.6"]; # Onboard audio (group 36)
+    };
+
+    # Hardware types
+    cpuType = "amd";
+    gpuType = "amd";
+  };
 
   # Machine specific configurations
 
