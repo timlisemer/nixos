@@ -1,26 +1,27 @@
 # Home Assistant Helper Groups Configuration
 # Documentation: https://www.home-assistant.io/integrations/group/
 
-# Target Temperature Helpers (input_number)
-# These can be modified by automations and persist across restarts
-input_number:
-  wohnzimmer_kuche_zieltemperatur:
-    name: 'Wohnzimmer & Küche Zieltemperatur'
-    min: 15
-    max: 25
-    step: 0.5
-    initial: 22
-    unit_of_measurement: '°C'
-    icon: mdi:thermometer
+# W100 Thermometer Center Button Actions
+input_select:
+  w100_buro_thermometer_center_action:
+    name: 'Büro Thermometer Center Button'
+    options:
+      - 'Toggle Thermostat'
+      - 'Toggle Nightmode'
+      - 'Boost 30min'
+      - 'None'
+    initial: 'Toggle Thermostat'
+    icon: mdi:gesture-tap-button
 
-  tim_buro_schlafzimmer_zieltemperatur:
-    name: 'Tim Büro & Schlafzimmer Zieltemperatur'
-    min: 15
-    max: 25
-    step: 0.5
-    initial: 22
-    unit_of_measurement: '°C'
-    icon: mdi:thermometer
+  w100_tim_schlafzimmer_thermometer_center_action:
+    name: 'Schlafzimmer Thermometer Center Button'
+    options:
+      - 'Toggle Thermostat'
+      - 'Toggle Nightmode'
+      - 'Boost 30min'
+      - 'None'
+    initial: 'Toggle Thermostat'
+    icon: mdi:gesture-tap-button
 
 # Temperature Sensor Groups (arithmetic mean)
 sensor:
@@ -207,3 +208,27 @@ template:
           {% set time_decimal = now().hour + now().minute / 60 %}
           {# Daytime: 9:00 to 01:00 (next day), Night: 01:00 to 09:00 #}
           {{ time_decimal >= 9.0 or time_decimal < 1.0 }}
+
+  # W100 Thermometer Display Sensors
+  - sensor:
+      # Dynamic heating percentage for W100 humidity display
+      # Compares current temperature vs target temperature:
+      # - 100% = current is 18°C (cold, needs max heating)
+      # - 50% = current equals target (maintaining)
+      # - 0% = current is 30°C (too hot, no heating needed)
+      - name: 'Tim Zone Heating Percentage'
+        unique_id: tim_zone_heating_percentage
+        unit_of_measurement: '%'
+        state: >
+          {% set current = states('sensor.tim_buro_schlafzimmer_temperatur') | float(20) %}
+          {% set target = state_attr('climate.tim_buro_schlafzimmer_heizung', 'temperature') | float(20) %}
+          {% set min_temp = 18 %}
+          {% set max_temp = 30 %}
+          {% if current >= target %}
+            {# At or above target: 50% down to 0% as current approaches 30°C #}
+            {% set pct = 50 - ((current - target) / (max_temp - target + 0.1)) * 50 %}
+          {% else %}
+            {# Below target: 50% up to 100% as current approaches 18°C #}
+            {% set pct = 50 + ((target - current) / (target - min_temp + 0.1)) * 50 %}
+          {% endif %}
+          {{ [[pct, 0] | max, 100] | min | round(0) }}

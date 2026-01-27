@@ -1,0 +1,376 @@
+# W100 Thermometer Control Automations
+# Controls W100 display sync and button actions for Büro and Schlafzimmer thermometers
+
+# =============================================================================
+# DISPLAY SYNC AUTOMATIONS
+# =============================================================================
+# Sync target temperature and heating percentage to W100 external display
+#
+# IMPORTANT: W100 thermometers must have sensor mode set to "external" before
+# the external_temperature and external_humidity values will be displayed.
+# By default, W100 devices are in "internal" mode which only shows the device's
+# own readings. We set sensor="external" via MQTT on every sync to ensure the
+# display mode is always correct, even after device restarts or resets.
+
+- alias: 'W100 Büro Display Sync'
+  id: w100_buro_display_sync
+  description: 'Sync better_thermostat target temp and heating percentage to Büro W100'
+  mode: single
+  triggers:
+    - trigger: state
+      entity_id: climate.tim_buro_schlafzimmer_heizung
+      attribute: temperature
+      id: temp_change
+    - trigger: state
+      entity_id: sensor.tim_zone_heating_percentage
+      id: pct_change
+    - trigger: time_pattern
+      minutes: '/5'
+      id: periodic_sync
+  actions:
+    # Enable external sensor mode via MQTT (required for external display values)
+    - action: mqtt.publish
+      data:
+        topic: 'zigbee2mqtt/Büro-Thermometer/set'
+        payload: '{"sensor": "external"}'
+    - action: number.set_value
+      target:
+        entity_id: number.buro_thermometer_external_temperature
+      data:
+        value: "{{ state_attr('climate.tim_buro_schlafzimmer_heizung', 'temperature') | float(20) }}"
+    - action: number.set_value
+      target:
+        entity_id: number.buro_thermometer_external_humidity
+      data:
+        value: "{{ states('sensor.tim_zone_heating_percentage') | float(50) }}"
+
+- alias: 'W100 Schlafzimmer Display Sync'
+  id: w100_schlafzimmer_display_sync
+  description: 'Sync better_thermostat target temp and heating percentage to Schlafzimmer W100'
+  mode: single
+  triggers:
+    - trigger: state
+      entity_id: climate.tim_buro_schlafzimmer_heizung
+      attribute: temperature
+      id: temp_change
+    - trigger: state
+      entity_id: sensor.tim_zone_heating_percentage
+      id: pct_change
+    - trigger: time_pattern
+      minutes: '/5'
+      id: periodic_sync
+  actions:
+    # Enable external sensor mode via MQTT (required for external display values)
+    - action: mqtt.publish
+      data:
+        topic: 'zigbee2mqtt/Tim-Schlafzimmer Thermometer/set'
+        payload: '{"sensor": "external"}'
+    - action: number.set_value
+      target:
+        entity_id: number.tim_schlafzimmer_thermometer_external_temperature
+      data:
+        value: "{{ state_attr('climate.tim_buro_schlafzimmer_heizung', 'temperature') | float(20) }}"
+    - action: number.set_value
+      target:
+        entity_id: number.tim_schlafzimmer_thermometer_external_humidity
+      data:
+        value: "{{ states('sensor.tim_zone_heating_percentage') | float(50) }}"
+
+# =============================================================================
+# PLUS BUTTON AUTOMATIONS
+# =============================================================================
+# Single: +1°C, Double: +2°C, Hold: +3°C (max 30°C)
+
+- alias: 'W100 Büro Plus Button'
+  id: w100_buro_plus_button
+  description: 'Handle plus button presses on Büro W100 thermometer'
+  mode: single
+  triggers:
+    - trigger: mqtt
+      topic: 'zigbee2mqtt/Büro-Thermometer'
+      value_template: '{{ value_json.action }}'
+      payload: 'single_plus'
+      id: single
+    - trigger: mqtt
+      topic: 'zigbee2mqtt/Büro-Thermometer'
+      value_template: '{{ value_json.action }}'
+      payload: 'double_plus'
+      id: double
+    - trigger: mqtt
+      topic: 'zigbee2mqtt/Büro-Thermometer'
+      value_template: '{{ value_json.action }}'
+      payload: 'hold_plus'
+      id: hold
+  actions:
+    - variables:
+        increment: >
+          {% if trigger.id == 'single' %}1
+          {% elif trigger.id == 'double' %}2
+          {% else %}3
+          {% endif %}
+        current_temp: "{{ state_attr('climate.tim_buro_schlafzimmer_heizung', 'temperature') | float(20) }}"
+        new_temp: "{{ [current_temp + increment, 30] | min }}"
+    - action: climate.set_temperature
+      target:
+        entity_id: climate.tim_buro_schlafzimmer_heizung
+      data:
+        temperature: '{{ new_temp }}'
+
+- alias: 'W100 Schlafzimmer Plus Button'
+  id: w100_schlafzimmer_plus_button
+  description: 'Handle plus button presses on Schlafzimmer W100 thermometer'
+  mode: single
+  triggers:
+    - trigger: mqtt
+      topic: 'zigbee2mqtt/Tim-Schlafzimmer Thermometer'
+      value_template: '{{ value_json.action }}'
+      payload: 'single_plus'
+      id: single
+    - trigger: mqtt
+      topic: 'zigbee2mqtt/Tim-Schlafzimmer Thermometer'
+      value_template: '{{ value_json.action }}'
+      payload: 'double_plus'
+      id: double
+    - trigger: mqtt
+      topic: 'zigbee2mqtt/Tim-Schlafzimmer Thermometer'
+      value_template: '{{ value_json.action }}'
+      payload: 'hold_plus'
+      id: hold
+  actions:
+    - variables:
+        increment: >
+          {% if trigger.id == 'single' %}1
+          {% elif trigger.id == 'double' %}2
+          {% else %}3
+          {% endif %}
+        current_temp: "{{ state_attr('climate.tim_buro_schlafzimmer_heizung', 'temperature') | float(20) }}"
+        new_temp: "{{ [current_temp + increment, 30] | min }}"
+    - action: climate.set_temperature
+      target:
+        entity_id: climate.tim_buro_schlafzimmer_heizung
+      data:
+        temperature: '{{ new_temp }}'
+
+# =============================================================================
+# MINUS BUTTON AUTOMATIONS
+# =============================================================================
+# Single: -1°C, Double: -2°C, Hold: -3°C (min 15°C)
+
+- alias: 'W100 Büro Minus Button'
+  id: w100_buro_minus_button
+  description: 'Handle minus button presses on Büro W100 thermometer'
+  mode: single
+  triggers:
+    - trigger: mqtt
+      topic: 'zigbee2mqtt/Büro-Thermometer'
+      value_template: '{{ value_json.action }}'
+      payload: 'single_minus'
+      id: single
+    - trigger: mqtt
+      topic: 'zigbee2mqtt/Büro-Thermometer'
+      value_template: '{{ value_json.action }}'
+      payload: 'double_minus'
+      id: double
+    - trigger: mqtt
+      topic: 'zigbee2mqtt/Büro-Thermometer'
+      value_template: '{{ value_json.action }}'
+      payload: 'hold_minus'
+      id: hold
+  actions:
+    - variables:
+        decrement: >
+          {% if trigger.id == 'single' %}1
+          {% elif trigger.id == 'double' %}2
+          {% else %}3
+          {% endif %}
+        current_temp: "{{ state_attr('climate.tim_buro_schlafzimmer_heizung', 'temperature') | float(20) }}"
+        new_temp: "{{ [current_temp - decrement, 15] | max }}"
+    - action: climate.set_temperature
+      target:
+        entity_id: climate.tim_buro_schlafzimmer_heizung
+      data:
+        temperature: '{{ new_temp }}'
+
+- alias: 'W100 Schlafzimmer Minus Button'
+  id: w100_schlafzimmer_minus_button
+  description: 'Handle minus button presses on Schlafzimmer W100 thermometer'
+  mode: single
+  triggers:
+    - trigger: mqtt
+      topic: 'zigbee2mqtt/Tim-Schlafzimmer Thermometer'
+      value_template: '{{ value_json.action }}'
+      payload: 'single_minus'
+      id: single
+    - trigger: mqtt
+      topic: 'zigbee2mqtt/Tim-Schlafzimmer Thermometer'
+      value_template: '{{ value_json.action }}'
+      payload: 'double_minus'
+      id: double
+    - trigger: mqtt
+      topic: 'zigbee2mqtt/Tim-Schlafzimmer Thermometer'
+      value_template: '{{ value_json.action }}'
+      payload: 'hold_minus'
+      id: hold
+  actions:
+    - variables:
+        decrement: >
+          {% if trigger.id == 'single' %}1
+          {% elif trigger.id == 'double' %}2
+          {% else %}3
+          {% endif %}
+        current_temp: "{{ state_attr('climate.tim_buro_schlafzimmer_heizung', 'temperature') | float(20) }}"
+        new_temp: "{{ [current_temp - decrement, 15] | max }}"
+    - action: climate.set_temperature
+      target:
+        entity_id: climate.tim_buro_schlafzimmer_heizung
+      data:
+        temperature: '{{ new_temp }}'
+
+# =============================================================================
+# CENTER BUTTON AUTOMATIONS
+# =============================================================================
+# Execute action based on input_select setting:
+# - Toggle Thermostat: turn on/off
+# - Toggle Nightmode: set 18°C or restore to 22°C
+# - Boost 30min: set 24°C for 30 minutes
+# - None: no action
+
+- alias: 'W100 Büro Center Button'
+  id: w100_buro_center_button
+  description: 'Handle center button presses on Büro W100 thermometer'
+  mode: single
+  triggers:
+    - trigger: mqtt
+      topic: 'zigbee2mqtt/Büro-Thermometer'
+      value_template: '{{ value_json.action }}'
+      payload: 'single_center'
+      id: single
+    - trigger: mqtt
+      topic: 'zigbee2mqtt/Büro-Thermometer'
+      value_template: '{{ value_json.action }}'
+      payload: 'double_center'
+      id: double
+    - trigger: mqtt
+      topic: 'zigbee2mqtt/Büro-Thermometer'
+      value_template: '{{ value_json.action }}'
+      payload: 'hold_center'
+      id: hold
+  actions:
+    - variables:
+        action_type: "{{ states('input_select.w100_buro_thermometer_center_action') }}"
+        current_temp: "{{ state_attr('climate.tim_buro_schlafzimmer_heizung', 'temperature') | float(20) }}"
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ action_type == 'Toggle Thermostat' }}"
+          sequence:
+            - action: climate.toggle
+              target:
+                entity_id: climate.tim_buro_schlafzimmer_heizung
+        - conditions:
+            - condition: template
+              value_template: "{{ action_type == 'Toggle Nightmode' }}"
+          sequence:
+            - choose:
+                - conditions:
+                    - condition: template
+                      value_template: "{{ current_temp == 18 }}"
+                  sequence:
+                    - action: climate.set_temperature
+                      target:
+                        entity_id: climate.tim_buro_schlafzimmer_heizung
+                      data:
+                        temperature: 22
+              default:
+                - action: climate.set_temperature
+                  target:
+                    entity_id: climate.tim_buro_schlafzimmer_heizung
+                  data:
+                    temperature: 18
+        - conditions:
+            - condition: template
+              value_template: "{{ action_type == 'Boost 30min' }}"
+          sequence:
+            - action: climate.set_temperature
+              target:
+                entity_id: climate.tim_buro_schlafzimmer_heizung
+              data:
+                temperature: 24
+            - delay:
+                minutes: 30
+            - action: climate.set_temperature
+              target:
+                entity_id: climate.tim_buro_schlafzimmer_heizung
+              data:
+                temperature: 22
+      default: []
+
+- alias: 'W100 Schlafzimmer Center Button'
+  id: w100_schlafzimmer_center_button
+  description: 'Handle center button presses on Schlafzimmer W100 thermometer'
+  mode: single
+  triggers:
+    - trigger: mqtt
+      topic: 'zigbee2mqtt/Tim-Schlafzimmer Thermometer'
+      value_template: '{{ value_json.action }}'
+      payload: 'single_center'
+      id: single
+    - trigger: mqtt
+      topic: 'zigbee2mqtt/Tim-Schlafzimmer Thermometer'
+      value_template: '{{ value_json.action }}'
+      payload: 'double_center'
+      id: double
+    - trigger: mqtt
+      topic: 'zigbee2mqtt/Tim-Schlafzimmer Thermometer'
+      value_template: '{{ value_json.action }}'
+      payload: 'hold_center'
+      id: hold
+  actions:
+    - variables:
+        action_type: "{{ states('input_select.w100_tim_schlafzimmer_thermometer_center_action') }}"
+        current_temp: "{{ state_attr('climate.tim_buro_schlafzimmer_heizung', 'temperature') | float(20) }}"
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ action_type == 'Toggle Thermostat' }}"
+          sequence:
+            - action: climate.toggle
+              target:
+                entity_id: climate.tim_buro_schlafzimmer_heizung
+        - conditions:
+            - condition: template
+              value_template: "{{ action_type == 'Toggle Nightmode' }}"
+          sequence:
+            - choose:
+                - conditions:
+                    - condition: template
+                      value_template: "{{ current_temp == 18 }}"
+                  sequence:
+                    - action: climate.set_temperature
+                      target:
+                        entity_id: climate.tim_buro_schlafzimmer_heizung
+                      data:
+                        temperature: 22
+              default:
+                - action: climate.set_temperature
+                  target:
+                    entity_id: climate.tim_buro_schlafzimmer_heizung
+                  data:
+                    temperature: 18
+        - conditions:
+            - condition: template
+              value_template: "{{ action_type == 'Boost 30min' }}"
+          sequence:
+            - action: climate.set_temperature
+              target:
+                entity_id: climate.tim_buro_schlafzimmer_heizung
+              data:
+                temperature: 24
+            - delay:
+                minutes: 30
+            - action: climate.set_temperature
+              target:
+                entity_id: climate.tim_buro_schlafzimmer_heizung
+              data:
+                temperature: 22
+      default: []
