@@ -59,9 +59,9 @@ sensor:
     unit_of_measurement: '°C'
     ignore_non_numeric: true
     entities:
-      - sensor.tim_thermometer_temperature
+      - sensor.buro_thermometer_temperature
       - sensor.buro_thermostat_temperature
-      # - sensor.tim_schlafzimmer_thermostat_temperature
+      - sensor.tim_schlafzimmer_thermometer_temperature
 
   # Humidity Sensor Groups (arithmetic mean)
   - platform: group
@@ -99,9 +99,9 @@ sensor:
     unit_of_measurement: '%'
     ignore_non_numeric: true
     entities:
-      - sensor.tim_thermometer_humidity
+      - sensor.buro_thermometer_humidity
       - sensor.buro_thermostat_humidity
-      # - sensor.tim_schlafzimmer_thermostat_humidity
+      - sensor.tim_schlafzimmer_thermometer_humidity
 
 # Binary Sensor Groups (window/door sensors)
 binary_sensor:

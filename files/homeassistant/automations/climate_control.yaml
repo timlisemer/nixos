@@ -1,61 +1,140 @@
 # Climate Control Automations
-# Uses helper binary sensors for cleaner trigger logic
+# Uses better_thermostat nightmode services and presence-based logic
 
-- id: 'tim_buro_schlafzimmer_heizung'
-  alias: 'Tim Büro & Schlafzimmer Heizung'
-  description: "Control Tim's office/bedroom heating based on Tim's presence, room activity, and time of day"
-  triggers:
-    - trigger: state
-      entity_id: binary_sensor.tim_home
-    - trigger: state
-      entity_id: binary_sensor.buro_tim_schlafzimmer_in_use
-    - trigger: state
-      entity_id: binary_sensor.tim_daytime_heating_period
-    - trigger: time_pattern
-      hours: '/1'
-  conditions: []
-  actions:
-    - variables:
-        is_daytime: "{{ is_state('binary_sensor.tim_daytime_heating_period', 'on') }}"
-        room_in_use: "{{ is_state('binary_sensor.buro_tim_schlafzimmer_in_use', 'on') }}"
-        tim_home: "{{ is_state('binary_sensor.tim_home', 'on') }}"
-        should_heat: '{{ room_in_use or (is_daytime and tim_home) }}'
-    - action: climate.set_temperature
-      target:
-        entity_id: climate.tim_buro_schlafzimmer_heizung
-      data:
-        temperature: "{{ states('input_number.tim_buro_schlafzimmer_zieltemperatur') | float(22) if should_heat else 18 }}"
-  mode: single
-
+# Küche & Wohnzimmer Heizung
 - id: 'kuche_wohnzimmer_heizung'
   alias: 'Küche & Wohnzimmer Heizung'
   description: 'Control kitchen/living room heating based on presence, room activity, and time of day'
   triggers:
     - trigger: state
-      entity_id: binary_sensor.somebody_home
-    - trigger: state
-      entity_id: binary_sensor.kuche_wohnzimmer_in_use
-    - trigger: state
-      entity_id: binary_sensor.wohnzimmer_kuche_daytime_heating_period
+      entity_id:
+        - binary_sensor.somebody_home
+        - binary_sensor.tim_home
+        - binary_sensor.edith_home
+        - binary_sensor.kuche_wohnzimmer_in_use
+        - binary_sensor.wohnzimmer_kuche_daytime_heating_period
     - trigger: time_pattern
       hours: '/1'
-  conditions: []
   actions:
-    - variables:
-        is_daytime: "{{ is_state('binary_sensor.wohnzimmer_kuche_daytime_heating_period', 'on') }}"
-        room_in_use: "{{ is_state('binary_sensor.kuche_wohnzimmer_in_use', 'on') }}"
-        someone_home: "{{ is_state('binary_sensor.somebody_home', 'on') }}"
-        should_heat: '{{ room_in_use or (is_daytime and someone_home) }}'
-    - variables:
-        target_temp: "{{ states('input_number.wohnzimmer_kuche_zieltemperatur') | float(22) }}"
-    - action: climate.set_temperature
-      target:
-        entity_id: climate.wohnzimmer_heizung
-      data:
-        temperature: "{{ target_temp if should_heat else 18 }}"
-    - action: climate.set_temperature
-      target:
-        entity_id: climate.kuche_heizung
-      data:
-        temperature: "{{ (target_temp - 2) if should_heat else 18 }}"
+    - choose:
+        # OPTION 1: Room active OR Edith home in schedule
+        - conditions:
+            - condition: or
+              conditions:
+                - condition: state
+                  entity_id: binary_sensor.kuche_wohnzimmer_in_use
+                  state: 'on'
+                - condition: and
+                  conditions:
+                    - condition: state
+                      entity_id: binary_sensor.wohnzimmer_kuche_daytime_heating_period
+                      state: 'on'
+                    - condition: state
+                      entity_id: binary_sensor.edith_home
+                      state: 'on'
+          sequence:
+            # Exit nightmode
+            - action: better_thermostat.restore_saved_target_temperature
+              target:
+                entity_id:
+                  - climate.wohnzimmer_heizung
+                  - climate.kuche_heizung
+            # Set explicit temps
+            - action: better_thermostat.set_temp_target_temperature
+              target:
+                entity_id: climate.wohnzimmer_heizung
+              data:
+                temperature: 22
+            - action: better_thermostat.set_temp_target_temperature
+              target:
+                entity_id: climate.kuche_heizung
+              data:
+                temperature: 20
+
+        # OPTION 2: Tim home (not Edith) in schedule
+        - conditions:
+            - condition: state
+              entity_id: binary_sensor.wohnzimmer_kuche_daytime_heating_period
+              state: 'on'
+            - condition: state
+              entity_id: binary_sensor.tim_home
+              state: 'on'
+            - condition: state
+              entity_id: binary_sensor.edith_home
+              state: 'off'
+          sequence:
+            # Exit nightmode
+            - action: better_thermostat.restore_saved_target_temperature
+              target:
+                entity_id:
+                  - climate.wohnzimmer_heizung
+                  - climate.kuche_heizung
+            # Set both to 20
+            - action: better_thermostat.set_temp_target_temperature
+              target:
+                entity_id:
+                  - climate.wohnzimmer_heizung
+                  - climate.kuche_heizung
+              data:
+                temperature: 20
+
+      # DEFAULT: Nightmode (nobody home or out of schedule)
+      default:
+        - action: better_thermostat.set_temp_target_temperature
+          target:
+            entity_id:
+              - climate.wohnzimmer_heizung
+              - climate.kuche_heizung
+          data:
+            temperature: 18
+  mode: single
+
+# Tim Büro & Schlafzimmer Heizung
+- id: 'tim_buro_schlafzimmer_heizung'
+  alias: 'Tim Büro & Schlafzimmer Heizung'
+  description: "Control Tim's office/bedroom heating based on Tim's presence, room activity, and time of day"
+  triggers:
+    - trigger: state
+      entity_id:
+        - binary_sensor.tim_home
+        - binary_sensor.buro_tim_schlafzimmer_in_use
+        - binary_sensor.tim_daytime_heating_period
+    - trigger: time_pattern
+      hours: '/1'
+  actions:
+    - choose:
+        # Room active OR Tim home in schedule
+        - conditions:
+            - condition: or
+              conditions:
+                - condition: state
+                  entity_id: binary_sensor.buro_tim_schlafzimmer_in_use
+                  state: 'on'
+                - condition: and
+                  conditions:
+                    - condition: state
+                      entity_id: binary_sensor.tim_daytime_heating_period
+                      state: 'on'
+                    - condition: state
+                      entity_id: binary_sensor.tim_home
+                      state: 'on'
+          sequence:
+            # Exit nightmode
+            - action: better_thermostat.restore_saved_target_temperature
+              target:
+                entity_id: climate.tim_buro_schlafzimmer_heizung
+            # Set explicit temp
+            - action: better_thermostat.set_temp_target_temperature
+              target:
+                entity_id: climate.tim_buro_schlafzimmer_heizung
+              data:
+                temperature: 22
+
+      # DEFAULT: Nightmode
+      default:
+        - action: better_thermostat.set_temp_target_temperature
+          target:
+            entity_id: climate.tim_buro_schlafzimmer_heizung
+          data:
+            temperature: 18
   mode: single
