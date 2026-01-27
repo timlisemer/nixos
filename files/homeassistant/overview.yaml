@@ -8,7 +8,7 @@ views:
             cards:
               - type: custom:better-thermostat-ui-card
                 entity: climate.tim_buro_schlafzimmer_heizung
-                name: Tim & Schlafzimmer
+                name: Tim Büro & Schlafzimmer
               - type: custom:better-thermostat-ui-card
                 entity: climate.kuche_heizung
                 name: Küche
