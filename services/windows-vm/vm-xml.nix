@@ -68,7 +68,7 @@
 
       if [ ! -f "$IMAGE_PATH" ]; then
         echo "Creating qcow2 image at $IMAGE_PATH with size $IMAGE_SIZE..."
-        mkdir -p "$(dirname "$IMAGE_PATH")"
+        ${pkgs.coreutils}/bin/mkdir -p "$(${pkgs.coreutils}/bin/dirname "$IMAGE_PATH")"
         ${pkgs.qemu}/bin/qemu-img create -f qcow2 "$IMAGE_PATH" "$IMAGE_SIZE"
         echo "qcow2 image created successfully."
       else
@@ -110,7 +110,7 @@
 
     # Generate VM XML with dynamic values
     VM_XML_PATH="/var/lib/libvirt/images/${cfg.vmName}.xml"
-    mkdir -p "$(dirname "$VM_XML_PATH")"
+    ${pkgs.coreutils}/bin/mkdir -p "$(${pkgs.coreutils}/bin/dirname "$VM_XML_PATH")"
 
     cat > "$VM_XML_PATH" << 'XMLEOF'
     <domain type='kvm'>
@@ -308,7 +308,7 @@
       ${pkgs.libvirt}/bin/virsh net-define /run/current-system/sw/etc/libvirt/qemu/networks/default.xml 2>/dev/null || true
     fi
 
-    if ! ${pkgs.libvirt}/bin/virsh net-info default 2>&1 | grep -q "Active:.*yes"; then
+    if ! ${pkgs.libvirt}/bin/virsh net-info default 2>&1 | ${pkgs.gnugrep}/bin/grep -q "Active:.*yes"; then
       echo "Starting default network..."
       ${pkgs.libvirt}/bin/virsh net-start default 2>/dev/null || true
       ${pkgs.libvirt}/bin/virsh net-autostart default 2>/dev/null || true

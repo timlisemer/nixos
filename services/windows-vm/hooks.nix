@@ -205,14 +205,14 @@ in {
   activationScript = {
     text = ''
       # Create libvirt hooks directory
-      mkdir -p /var/lib/libvirt/hooks
+      ${pkgs.coreutils}/bin/mkdir -p /var/lib/libvirt/hooks
 
       # Install QEMU hook
-      cp ${qemuHook} /var/lib/libvirt/hooks/qemu
-      chmod +x /var/lib/libvirt/hooks/qemu
+      ${pkgs.coreutils}/bin/cp ${qemuHook} /var/lib/libvirt/hooks/qemu
+      ${pkgs.coreutils}/bin/chmod +x /var/lib/libvirt/hooks/qemu
 
       # Ensure proper ownership
-      chown -R root:root /var/lib/libvirt/hooks
+      ${pkgs.coreutils}/bin/chown -R root:root /var/lib/libvirt/hooks
     '';
     deps = [];
   };

@@ -184,11 +184,11 @@
   createAutounattendIso = pkgs.writeShellScript "create-autounattend-iso" ''
     set -euo pipefail
 
-    WORK_DIR=$(mktemp -d)
-    trap "rm -rf $WORK_DIR" EXIT
+    WORK_DIR=$(${pkgs.coreutils}/bin/mktemp -d)
+    trap "${pkgs.coreutils}/bin/rm -rf $WORK_DIR" EXIT
 
     # Copy autounattend.xml
-    cp ${autounattendXml} "$WORK_DIR/autounattend.xml"
+    ${pkgs.coreutils}/bin/cp ${autounattendXml} "$WORK_DIR/autounattend.xml"
 
     # Create ISO (suppress verbose output)
     ${pkgs.xorriso}/bin/xorriso -as mkisofs \
@@ -211,8 +211,8 @@
     AUTOUNATTEND_ISO="${autounattendIso}"
     WORK_DIR="/var/lib/libvirt/uup-work"
 
-    # Add required tools to PATH for UUPDump converter
-    export PATH="${pkgs.which}/bin:${pkgs.cabextract}/bin:${pkgs.wimlib}/bin:${pkgs.chntpw}/bin:${pkgs.cdrtools}/bin:${pkgs.aria2}/bin:$PATH"
+    # Add required tools to PATH for UUPDump converter script (third-party script needs these in PATH)
+    export PATH="${pkgs.which}/bin:${pkgs.cabextract}/bin:${pkgs.wimlib}/bin:${pkgs.chntpw}/bin:${pkgs.cdrtools}/bin:${pkgs.coreutils}/bin:${pkgs.gawk}/bin:${pkgs.gnused}/bin:${pkgs.gnugrep}/bin:$PATH"
 
     log() {
       echo "[windows-iso] $1"
@@ -228,8 +228,8 @@
     fi
 
     # Create directories
-    mkdir -p "$ISO_DIR"
-    mkdir -p "$WORK_DIR"
+    ${pkgs.coreutils}/bin/mkdir -p "$ISO_DIR"
+    ${pkgs.coreutils}/bin/mkdir -p "$WORK_DIR"
 
     # Download VirtIO drivers if not present
     if [ ! -f "$VIRTIO_ISO" ]; then
@@ -292,7 +292,7 @@
     }
 
     # Extract the package
-    rm -rf "$WORK_DIR/uup_extract"
+    ${pkgs.coreutils}/bin/rm -rf "$WORK_DIR/uup_extract"
     ${pkgs.unzip}/bin/unzip -q -o "$PACK_FILE" -d "$WORK_DIR/uup_extract" || {
       err "Failed to extract UUPDump package"
       exit 1
@@ -341,7 +341,7 @@
 
     # Download all UUP files
     UUP_DIR="$WORK_DIR/uup_extract/UUPs"
-    mkdir -p "$UUP_DIR"
+    ${pkgs.coreutils}/bin/mkdir -p "$UUP_DIR"
     ${pkgs.aria2}/bin/aria2c --no-conf \
       --console-log-level=warn \
       --summary-interval=60 \
@@ -359,7 +359,7 @@
     log "Converting to ISO (this takes several minutes)..."
     CONVERT_SCRIPT="$WORK_DIR/uup_extract/files/convert.sh"
     if [ -f "$CONVERT_SCRIPT" ]; then
-      chmod +x "$CONVERT_SCRIPT"
+      ${pkgs.coreutils}/bin/chmod +x "$CONVERT_SCRIPT"
 
       # Run the converter with bash explicitly (NixOS has no /bin/bash)
       (
@@ -398,8 +398,8 @@
     }
 
     # Cleanup work directory
-    rm -rf "$UUP_DIR"
-    rm -f "$PACK_FILE"
+    ${pkgs.coreutils}/bin/rm -rf "$UUP_DIR"
+    ${pkgs.coreutils}/bin/rm -f "$PACK_FILE"
 
     log "Windows 11 ISO created: $WINDOWS_ISO ($(($ISO_SIZE / 1024 / 1024 / 1024))GB)"
   '';

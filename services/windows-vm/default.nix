@@ -183,7 +183,7 @@ in {
         ${pkgs.libvirt}/bin/virsh start ${cfg.vmName} 2>/dev/null || true
 
         # Keep the session alive while VM runs
-        while ${pkgs.libvirt}/bin/virsh domstate ${cfg.vmName} 2>/dev/null | grep -q "running"; do
+        while ${pkgs.libvirt}/bin/virsh domstate ${cfg.vmName} 2>/dev/null | ${pkgs.gnugrep}/bin/grep -q "running"; do
           sleep 5
         done
       ''}

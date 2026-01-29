@@ -15,8 +15,10 @@
 
   # Windows VM with GPU passthrough (appears as GDM session)
   # Resources are auto-detected at runtime: RAM - 2GB, CPU threads - 2
+  # DISABLED: intel_iommu kernel params prevent dGPU from waking from D3hot sleep
+  # on hybrid graphics laptops. Need laptop-compatible VFIO solution.
   services.windows-vm = {
-    enable = true;
+    enable = false;
     vmName = "windows-vm";
     username = "tim";
     password = "changeme"; # TODO: Move to SOPS
