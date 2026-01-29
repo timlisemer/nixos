@@ -8,8 +8,10 @@
 
   # Windows 11 icon from local files
   windowsIcon = ../files/icons/windows11-48.png;
-in
-  lib.mkIf cfg.enable {
+in {
+  imports = [../services/windows-vm];
+
+  config = lib.mkIf cfg.enable {
     # Install Windows icon
     environment.systemPackages = [
       (pkgs.runCommand "windows-vm-icon" {} ''
@@ -73,4 +75,5 @@ in
       X-GNOME-Autostart-enabled=true
       X-GNOME-Autostart-Phase=Applications
     '';
-  }
+  };
+}

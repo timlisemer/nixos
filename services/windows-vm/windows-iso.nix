@@ -284,9 +284,8 @@
     # Step 2: Download the UUPDump package (contains converter scripts)
     log "Downloading UUPDump converter package..."
     PACK_FILE="$WORK_DIR/uup_package.zip"
-    ${pkgs.curl}/bin/curl -sL -X POST \
-      "https://uupdump.net/get.php?id=$BUILD_UUID&pack=en-us&edition=professional" \
-      -d "autodl=2" \
+    ${pkgs.curl}/bin/curl -sL \
+      "https://uupdump.net/get.php?id=$BUILD_UUID&pack=en-us&edition=professional&autodl=2" \
       -o "$PACK_FILE" || {
       err "Failed to download UUPDump package"
       exit 1
@@ -300,15 +299,17 @@
     }
 
     # Download the aria2 script with file URLs
+    # UUPDump requires a delay between API calls
+    sleep 3
     log "Fetching download manifest..."
     ARIA2_SCRIPT="$WORK_DIR/uup_extract/aria2_script.txt"
     ${pkgs.curl}/bin/curl -sL \
       "https://uupdump.net/get.php?id=$BUILD_UUID&pack=en-us&edition=professional&aria2=2" \
       -o "$ARIA2_SCRIPT"
 
-    # Check if we got rate limited (HTML instead of aria2 script)
-    if ! ${pkgs.gnugrep}/bin/grep -q '^https://' "$ARIA2_SCRIPT" 2>/dev/null; then
-      err "Rate limited by UUPDump. Try again in a few minutes."
+    # Check if we got a valid aria2 script (not HTML error page)
+    if ! ${pkgs.gnugrep}/bin/grep -q '^http' "$ARIA2_SCRIPT" 2>/dev/null; then
+      err "Failed to fetch download manifest from UUPDump"
       exit 1
     fi
 
@@ -319,7 +320,7 @@
       exit 1
     fi
 
-    FILE_COUNT=$(${pkgs.gnugrep}/bin/grep -c '^https://' "$ARIA2_SCRIPT" || echo "0")
+    FILE_COUNT=$(${pkgs.gnugrep}/bin/grep -c '^http' "$ARIA2_SCRIPT" || echo "0")
     log "Downloading $FILE_COUNT UUP files..."
 
     # Download converter tools
