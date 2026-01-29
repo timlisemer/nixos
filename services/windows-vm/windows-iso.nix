@@ -212,7 +212,7 @@
     WORK_DIR="/var/lib/libvirt/uup-work"
 
     # Add required tools to PATH for UUPDump converter
-    export PATH="${pkgs.cabextract}/bin:${pkgs.wimlib}/bin:${pkgs.chntpw}/bin:${pkgs.cdrtools}/bin:${pkgs.aria2}/bin:$PATH"
+    export PATH="${pkgs.which}/bin:${pkgs.cabextract}/bin:${pkgs.wimlib}/bin:${pkgs.chntpw}/bin:${pkgs.cdrtools}/bin:${pkgs.aria2}/bin:$PATH"
 
     log() {
       echo "[windows-iso] $1"
