@@ -60,16 +60,23 @@ in {
   # Ensure dev outputs are available so .pc files exist
   environment.extraOutputsToInstall = ["dev"];
 
-  # Build PKG_CONFIG_PATH dynamically at login
+  # Cache PKG_CONFIG_PATH directories at build time (activation script below)
+  # Then read from cached file at login for fast shell startup
   environment.loginShellInit = ''
-    pc_path=""
-    # Scan only the system profile (not the whole store)
-    while IFS= read -r d; do
-      [ -d "$d" ] && pc_path="''${pc_path:+$pc_path:}$d"
-    done <<EOF
-    $(find -L /run/current-system/sw -type d \( -path '*/lib/pkgconfig' -o -path '*/share/pkgconfig' \) 2>/dev/null | sort -u)
-    EOF
-    export PKG_CONFIG_PATH="''${pc_path}''${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
+    if [ -f /etc/pkgconfig-paths ]; then
+      pc_path=""
+      while IFS= read -r d; do
+        [ -d "$d" ] && pc_path="''${pc_path:+$pc_path:}$d"
+      done < /etc/pkgconfig-paths
+      export PKG_CONFIG_PATH="''${pc_path}''${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
+    fi
+  '';
+
+  # Build PKG_CONFIG_PATH cache during nixos-rebuild
+  system.activationScripts.pkgconfigPaths.text = ''
+    ${pkgs.findutils}/bin/find -L /run/current-system/sw -type d \( -path '*/lib/pkgconfig' -o -path '*/share/pkgconfig' \) 2>/dev/null | ${pkgs.coreutils}/bin/sort -u > /etc/pkgconfig-paths
+    COUNT=$(${pkgs.coreutils}/bin/wc -l < /etc/pkgconfig-paths)
+    echo "[pkgconfig-paths] cached $COUNT directories"
   '';
 
   # Enable experimental nix-command and flakes
