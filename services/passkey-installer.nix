@@ -272,7 +272,7 @@
 
     echo "=== Locking flake inputs ==="
     cd /tmp/nixos
-    nix --extra-experimental-features 'nix-command flakes' flake lock --accept-flake-config
+    nix --extra-experimental-features 'nix-command flakes' flake lock --option accept-flake-config true
     cd -
     echo "Flake locked."
     echo ""
@@ -321,7 +321,7 @@
     echo ""
 
     echo "=== Installing NixOS ==="
-    nixos-install --flake "/mnt/etc/nixos#$HOSTNAME" --accept-flake-config
+    nixos-install --flake "/mnt/etc/nixos#$HOSTNAME" --option accept-flake-config true
     echo "NixOS installation complete."
     echo ""
 

@@ -204,6 +204,8 @@ in {
   # Activation script to install hooks
   activationScript = {
     text = ''
+      echo "[libvirt-hooks] Installing QEMU hooks for GPU passthrough"
+
       # Create libvirt hooks directory
       ${pkgs.coreutils}/bin/mkdir -p /var/lib/libvirt/hooks
 

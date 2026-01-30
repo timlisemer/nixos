@@ -537,7 +537,7 @@ in {
   ##########################################################################
   system.activationScripts.cloneGitHubRepos = {
     text = ''
-      if ! ${pkgs.openssh}/bin/ssh -T git@github.com 2>&1 | ${pkgs.gnugrep}/bin/grep -q "successfully authenticated"; then
+      if ! ${pkgs.openssh}/bin/ssh -o StrictHostKeyChecking=accept-new -T git@github.com 2>&1 | ${pkgs.gnugrep}/bin/grep -q "successfully authenticated"; then
         echo "[github-repos] SSH not available"
       else
         # Parent must exist - created by setupHomeStructure

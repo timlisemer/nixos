@@ -17,7 +17,7 @@
   # Resources are auto-detected at runtime: RAM - 2GB, CPU threads - 2
   # DISABLED: Hybrid graphics laptops cannot safely use IOMMU kernel params
   services.windows-vm = {
-    enable = false;
+    enable = true;
     vmName = "windows-vm";
     username = "tim";
     password = "changeme"; # TODO: Move to SOPS
