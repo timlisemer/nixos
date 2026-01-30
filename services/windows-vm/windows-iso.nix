@@ -4,7 +4,7 @@
   lib,
   cfg,
 }: let
-  isoDir = "/var/lib/libvirt/images";
+  isoDir = "/mnt/vm-data/isos";
   windowsIso = "${isoDir}/windows11.iso";
   virtioIso = "${isoDir}/virtio-win.iso";
   autounattendIso = "${isoDir}/autounattend.iso";
@@ -209,7 +209,7 @@
     WINDOWS_ISO="${windowsIso}"
     VIRTIO_ISO="${virtioIso}"
     AUTOUNATTEND_ISO="${autounattendIso}"
-    WORK_DIR="/var/lib/libvirt/uup-work"
+    WORK_DIR="/mnt/vm-data/uup-work"
 
     # Add required tools to PATH for UUPDump converter script (third-party script needs these in PATH)
     export PATH="${pkgs.which}/bin:${pkgs.cabextract}/bin:${pkgs.wimlib}/bin:${pkgs.chntpw}/bin:${pkgs.cdrtools}/bin:${pkgs.coreutils}/bin:${pkgs.gawk}/bin:${pkgs.gnused}/bin:${pkgs.gnugrep}/bin:$PATH"
@@ -412,7 +412,7 @@ in {
         exit 0
       fi
 
-      ${pkgs.coreutils}/bin/mkdir -p "${isoDir}"
+      ${pkgs.coreutils}/bin/mkdir -p /mnt/vm-data "${isoDir}" /mnt/vm-data/images
 
       # Run the download script directly (blocking)
       if ! ${windowsDownloadScript}; then

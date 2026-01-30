@@ -54,8 +54,8 @@ in {
 
       path = mkOption {
         type = types.nullOr types.str;
-        default = "/var/lib/libvirt/images/windows.qcow2";
-        description = "Path for qcow2 image file";
+        default = null;
+        description = "Path for qcow2 image file (e.g., /mnt/vm-data/<vm-name>/disk.qcow2)";
       };
 
       size = mkOption {

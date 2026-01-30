@@ -5,7 +5,7 @@
   cfg,
   pciToDomain,
 }: let
-  isoDir = "/var/lib/libvirt/images";
+  isoDir = "/mnt/vm-data/isos";
   windowsIso = "${isoDir}/windows11.iso";
   virtioIso = "${isoDir}/virtio-win.iso";
   autounattendIso = "${isoDir}/autounattend.iso";
@@ -109,7 +109,7 @@
     echo "Auto-detected CPU: ''${TOTAL_THREADS} threads total, allocating ''${VM_THREADS} to VM (2 reserved for host)"
 
     # Generate VM XML with dynamic values
-    VM_XML_PATH="/var/lib/libvirt/images/${cfg.vmName}.xml"
+    VM_XML_PATH="/mnt/vm-data/${cfg.vmName}/vm.xml"
     ${pkgs.coreutils}/bin/mkdir -p "$(${pkgs.coreutils}/bin/dirname "$VM_XML_PATH")"
 
     cat > "$VM_XML_PATH" << 'XMLEOF'

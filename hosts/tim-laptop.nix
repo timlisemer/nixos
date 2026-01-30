@@ -26,7 +26,7 @@
     # Storage: virtual qcow2 disk (laptop has single NVMe)
     storage = {
       type = "qcow2";
-      path = "/var/lib/libvirt/images/windows.qcow2";
+      path = "/mnt/vm-data/windows-vm/disk.qcow2";
       size = "100G";
     };
 
