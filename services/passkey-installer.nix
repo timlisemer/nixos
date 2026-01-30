@@ -506,10 +506,39 @@
         # Check if passkey already exists (single passkey limit)
         credentials = load_credentials()
         if credentials:
-            return HTMLResponse(
-                f"<h1>Passkey already registered</h1><p>Remove {credentials_file} to reset.</p>",
-                status_code=400
-            )
+            error_html = """<!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Passkey Already Registered - NixOS Installer</title>
+        <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; padding: 20px; max-width: 500px; margin: 0 auto; }
+            h1 { color: #5277C3; }
+            .status { padding: 15px; border-radius: 8px; margin-top: 20px; }
+            .error { background: #f8d7da; color: #721c24; }
+            .warning { background: #fff3cd; color: #856404; }
+            code { background: #e9ecef; padding: 2px 6px; border-radius: 4px; font-size: 14px; display: block; margin: 10px 0; word-break: break-all; }
+            strong { color: #721c24; }
+        </style>
+    </head>
+    <body>
+        <h1>Passkey Already Registered</h1>
+        <div class="status error">
+            <p>A passkey has already been registered for this installer.</p>
+        </div>
+        <div class="status warning">
+            <p><strong>WARNING: Read carefully!</strong></p>
+            <p>To re-register a passkey, you must delete ONLY this one file:</p>
+            <code>ssh root@homeassistant-yellow "rm /var/lib/passkey-installer/credentials.json"</code>
+            <p><strong>DO NOT delete the folder</strong> <code>/var/lib/passkey-installer/</code> - it contains the Python script which the service needs to run.</p>
+            <p>If you accidentally deleted the folder, restart the service to recreate it:</p>
+            <code>ssh root@homeassistant-yellow "systemctl restart passkey-installer"</code>
+            <p>Then refresh this page.</p>
+        </div>
+    </body>
+    </html>"""
+            return HTMLResponse(error_html, status_code=400)
 
         user_id = hashlib.sha256(username.encode()).digest()
 
