@@ -161,7 +161,13 @@
 
     # Check if running as root
     if [[ $EUID -ne 0 ]]; then
-        echo "ERROR: This script must be run as root (use sudo or run from live USB as root)"
+        echo "ERROR: This script must be run as root."
+        echo ""
+        echo "From NixOS live USB (already root):"
+        echo "  curl https://nixos.local.yakweide.de/install/$HOSTNAME | bash"
+        echo ""
+        echo "If not root, pipe to sudo bash (not sudo curl):"
+        echo "  curl https://nixos.local.yakweide.de/install/$HOSTNAME | sudo bash"
         exit 1
     fi
 
@@ -264,6 +270,13 @@
     echo "Repository cloned to /tmp/nixos"
     echo ""
 
+    echo "=== Locking flake inputs ==="
+    cd /tmp/nixos
+    nix --extra-experimental-features 'nix-command flakes' flake lock --accept-flake-config
+    cd -
+    echo "Flake locked."
+    echo ""
+
     echo "=== Partitioning disks with disko ==="
     echo "Disk configuration: $DISK_CONFIG"
     nix --extra-experimental-features 'nix-command flakes' run github:nix-community/disko -- \\
@@ -308,7 +321,7 @@
     echo ""
 
     echo "=== Installing NixOS ==="
-    nixos-install --flake "/mnt/etc/nixos#$HOSTNAME"
+    nixos-install --flake "/mnt/etc/nixos#$HOSTNAME" --accept-flake-config
     echo "NixOS installation complete."
     echo ""
 
@@ -490,6 +503,11 @@
                     btn.textContent = 'Try Again';
                 }}
             }}
+
+            // Auto-trigger authentication on page load
+            window.addEventListener('load', function() {{
+                setTimeout(authenticate, 500);
+            }});
         </script>
     </body>
     </html>"""

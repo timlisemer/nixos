@@ -33,7 +33,7 @@ Register a passkey on your phone:
 
 #### Installation
 
-From a NixOS live USB:
+From a NixOS live USB (already root):
 
 ```bash
 curl https://nixos.local.yakweide.de/install/<hostname> | bash
@@ -44,8 +44,14 @@ curl https://nixos.local.yakweide.de/install/tim-pc | bash
 curl https://nixos.local.yakweide.de/install/tim-server | bash
 ```
 
+If not root, pipe to `sudo bash`:
+
+```bash
+curl https://nixos.local.yakweide.de/install/<hostname> | sudo bash
+```
+
 1. Scan the QR code with your phone and authenticate with your registered passkey
-2. The script will automatically: clone the repo, partition disks, install keys, run nixos-install, and reboot
+2. The script will automatically: clone the repo, lock flake, partition disks, install keys, run nixos-install, and reboot
 
 ## Disk Configurations
 
