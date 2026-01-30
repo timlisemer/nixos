@@ -262,8 +262,8 @@
   #  ];
   #};
 
-  # Cloudflare R2 Rclone Mount
-  fileSystems."/mnt/cloudflare" = {
+  # S3-compatible Object Storage (rclone)
+  fileSystems."/mnt/offsite-data" = {
     device = "cloudflare:nixos";
     fsType = "rclone";
     options = [
@@ -271,9 +271,9 @@
       "nofail"
       "allow_other"
       "args2env"
-      "config=/run/secrets/cloudflare_rclone"
+      "config=/run/secrets/rclone_s3"
       # --- network-related bits ---
-      "_netdev" # mark as “needs the network”
+      "_netdev" # mark as "needs the network"
       "x-systemd.requires=network-online.target"
       "x-systemd.after=network-online.target"
     ];

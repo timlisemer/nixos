@@ -26,7 +26,7 @@
   sops.secrets.webhook_id_audio_receiver = {
     mode = "0444"; # Readable by GNOME extension
   };
-  sops.secrets.cloudflare_rclone = {};
+  sops.secrets.rclone_s3 = {};
   sops.secrets.google-sa = {
     sopsFile = ./secrets.yaml;
     key = "google_drive_sa_json";
