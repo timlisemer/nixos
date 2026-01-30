@@ -15,13 +15,13 @@
 
   # Windows VM with GPU passthrough (appears as GDM session)
   # Resources are auto-detected at runtime: RAM - 2GB, CPU threads - 2
-  # DISABLED: intel_iommu kernel params prevent dGPU from waking from D3hot sleep
-  # on hybrid graphics laptops. Need laptop-compatible VFIO solution.
+  # DISABLED: Hybrid graphics laptops cannot safely use IOMMU kernel params
   services.windows-vm = {
     enable = false;
     vmName = "windows-vm";
     username = "tim";
     password = "changeme"; # TODO: Move to SOPS
+    noHybridGraphics = false; # Laptop has hybrid graphics - dGPU sleeps
 
     # Storage: virtual qcow2 disk (laptop has single NVMe)
     storage = {

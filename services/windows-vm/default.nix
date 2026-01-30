@@ -99,6 +99,37 @@ in {
       default = "amd";
       description = "GPU type for driver unbind/rebind";
     };
+
+    noHybridGraphics = mkOption {
+      type = types.bool;
+      description = ''
+        Does this system NOT have hybrid/switchable graphics?
+
+        This setting controls whether IOMMU kernel parameters (intel_iommu=on
+        or amd_iommu=on) are added to your boot configuration.
+
+        SET TO TRUE IF:
+        - Desktop PC with a dedicated GPU
+        - Workstation with discrete graphics
+        - Any system where the GPU is always powered on
+
+        SET TO FALSE IF:
+        - Laptop with hybrid/switchable graphics (Intel iGPU + discrete GPU)
+        - Laptop with NVIDIA Optimus or AMD Switchable Graphics
+        - Any system where the discrete GPU enters power-saving sleep states
+
+        WARNING: Setting this incorrectly can cause an UNRECOVERABLE KERNEL PANIC.
+        The panic does NOT occur during nixos-rebuild - it happens on REBOOT.
+        This means you may need to reinstall your system if you set this wrong.
+
+        Technical details: On hybrid graphics laptops, the discrete GPU enters
+        D3hot power-saving state when not in use. The intel_iommu kernel parameter
+        prevents the GPU from waking from this sleep state, causing a kernel panic
+        when the system tries to access the GPU after boot.
+
+        This option has no default - you must explicitly choose.
+      '';
+    };
   };
 
   config = mkIf cfg.enable {
@@ -115,15 +146,36 @@ in {
         assertion = cfg.passthrough.gpu != [];
         message = "services.windows-vm.passthrough.gpu must contain at least one PCI address";
       }
+      {
+        assertion = cfg ? noHybridGraphics;
+        message = ''
+          services.windows-vm.noHybridGraphics must be explicitly set.
+
+          This setting controls IOMMU kernel parameters that can cause
+          UNRECOVERABLE KERNEL PANICS if set incorrectly.
+
+          The panic does NOT occur during nixos-rebuild - it happens on REBOOT.
+          You may need to reinstall your system if you choose wrong.
+
+          Set to TRUE if: System has NO hybrid graphics (GPU always powered)
+          Set to FALSE if: System HAS hybrid graphics (GPU sleeps to save power)
+
+          Examples:
+            noHybridGraphics = true;   # Desktop PC, workstation
+            noHybridGraphics = false;  # Laptop with Intel + NVIDIA/AMD switchable graphics
+
+          If unsure, set to FALSE - the VM won't work but your system won't panic.
+        '';
+      }
     ];
 
-    # Kernel parameters for IOMMU
+    # Kernel parameters for IOMMU (only on systems without hybrid graphics)
     boot.kernelParams =
-      (
+      (lib.optionals cfg.noHybridGraphics (
         if cfg.cpuType == "amd"
         then ["amd_iommu=on" "iommu=pt"]
         else ["intel_iommu=on" "iommu=pt"]
-      )
+      ))
       ++ ["kvm.ignore_msrs=1" "kvm.report_ignored_msrs=0"];
 
     # VFIO modules in initrd

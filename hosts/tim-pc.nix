@@ -21,6 +21,7 @@
     vmName = "windows-vm";
     username = "tim";
     password = "changeme"; # TODO: Move to SOPS
+    noHybridGraphics = true; # Desktop PC - GPU always powered
 
     # Storage: dedicated NVMe drive
     storage = {
