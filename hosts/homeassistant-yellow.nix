@@ -121,8 +121,7 @@
       9001 # Mosquitto WebSocket
       9471 # Agent Framework Telemetry Collector
       9472 # Agent Framework Telemetry Grafana
-      8900 # Passkey installer HTTP
-      8901 # Passkey installer HTTPS (WebAuthn)
+      8900 # Passkey installer HTTP (Traefik handles HTTPS)
     ];
 
     # UDP ports to open

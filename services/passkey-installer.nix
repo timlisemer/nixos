@@ -19,15 +19,9 @@
       aiofiles
     ]);
 
-  # Self-signed certificate for HTTPS (WebAuthn requires secure context)
-  selfSignedCert =
-    pkgs.runCommand "passkey-installer-cert" {
-      nativeBuildInputs = [pkgs.openssl];
-    } ''
-      mkdir -p $out
-      openssl req -x509 -newkey rsa:4096 -keyout $out/key.pem -out $out/cert.pem \
-        -days 3650 -nodes -subj "/CN=homeassistant-yellow.local"
-    '';
+  # Valid hostnames for installation (must match nixosConfigurations in flake.nix)
+  validHostnames = ["tim-laptop" "tim-pc" "tim-server" "tim-wsl" "tim-pi4" "greeter" "homeassistant-yellow" "rpi5"];
+  validHostnamesStr = builtins.concatStringsSep "," validHostnames;
 
   # The FastAPI application for passkey authentication
   installerApp = pkgs.writeText "passkey_installer.py" ''
@@ -63,11 +57,12 @@
     app = FastAPI(title="NixOS Passkey Installer")
 
     # Configuration
-    RP_ID = os.environ.get("RP_ID", "homeassistant-yellow.local")
+    RP_ID = os.environ.get("RP_ID", "nixos.local.yakweide.de")
     RP_NAME = os.environ.get("RP_NAME", "NixOS Installer")
-    RP_ORIGIN = os.environ.get("RP_ORIGIN", "https://homeassistant-yellow.local:8901")
+    RP_ORIGIN = os.environ.get("RP_ORIGIN", "https://nixos.local.yakweide.de")
     SSH_KEY_PATH = os.environ.get("SSH_KEY_PATH", "/run/secrets/installer_ssh_key")
     DATA_DIR = Path(os.environ.get("DATA_DIR", "/var/lib/passkey-installer"))
+    VALID_HOSTNAMES = os.environ.get("VALID_HOSTNAMES", "").split(",")
 
     # In-memory session storage (for simplicity)
     sessions: dict = {}
@@ -110,13 +105,21 @@
         return {"status": "ok", "service": "NixOS Passkey Installer"}
 
 
-    @app.get("/install", response_class=PlainTextResponse)
-    async def get_install_script():
-        """Return the curl-able installation script."""
-        script = """#!/usr/bin/env bash
+    @app.get("/install/{hostname}", response_class=PlainTextResponse)
+    async def get_install_script(hostname: str):
+        """Return the curl-able installation script for a specific hostname."""
+        if hostname not in VALID_HOSTNAMES:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Unknown hostname '{hostname}'. Valid hostnames: {', '.join(VALID_HOSTNAMES)}"
+            )
+
+        script = f"""#!/usr/bin/env bash
     set -euo pipefail
 
-    echo "=== NixOS Passkey Installation ==="
+    HOSTNAME="{hostname}"
+
+    echo "=== NixOS Passkey Installation for $HOSTNAME ==="
     echo ""
 
     # Check if running as root
@@ -138,7 +141,7 @@
 
     # Start authentication session
     echo "Starting authentication session..."
-    SESSION_DATA=$(curl -s "http://homeassistant-yellow.local:8900/auth/begin")
+    SESSION_DATA=$(curl -s "https://nixos.local.yakweide.de/auth/begin")
     SESSION_ID=$(echo "$SESSION_DATA" | jq -r '.session_id')
     AUTH_URL=$(echo "$SESSION_DATA" | jq -r '.auth_url')
 
@@ -159,8 +162,8 @@
     echo "Waiting for authentication (timeout: 5 minutes)..."
 
     # Poll for authentication completion
-    for i in {1..300}; do
-        STATUS=$(curl -s "http://homeassistant-yellow.local:8900/auth/status/$SESSION_ID")
+    for i in {{1..300}}; do
+        STATUS=$(curl -s "https://nixos.local.yakweide.de/auth/status/$SESSION_ID")
         STATE=$(echo "$STATUS" | jq -r '.state')
 
         if [[ "$STATE" == "authenticated" ]]; then
@@ -189,7 +192,7 @@
 
     # Retrieve SSH key
     echo "Retrieving SSH key..."
-    SSH_KEY=$(curl -s "http://homeassistant-yellow.local:8900/key/$TOKEN")
+    SSH_KEY=$(curl -s "https://nixos.local.yakweide.de/key/$TOKEN")
 
     if [[ -z "$SSH_KEY" || "$SSH_KEY" == *"error"* ]]; then
         echo "Error: Failed to retrieve SSH key"
@@ -213,12 +216,12 @@
     echo ""
     echo "SSH key installed successfully!"
     echo ""
-    echo "You can now proceed with NixOS installation:"
+    echo "You can now proceed with NixOS installation for $HOSTNAME:"
     echo ""
     echo "  1. Clone the repository:"
     echo "     git clone git@github.com:timlisemer/nixos.git /tmp/nixos"
     echo ""
-    echo "  2. Run disko to partition disks (example for tim-laptop):"
+    echo "  2. Run disko to partition disks:"
     echo "     nix --extra-experimental-features 'nix-command flakes' run github:nix-community/disko -- --mode zap_create_mount /tmp/nixos/common/disko.nix --arg disks '[ \\"/dev/nvme0n1\\" ]'"
     echo ""
     echo "  3. Copy configuration:"
@@ -232,7 +235,7 @@
     echo "     cp /root/.ssh/id_ed25519 /mnt/etc/ssh/nixos_personal_sops_key"
     echo ""
     echo "  5. Install NixOS:"
-    echo "     nixos-install --flake /mnt/etc/nixos#<hostname>"
+    echo "     nixos-install --flake /mnt/etc/nixos#$HOSTNAME"
     echo ""
     """
         return script
@@ -246,7 +249,7 @@
         if not credentials:
             raise HTTPException(
                 status_code=400,
-                detail="No passkeys registered. Please register a passkey first via /register/begin"
+                detail="No passkeys registered. Please register a passkey first via /register-passkey/begin"
             )
 
         session_id = secrets.token_urlsafe(32)
@@ -497,9 +500,17 @@
 
     # === Registration endpoints (run once to set up passkey) ===
 
-    @app.get("/register/begin")
+    @app.get("/register-passkey/begin")
     async def register_begin(username: str = "admin"):
         """Start passkey registration (run once to set up)."""
+        # Check if passkey already exists (single passkey limit)
+        credentials = load_credentials()
+        if credentials:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Passkey already registered. Remove {credentials_file} to reset."
+            )
+
         user_id = hashlib.sha256(username.encode()).digest()
 
         options = webauthn.generate_registration_options(
@@ -522,10 +533,10 @@
             "created": time.time(),
         }
 
-        return RedirectResponse(url=f"/register/page?session={session_id}")
+        return RedirectResponse(url=f"/register-passkey/page?session={session_id}")
 
 
-    @app.get("/register/page", response_class=HTMLResponse)
+    @app.get("/register-passkey/page", response_class=HTMLResponse)
     async def register_page(session: str):
         """Registration page for mobile devices."""
         if session not in sessions or sessions[session]["state"] != "registering":
@@ -613,7 +624,7 @@
                         }}
                     }});
 
-                    const response = await fetch('/register/complete', {{
+                    const response = await fetch('/register-passkey/complete', {{
                         method: 'POST',
                         headers: {{ 'Content-Type': 'application/json' }},
                         body: JSON.stringify({{
@@ -653,7 +664,7 @@
         attestation: str
 
 
-    @app.post("/register/complete")
+    @app.post("/register-passkey/complete")
     async def register_complete(request: RegisterCompleteRequest):
         """Complete passkey registration."""
         if request.session_id not in sessions:
@@ -699,7 +710,7 @@
 
     if __name__ == "__main__":
         import uvicorn
-        uvicorn.run(app, host="0.0.0.0", port=8902)
+        uvicorn.run(app, host="0.0.0.0", port=8900)
   '';
 in {
   config = lib.mkIf isEnabled {
@@ -714,24 +725,25 @@ in {
       "d /var/lib/passkey-installer 0750 root root -"
     ];
 
-    # Python passkey service (HTTPS on port 8901 with self-signed cert for WebAuthn)
+    # Python passkey service (HTTP on port 8900 - Traefik handles HTTPS termination)
     systemd.services.passkey-installer = {
-      description = "Passkey-protected NixOS installer service (HTTPS)";
+      description = "Passkey-protected NixOS installer service";
       after = ["network-online.target"];
       wants = ["network-online.target"];
       wantedBy = ["multi-user.target"];
 
       environment = {
-        RP_ID = "homeassistant-yellow.local";
+        RP_ID = "nixos.local.yakweide.de";
         RP_NAME = "NixOS Installer";
-        RP_ORIGIN = "https://homeassistant-yellow.local:8901";
+        RP_ORIGIN = "https://nixos.local.yakweide.de";
         SSH_KEY_PATH = "/run/secrets/installer_ssh_key";
         DATA_DIR = "/var/lib/passkey-installer";
+        VALID_HOSTNAMES = validHostnamesStr;
       };
 
       serviceConfig = {
         Type = "simple";
-        ExecStart = "${pythonEnv}/bin/uvicorn passkey_installer:app --host 0.0.0.0 --port 8901 --ssl-keyfile ${selfSignedCert}/key.pem --ssl-certfile ${selfSignedCert}/cert.pem";
+        ExecStart = "${pythonEnv}/bin/uvicorn passkey_installer:app --host 0.0.0.0 --port 8900";
         WorkingDirectory = "/var/lib/passkey-installer";
         Restart = "always";
         RestartSec = "5s";
@@ -749,34 +761,9 @@ in {
       '';
     };
 
-    # Simple HTTP server for the install script (port 8900)
-    # This serves the curl-able script without HTTPS for ease of use
-    systemd.services.passkey-installer-http = {
-      description = "HTTP endpoint for install script";
-      after = ["passkey-installer.service"];
-      wants = ["passkey-installer.service"];
-      wantedBy = ["multi-user.target"];
-
-      serviceConfig = {
-        Type = "simple";
-        ExecStart = "${pythonEnv}/bin/uvicorn passkey_installer:app --host 0.0.0.0 --port 8900";
-        WorkingDirectory = "/var/lib/passkey-installer";
-        Restart = "always";
-        RestartSec = "5s";
-
-        # Security hardening
-        NoNewPrivileges = true;
-        ProtectSystem = "strict";
-        ProtectHome = true;
-        PrivateTmp = true;
-        ReadWritePaths = ["/var/lib/passkey-installer"];
-      };
-    };
-
-    # Firewall rules
+    # Firewall rules - only HTTP port needed (Traefik handles HTTPS)
     networking.firewall.allowedTCPPorts = [
-      8900 # HTTP for install script
-      8901 # HTTPS for WebAuthn
+      8900 # HTTP for Traefik to reach
     ];
 
     environment.systemPackages = [pythonEnv];

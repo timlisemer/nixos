@@ -28,7 +28,7 @@ For fresh installations from NixOS live USB (requires homeassistant-yellow on lo
 
 Register a passkey on your phone:
 
-1. Open `https://homeassistant-yellow.local:8901/register/begin` on your phone
+1. Open `https://nixos.local.yakweide.de/register-passkey/begin` on your phone
 2. Follow prompts to register with Bitwarden (or another passkey provider)
 
 #### Installation
@@ -36,7 +36,12 @@ Register a passkey on your phone:
 From a NixOS live USB:
 
 ```bash
-curl http://homeassistant-yellow.local:8900/install | bash
+curl https://nixos.local.yakweide.de/install/<hostname> | bash
+
+# Examples:
+curl https://nixos.local.yakweide.de/install/tim-laptop | bash
+curl https://nixos.local.yakweide.de/install/tim-pc | bash
+curl https://nixos.local.yakweide.de/install/tim-server | bash
 ```
 
 1. Scan the QR code with your phone
