@@ -19,8 +19,9 @@
       aiofiles
     ]);
 
-  # Valid hostnames for installation (must match nixosConfigurations in flake.nix)
-  validHostnames = ["tim-laptop" "tim-pc" "tim-server" "tim-wsl" "tim-pi4" "greeter" "homeassistant-yellow" "rpi5"];
+  # Valid hostnames for installation (only disko-compatible hosts)
+  # Excluded: homeassistant-yellow (hosts the service), rpi5/tim-pi4 (SD card), tim-wsl (no disk install)
+  validHostnames = ["tim-laptop" "tim-pc" "tim-server" "greeter"];
   validHostnamesStr = builtins.concatStringsSep "," validHostnames;
 
   # The FastAPI application for passkey authentication
@@ -100,9 +101,39 @@
         user_handle: Optional[str] = None
 
 
+    # Disk configurations per hostname (for autonomous install script)
+    HOST_DISKS = {
+        "tim-laptop": '[ "/dev/nvme0n1" ]',
+        "tim-pc": '[ "/dev/nvme0n1" "/dev/nvme1n1" ]',
+        "tim-server": '[ "/dev/sda" ]',
+        "greeter": '[ "/dev/sda" ]',
+    }
+
+
     @app.get("/")
     async def root():
-        return {"status": "ok", "service": "NixOS Passkey Installer"}
+        """Return service status with endpoints and passkey registration state."""
+        credentials = load_credentials()
+        passkey_registered = bool(credentials)
+
+        return {
+            "service": "NixOS Passkey Installer",
+            "passkey_registered": passkey_registered,
+            "endpoints": {
+                "register": "/register-passkey",
+                "install": "/install/{hostname}"
+            },
+            "valid_hostnames": VALID_HOSTNAMES
+        }
+
+
+    @app.get("/install")
+    async def install_no_hostname():
+        """Return error when no hostname provided."""
+        raise HTTPException(
+            status_code=400,
+            detail=f"Missing hostname. Valid hostnames: {', '.join(VALID_HOSTNAMES)}"
+        )
 
 
     @app.get("/install/{hostname}", response_class=PlainTextResponse)
@@ -114,21 +145,28 @@
                 detail=f"Unknown hostname '{hostname}'. Valid hostnames: {', '.join(VALID_HOSTNAMES)}"
             )
 
+        # Get disk configuration for this hostname
+        disk_config = HOST_DISKS.get(hostname, '[ "/dev/sda" ]')
+
         script = f"""#!/usr/bin/env bash
     set -euo pipefail
 
     HOSTNAME="{hostname}"
+    DISK_CONFIG='{disk_config}'
 
+    echo "=============================================="
     echo "=== NixOS Passkey Installation for $HOSTNAME ==="
+    echo "=============================================="
     echo ""
 
     # Check if running as root
     if [[ $EUID -ne 0 ]]; then
-        echo "This script must be run as root (use sudo or run from live USB as root)"
+        echo "ERROR: This script must be run as root (use sudo or run from live USB as root)"
         exit 1
     fi
 
-    # Install required tools if not present
+    echo "=== Installing required tools ==="
+
     if ! command -v qrencode &>/dev/null; then
         echo "Installing qrencode..."
         nix-env -iA nixos.qrencode || nix profile install nixpkgs#qrencode
@@ -139,14 +177,21 @@
         nix-env -iA nixos.jq || nix profile install nixpkgs#jq
     fi
 
-    # Start authentication session
-    echo "Starting authentication session..."
+    if ! command -v ssh-to-age &>/dev/null; then
+        echo "Installing ssh-to-age..."
+        nix-env -iA nixos.ssh-to-age || nix profile install nixpkgs#ssh-to-age
+    fi
+
+    echo "All required tools installed."
+    echo ""
+
+    echo "=== Starting authentication session ==="
     SESSION_DATA=$(curl -s "https://nixos.local.yakweide.de/auth/begin")
     SESSION_ID=$(echo "$SESSION_DATA" | jq -r '.session_id')
     AUTH_URL=$(echo "$SESSION_DATA" | jq -r '.auth_url')
 
     if [[ -z "$SESSION_ID" || "$SESSION_ID" == "null" ]]; then
-        echo "Error: Failed to start authentication session"
+        echo "ERROR: Failed to start authentication session"
         echo "Response: $SESSION_DATA"
         exit 1
     fi
@@ -173,7 +218,7 @@
             break
         elif [[ "$STATE" == "failed" ]]; then
             echo ""
-            echo "Authentication failed: $(echo "$STATUS" | jq -r '.error')"
+            echo "ERROR: Authentication failed: $(echo "$STATUS" | jq -r '.error')"
             exit 1
         fi
 
@@ -186,57 +231,95 @@
 
     if [[ "$STATE" != "authenticated" ]]; then
         echo ""
-        echo "Authentication timed out"
+        echo "ERROR: Authentication timed out"
         exit 1
     fi
 
-    # Retrieve SSH key
-    echo "Retrieving SSH key..."
+    echo ""
+    echo "=== Retrieving SSH key ==="
     SSH_KEY=$(curl -s "https://nixos.local.yakweide.de/key/$TOKEN")
 
     if [[ -z "$SSH_KEY" || "$SSH_KEY" == *"error"* ]]; then
-        echo "Error: Failed to retrieve SSH key"
+        echo "ERROR: Failed to retrieve SSH key"
         echo "Response: $SSH_KEY"
         exit 1
     fi
 
-    # Set up SSH key for the live environment
+    # Set up SSH key for the live environment (needed for git clone)
     mkdir -p /root/.ssh
     echo "$SSH_KEY" > /root/.ssh/id_ed25519
     chmod 600 /root/.ssh/id_ed25519
     ssh-keygen -y -f /root/.ssh/id_ed25519 > /root/.ssh/id_ed25519.pub
+    chmod 644 /root/.ssh/id_ed25519.pub
 
-    # Generate age key
-    if command -v ssh-to-age &>/dev/null; then
-        mkdir -p /root/.config/sops/age
-        ssh-to-age -private-key -i /root/.ssh/id_ed25519 > /root/.config/sops/age/keys.txt
-        chmod 600 /root/.config/sops/age/keys.txt
-    fi
+    # Add GitHub to known hosts
+    ssh-keyscan -t ed25519 github.com >> /root/.ssh/known_hosts 2>/dev/null
 
+    echo "SSH key installed in live environment."
     echo ""
-    echo "SSH key installed successfully!"
+
+    echo "=== Cloning NixOS configuration repository ==="
+    rm -rf /tmp/nixos
+    git clone git@github.com:timlisemer/nixos.git /tmp/nixos
+    echo "Repository cloned to /tmp/nixos"
     echo ""
-    echo "You can now proceed with NixOS installation for $HOSTNAME:"
+
+    echo "=== Partitioning disks with disko ==="
+    echo "Disk configuration: $DISK_CONFIG"
+    nix --extra-experimental-features 'nix-command flakes' run github:nix-community/disko -- \\
+        --mode zap_create_mount /tmp/nixos/common/disko.nix --arg disks "$DISK_CONFIG"
+    echo "Disks partitioned and mounted."
     echo ""
-    echo "  1. Clone the repository:"
-    echo "     git clone git@github.com:timlisemer/nixos.git /tmp/nixos"
+
+    echo "=== Copying configuration to /mnt/etc/nixos ==="
+    mkdir -p /mnt/etc/nixos
+    cp -a /tmp/nixos/* /mnt/etc/nixos/
+    echo "Configuration copied."
     echo ""
-    echo "  2. Run disko to partition disks:"
-    echo "     nix --extra-experimental-features 'nix-command flakes' run github:nix-community/disko -- --mode zap_create_mount /tmp/nixos/common/disko.nix --arg disks '[ \\"/dev/nvme0n1\\" ]'"
+
+    echo "=== Installing SSH and age keys to /mnt ==="
+    SSH_DIR="/mnt/home/tim/.ssh"
+    SOPS_AGE_DIR="/mnt/home/tim/.config/sops/age"
+    ETC_SSH_DIR="/mnt/etc/ssh"
+
+    mkdir -p "$SSH_DIR" "$SOPS_AGE_DIR" "$ETC_SSH_DIR"
+    chmod 700 "$SSH_DIR"
+    chmod 700 "$(dirname "$SOPS_AGE_DIR")"
+    chmod 700 "$SOPS_AGE_DIR"
+
+    # Copy SSH keys
+    cp /root/.ssh/id_ed25519 "$SSH_DIR/id_ed25519"
+    chmod 600 "$SSH_DIR/id_ed25519"
+    cp /root/.ssh/id_ed25519.pub "$SSH_DIR/id_ed25519.pub"
+    chmod 644 "$SSH_DIR/id_ed25519.pub"
+
+    # Generate age key from SSH key
+    ssh-to-age -private-key -i /root/.ssh/id_ed25519 > "$SOPS_AGE_DIR/keys.txt"
+    chmod 600 "$SOPS_AGE_DIR/keys.txt"
+
+    # Copy SSH key to /etc/ssh for SOPS decryption
+    cp /root/.ssh/id_ed25519 "$ETC_SSH_DIR/nixos_personal_sops_key"
+    chmod 600 "$ETC_SSH_DIR/nixos_personal_sops_key"
+
+    echo "Keys installed to /mnt"
     echo ""
-    echo "  3. Copy configuration:"
-    echo "     mkdir -p /mnt/etc/nixos"
-    echo "     cp -a /tmp/nixos/* /mnt/etc/nixos/"
+
+    echo "=== Installing NixOS ==="
+    nixos-install --flake "/mnt/etc/nixos#$HOSTNAME"
+    echo "NixOS installation complete."
     echo ""
-    echo "  4. Set up keys for /mnt:"
-    echo "     mkdir -p /mnt/home/tim/.ssh /mnt/home/tim/.config/sops/age /mnt/etc/ssh"
-    echo "     cp /root/.ssh/id_ed25519* /mnt/home/tim/.ssh/"
-    echo "     cp /root/.config/sops/age/keys.txt /mnt/home/tim/.config/sops/age/"
-    echo "     cp /root/.ssh/id_ed25519 /mnt/etc/ssh/nixos_personal_sops_key"
+
+    echo "=============================================="
+    echo "=== Installation complete! ==="
+    echo "=============================================="
     echo ""
-    echo "  5. Install NixOS:"
-    echo "     nixos-install --flake /mnt/etc/nixos#$HOSTNAME"
+    echo "Rebooting in 10 seconds..."
+    for i in {{10..1}}; do
+        echo -n "$i "
+        sleep 1
+    done
     echo ""
+    reboot
     """
         return script
 

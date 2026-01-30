@@ -22,7 +22,7 @@ This builds locally and deploys remotely with integrated key transfer.
 
 ### Method 2: USB Install with Passkey
 
-For fresh installations from NixOS live USB (requires homeassistant-yellow on local network).
+Fully autonomous installation from NixOS live USB (requires homeassistant-yellow on local network).
 
 #### First-time Setup (one-time)
 
@@ -44,9 +44,8 @@ curl https://nixos.local.yakweide.de/install/tim-pc | bash
 curl https://nixos.local.yakweide.de/install/tim-server | bash
 ```
 
-1. Scan the QR code with your phone
-2. Authenticate with your registered passkey
-3. Follow the on-screen instructions to complete installation
+1. Scan the QR code with your phone and authenticate with your registered passkey
+2. The script will automatically: clone the repo, partition disks, install keys, run nixos-install, and reboot
 
 ## Disk Configurations
 
@@ -55,6 +54,7 @@ curl https://nixos.local.yakweide.de/install/tim-server | bash
 | tim-laptop | `/dev/nvme0n1` |
 | tim-pc | `/dev/nvme0n1`, `/dev/nvme1n1` |
 | tim-server | `/dev/sda` |
+| greeter | `/dev/sda` |
 
 ## Rebuilding
 
