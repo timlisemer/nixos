@@ -301,6 +301,9 @@
     cp /root/.ssh/id_ed25519 "$ETC_SSH_DIR/nixos_personal_sops_key"
     chmod 600 "$ETC_SSH_DIR/nixos_personal_sops_key"
 
+    # Fix ownership for tim user (UID 1000)
+    chown -R 1000:100 /mnt/home/tim
+
     echo "Keys installed to /mnt"
     echo ""
 
