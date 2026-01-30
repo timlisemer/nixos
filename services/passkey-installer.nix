@@ -45,12 +45,13 @@
     from typing import Optional
 
     from fastapi import FastAPI, HTTPException, Response
-    from fastapi.responses import PlainTextResponse, HTMLResponse
+    from fastapi.responses import PlainTextResponse, HTMLResponse, RedirectResponse
     from pydantic import BaseModel
     import webauthn
     from webauthn.helpers import (
         bytes_to_base64url,
         base64url_to_bytes,
+        options_to_json,
     )
     from webauthn.helpers.structs import (
         AuthenticatorSelectionCriteria,
@@ -264,12 +265,12 @@
             user_verification=UserVerificationRequirement.PREFERRED,
         )
 
-        sessions[session_id] = {{
+        sessions[session_id] = {
             "challenge": bytes_to_base64url(challenge),
             "state": "pending",
             "created": time.time(),
             "token": None,
-        }}
+        }
 
         # Clean up old sessions (older than 10 minutes)
         current_time = time.time()
@@ -277,11 +278,11 @@
         for sid in expired:
             del sessions[sid]
 
-        return {{
+        return {
             "session_id": session_id,
-            "auth_url": f"{{RP_ORIGIN}}/auth/verify?session={{session_id}}",
-            "options": options.model_dump(),
-        }}
+            "auth_url": f"{RP_ORIGIN}/auth/verify?session={session_id}",
+            "options": json.loads(options_to_json(options)),
+        }
 
 
     @app.get("/auth/verify", response_class=HTMLResponse)
@@ -296,7 +297,7 @@
 
         credentials = load_credentials()
         allow_credentials_json = json.dumps([
-            {{"type": "public-key", "id": cred_id}}
+            {"type": "public-key", "id": cred_id}
             for cred_id in credentials.keys()
         ])
 
@@ -424,18 +425,18 @@
 
         try:
             verification = webauthn.verify_authentication_response(
-                credential={{
+                credential={
                     "id": request.credential_id,
                     "rawId": request.credential_id,
-                    "response": {{
+                    "response": {
                         "clientDataJSON": request.client_data,
                         "authenticatorData": request.authenticator_data,
                         "signature": request.signature,
-                    }},
+                    },
                     "type": "public-key",
                     "authenticatorAttachment": "cross-platform",
-                    "clientExtensionResults": {{}},
-                }},
+                    "clientExtensionResults": {},
+                },
                 expected_challenge=base64url_to_bytes(sess["challenge"]),
                 expected_rp_id=RP_ID,
                 expected_origin=RP_ORIGIN,
@@ -452,21 +453,21 @@
             sess["state"] = "authenticated"
             sess["token"] = token
 
-            return {{"success": True}}
+            return {"success": True}
 
         except Exception as e:
             sess["state"] = "failed"
             raise HTTPException(status_code=400, detail=str(e))
 
 
-    @app.get("/auth/status/{{session_id}}")
+    @app.get("/auth/status/{session_id}")
     async def auth_status(session_id: str):
         """Check authentication status."""
         if session_id not in sessions:
-            return {{"state": "invalid"}}
+            return {"state": "invalid"}
 
         sess = sessions[session_id]
-        result = {{"state": sess["state"]}}
+        result = {"state": sess["state"]}
 
         if sess["state"] == "authenticated" and sess["token"]:
             result["token"] = sess["token"]
@@ -474,7 +475,7 @@
         return result
 
 
-    @app.get("/key/{{token}}", response_class=PlainTextResponse)
+    @app.get("/key/{token}", response_class=PlainTextResponse)
     async def get_key(token: str):
         """Retrieve SSH key with one-time token."""
         # Find session with this token
@@ -514,18 +515,14 @@
         )
 
         session_id = secrets.token_urlsafe(32)
-        sessions[session_id] = {{
+        sessions[session_id] = {
             "challenge": bytes_to_base64url(options.challenge),
             "user_id": bytes_to_base64url(user_id),
             "state": "registering",
             "created": time.time(),
-        }}
+        }
 
-        return {{
-            "session_id": session_id,
-            "options": options.model_dump(),
-            "register_url": f"{{RP_ORIGIN}}/register/page?session={{session_id}}",
-        }}
+        return RedirectResponse(url=f"/register/page?session={session_id}")
 
 
     @app.get("/register/page", response_class=HTMLResponse)
@@ -668,17 +665,17 @@
 
         try:
             verification = webauthn.verify_registration_response(
-                credential={{
+                credential={
                     "id": request.credential_id,
                     "rawId": request.credential_id,
-                    "response": {{
+                    "response": {
                         "clientDataJSON": request.client_data,
                         "attestationObject": request.attestation,
-                    }},
+                    },
                     "type": "public-key",
-                    "clientExtensionResults": {{}},
+                    "clientExtensionResults": {},
                     "authenticatorAttachment": "cross-platform",
-                }},
+                },
                 expected_challenge=base64url_to_bytes(sess["challenge"]),
                 expected_rp_id=RP_ID,
                 expected_origin=RP_ORIGIN,
@@ -686,15 +683,15 @@
 
             # Save credential
             credentials = load_credentials()
-            credentials[request.credential_id] = {{
+            credentials[request.credential_id] = {
                 "public_key": bytes_to_base64url(verification.credential_public_key),
                 "sign_count": verification.sign_count,
                 "user_id": sess["user_id"],
-            }}
+            }
             save_credentials(credentials)
 
             del sessions[request.session_id]
-            return {{"success": True}}
+            return {"success": True}
 
         except Exception as e:
             raise HTTPException(status_code=400, detail=str(e))
