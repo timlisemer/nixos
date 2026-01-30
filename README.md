@@ -28,7 +28,7 @@ For fresh installations from NixOS live USB (requires homeassistant-yellow on lo
 
 Register a passkey on your phone:
 
-1. Open `https://nixos.local.yakweide.de/register-passkey/begin` on your phone
+1. Open `https://nixos.local.yakweide.de/register-passkey` on your phone
 2. Follow prompts to register with Bitwarden (or another passkey provider)
 
 #### Installation

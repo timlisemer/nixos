@@ -249,7 +249,7 @@
         if not credentials:
             raise HTTPException(
                 status_code=400,
-                detail="No passkeys registered. Please register a passkey first via /register-passkey/begin"
+                detail="No passkeys registered. Please register a passkey first via /register-passkey"
             )
 
         session_id = secrets.token_urlsafe(32)
@@ -283,13 +283,13 @@
 
         return {
             "session_id": session_id,
-            "auth_url": f"{RP_ORIGIN}/auth/verify?session={session_id}",
+            "auth_url": f"{RP_ORIGIN}/auth?session={session_id}",
             "options": json.loads(options_to_json(options)),
         }
 
 
-    @app.get("/auth/verify", response_class=HTMLResponse)
-    async def auth_verify_page(session: str):
+    @app.get("/auth", response_class=HTMLResponse)
+    async def auth_page(session: str):
         """Serve the WebAuthn authentication page for mobile devices."""
         if session not in sessions:
             return HTMLResponse("<h1>Invalid or expired session</h1>", status_code=400)
@@ -375,7 +375,7 @@
                         }}
                     }});
 
-                    const response = await fetch('/auth/complete', {{
+                    const response = await fetch('/auth', {{
                         method: 'POST',
                         headers: {{ 'Content-Type': 'application/json' }},
                         body: JSON.stringify({{
@@ -395,7 +395,7 @@
                         status.textContent = 'Authentication successful! You can close this page and return to your terminal.';
                         btn.textContent = 'Authenticated';
                     }} else {{
-                        throw new Error(result.error || 'Authentication failed');
+                        throw new Error(result.detail || result.error || 'Authentication failed');
                     }}
                 }} catch (err) {{
                     status.className = 'status error';
@@ -410,7 +410,7 @@
         return HTMLResponse(html)
 
 
-    @app.post("/auth/complete")
+    @app.post("/auth")
     async def auth_complete(request: AuthCompleteRequest):
         """Complete WebAuthn authentication."""
         if request.session_id not in sessions:
@@ -500,15 +500,15 @@
 
     # === Registration endpoints (run once to set up passkey) ===
 
-    @app.get("/register-passkey/begin")
-    async def register_begin(username: str = "admin"):
-        """Start passkey registration (run once to set up)."""
+    @app.get("/register-passkey", response_class=HTMLResponse)
+    async def register_page(username: str = "admin"):
+        """Serve passkey registration page (run once to set up)."""
         # Check if passkey already exists (single passkey limit)
         credentials = load_credentials()
         if credentials:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Passkey already registered. Remove {credentials_file} to reset."
+            return HTMLResponse(
+                f"<h1>Passkey already registered</h1><p>Remove {credentials_file} to reset.</p>",
+                status_code=400
             )
 
         user_id = hashlib.sha256(username.encode()).digest()
@@ -533,16 +533,7 @@
             "created": time.time(),
         }
 
-        return RedirectResponse(url=f"/register-passkey/page?session={session_id}")
-
-
-    @app.get("/register-passkey/page", response_class=HTMLResponse)
-    async def register_page(session: str):
-        """Registration page for mobile devices."""
-        if session not in sessions or sessions[session]["state"] != "registering":
-            return HTMLResponse("<h1>Invalid or expired session</h1>", status_code=400)
-
-        sess = sessions[session]
+        sess = sessions[session_id]
 
         html = f"""<!DOCTYPE html>
     <html>
@@ -570,7 +561,7 @@
         <div id="status" class="status info" style="display:none;"></div>
 
         <script>
-            const sessionId = "{session}";
+            const sessionId = "{session_id}";
             const rpId = "{RP_ID}";
             const rpName = "{RP_NAME}";
             const challenge = "{sess['challenge']}";
@@ -624,7 +615,7 @@
                         }}
                     }});
 
-                    const response = await fetch('/register-passkey/complete', {{
+                    const response = await fetch('/register-passkey', {{
                         method: 'POST',
                         headers: {{ 'Content-Type': 'application/json' }},
                         body: JSON.stringify({{
@@ -642,7 +633,7 @@
                         status.textContent = 'Passkey registered successfully! You can now use it to authenticate NixOS installations.';
                         btn.textContent = 'Registered';
                     }} else {{
-                        throw new Error(result.error || 'Registration failed');
+                        throw new Error(result.detail || result.error || 'Registration failed');
                     }}
                 }} catch (err) {{
                     status.className = 'status error';
@@ -664,7 +655,7 @@
         attestation: str
 
 
-    @app.post("/register-passkey/complete")
+    @app.post("/register-passkey")
     async def register_complete(request: RegisterCompleteRequest):
         """Complete passkey registration."""
         if request.session_id not in sessions:
@@ -720,11 +711,6 @@ in {
       mode = "0400";
     };
 
-    # State directory for passkey credentials
-    systemd.tmpfiles.rules = [
-      "d /var/lib/passkey-installer 0750 root root -"
-    ];
-
     # Python passkey service (HTTP on port 8900 - Traefik handles HTTPS termination)
     systemd.services.passkey-installer = {
       description = "Passkey-protected NixOS installer service";
@@ -745,6 +731,7 @@ in {
         Type = "simple";
         ExecStart = "${pythonEnv}/bin/uvicorn passkey_installer:app --host 0.0.0.0 --port 8900";
         WorkingDirectory = "/var/lib/passkey-installer";
+        StateDirectory = "passkey-installer";
         Restart = "always";
         RestartSec = "5s";
 
@@ -753,7 +740,6 @@ in {
         ProtectSystem = "strict";
         ProtectHome = true;
         PrivateTmp = true;
-        ReadWritePaths = ["/var/lib/passkey-installer"];
       };
 
       preStart = ''
