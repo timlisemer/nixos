@@ -18,6 +18,7 @@
     ../packages/system-packages.nix
     ../packages/dependencies.nix
     ../services/homeassistant.nix
+    ../services/passkey-installer.nix
     (import ../common/home-manager.nix {
       inherit config pkgs inputs home-manager lib users;
       isDesktop = false;

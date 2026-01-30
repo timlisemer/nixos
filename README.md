@@ -2,109 +2,58 @@
 
 This repository contains my personal configuration for NixOS, a Linux distribution known for its declarative configuration model and reliable system management.
 
-## How to Use This Configuration
+## Installation Methods
 
-To use this NixOS configuration on your system, follow these steps:
+### Method 1: Remote Install (Recommended)
 
-### 1. Boot into the Minimal NixOS Live CD:
-
-Boot your system using a NixOS live CD or USB.
-
-### 2. Prepare the Live Environment:
-
-If the minimal NixOS environment does not have `git` installed by default, install it with the following command:
+Use this method from an existing NixOS machine with SSH keys configured.
 
 ```bash
-nix-shell -p git
+install_nixos <hostname>
+
+# Examples:
+install_nixos tim-laptop
+install_nixos tim-pc
+install_nixos tim-server
+install_nixos homeassistant-yellow
 ```
 
-#### 2.1 Optionally Enable SSH Access Within the Live Environment:
+This builds locally and deploys remotely with integrated key transfer.
 
-To set a password for the `nixos` user, run:
+### Method 2: USB Install with Passkey
+
+For fresh installations from NixOS live USB (requires homeassistant-yellow on local network).
+
+#### First-time Setup (one-time)
+
+Register a passkey on your phone:
+
+1. Open `https://homeassistant-yellow.local:8901/register/begin` on your phone
+2. Follow prompts to register with Bitwarden (or another passkey provider)
+
+#### Installation
+
+From a NixOS live USB:
 
 ```bash
-passwd nixos
+curl http://homeassistant-yellow.local:8900/install | bash
 ```
 
-This allows you to SSH into the live environment using:
+1. Scan the QR code with your phone
+2. Authenticate with your registered passkey
+3. Follow the on-screen instructions to complete installation
+
+## Disk Configurations
+
+| Host | Disks |
+|------|-------|
+| tim-laptop | `/dev/nvme0n1` |
+| tim-pc | `/dev/nvme0n1`, `/dev/nvme1n1` |
+| tim-server | `/dev/sda` |
+
+## Rebuilding
 
 ```bash
-ssh nixos@<hostname>
+rebuild                    # Local rebuild
+remote_rebuild <hostname>  # Remote rebuild
 ```
-
-### 3. Clone the Repository:
-
-Clone the repository from GitHub to a temporary directory, such as `/tmp`.
-
-```bash
-git clone https://github.com/TimLisemer/NixOs.git /tmp/nixos
-```
-
-### 3.1 Optionally Generate Hardware Configuration:
-
-Generate a hardware configuration without filesystem information and save it to `hardware-configuration.nix`:
-
-```bash
-sudo nixos-generate-config --no-filesystems --show-hardware-config >> hardware-configuration.nix
-```
-
-Move the generated file, for example, into `/tmp/nixos/hosts` with an appropriate name.
-
-### 4. Mount the Filesystem Using Disko:
-
-Use Disko to mount the filesystem by running the following commands. Ensure you specify the correct disk(s) for your machine.
-
-- **For `tim-laptop` (single disk):**
-
-```bash
-sudo nix --extra-experimental-features 'nix-command flakes' run github:nix-community/disko -- --mode zap_create_mount /tmp/nixos/common/disko.nix --arg disks '[ "/dev/nvme0n1" ]'
-```
-
-- **For `tim-pc` (dual disk):**
-
-```bash
-sudo nix --extra-experimental-features 'nix-command flakes' run github:nix-community/disko -- --mode zap_create_mount /tmp/nixos/common/disko.nix --arg disks '[ "/dev/nvme0n1" "/dev/nvme1n1" ]'
-```
-
-### 5. Install NixOS:
-
-Create the necessary directories and copy the configuration to the target filesystem:
-
-```bash
-sudo mkdir -p /mnt/etc/nixos
-sudo cp -a /tmp/nixos/* /mnt/etc/nixos/
-```
-
-- **For `tim-laptop`:**
-
-```bash
-sudo nixos-install --flake '/mnt/etc/nixos#tim-laptop'
-```
-
-- **For `tim-pc`:**
-
-```bash
-sudo nixos-install --flake '/mnt/etc/nixos#tim-pc'
-```
-
-### 6. Finalize Installation:
-
-Set the password for each user account declared in the configuration:
-
-```bash
-sudo nixos-enter --root /mnt -c 'passwd tim'
-```
-
-### 7. Boot into the Newly Installed System:
-
-After the installation completes, reboot your system into the newly installed NixOS.
-
-### 8. Rebuild the Configuration in the Future:
-
-After the initial setup, you can rebuild the configuration with the following command:
-
-```bash
-sudo nixos-rebuild switch
-```
-
-This setup allows you to manage different machines (e.g., `tim-pc`, `tim-laptop`) using a shared configuration repository with host-specific adjustments.

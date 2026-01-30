@@ -35,6 +35,9 @@
   };
   sops.secrets.resticENV = {};
   sops.secrets.telemetryENV = {};
+  sops.secrets.installer_ssh_key = {
+    mode = "0400"; # Only readable by root for security
+  };
 
   sops.secrets.openvpn_ca = {owner = "nm-openvpn";};
   sops.secrets.openvpn_extra_certs = {group = "nm-openvpn";};

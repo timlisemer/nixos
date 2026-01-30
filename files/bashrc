@@ -11,8 +11,88 @@ alias term='ghostty'
 alias terminal='ghostty'
 alias nixos='cd ~/Coding/nixos'
 alias iocto='cd ~/Coding/iocto'
-alias install_tim_server='nix run nixpkgs#nixos-anywhere -- --flake /etc/nixos#tim-server root@142.132.234.128'
-alias install_homeassistant_yellow='nix run nixpkgs#nixos-anywhere -- --flake /etc/nixos#homeassistant-yellow nixos@homeassistant-yellow'
+# --- install_nixos: unified NixOS remote installation with key transfer ---
+install_nixos() {
+	local host="$1"
+	local target="$2" # Optional: override target address
+
+	if [[ -z "$host" ]]; then
+		echo "Usage: install_nixos <hostname> [target_address]"
+		echo ""
+		echo "Available hosts:"
+		echo "  tim-server           - VPS at 142.132.234.128"
+		echo "  homeassistant-yellow - RPi at homeassistant-yellow"
+		echo "  tim-pi4              - RPi at tim-pi4"
+		echo "  tim-laptop           - Laptop"
+		echo "  tim-pc               - Desktop"
+		return 1
+	fi
+
+	# Validate and set default target addresses
+	case "$host" in
+	tim-server) target="${target:-root@142.132.234.128}" ;;
+	homeassistant-yellow) target="${target:-nixos@homeassistant-yellow}" ;;
+	tim-pi4) target="${target:-nixos@tim-pi4}" ;;
+	tim-laptop) target="${target:-nixos@tim-laptop}" ;;
+	tim-pc) target="${target:-nixos@tim-pc}" ;;
+	*)
+		echo "Unknown host: $host"
+		echo "Use 'install_nixos' without arguments to see available hosts."
+		return 1
+		;;
+	esac
+
+	echo "=== NixOS Remote Installation ==="
+	echo "Host:   $host"
+	echo "Target: $target"
+	echo ""
+	read -p "Continue? [y/N] " -n 1 -r
+	echo
+	[[ ! $REPLY =~ ^[Yy]$ ]] && return 0
+
+	# Prepare extra-files with SSH keys for transfer
+	local temp
+	temp=$(mktemp -d)
+	trap "rm -rf $temp" EXIT
+
+	local key_path="$HOME/.ssh/id_ed25519"
+	if [[ ! -f "$key_path" ]]; then
+		echo "Error: SSH key not found at $key_path" >&2
+		return 1
+	fi
+
+	echo "→ Preparing SSH keys for transfer..."
+
+	# Set up directory structure
+	install -d -m700 "$temp/home/tim/.ssh"
+	install -d -m700 "$temp/home/tim/.config/sops/age"
+	install -d -m755 "$temp/etc/ssh"
+
+	# Copy SSH keys
+	install -m600 "$key_path" "$temp/home/tim/.ssh/id_ed25519"
+	install -m644 "$key_path.pub" "$temp/home/tim/.ssh/id_ed25519.pub"
+
+	# Generate age key from SSH key
+	if ! command -v ssh-to-age &>/dev/null; then
+		echo "Error: ssh-to-age not found in PATH" >&2
+		return 1
+	fi
+	ssh-to-age -private-key -i "$key_path" >"$temp/home/tim/.config/sops/age/keys.txt"
+	chmod 600 "$temp/home/tim/.config/sops/age/keys.txt"
+
+	# Copy SOPS key to /etc/ssh
+	install -m600 "$key_path" "$temp/etc/ssh/nixos_personal_sops_key"
+
+	echo "→ Running nixos-anywhere with key transfer..."
+	nix run nixpkgs#nixos-anywhere -- \
+		--extra-files "$temp" \
+		--flake "$HOME/Coding/nixos#$host" \
+		"$target"
+
+	echo ""
+	echo "=== Installation Complete ==="
+}
+# ---------------------------------------------------------------------------
 alias nix_clean='sudo nix-collect-garbage -d && sudo nix-store --gc && sudo nix-store --optimize && sudo nix-store --verify --check-contents'
 alias git_amend='git amend'
 alias wake_tim-pc='wol 30:56:0F:00:CB:BF'
@@ -845,13 +925,13 @@ ssh() {
 }
 # ---------------------------------------------------------------------------
 
-# --- rebuild_remote: rebuild NixOS configuration on a remote host ---------
-rebuild_remote() {
+# --- remote_rebuild: rebuild NixOS configuration on a remote host ---------
+remote_rebuild() {
 	local host="$1"
 
 	# --- sanity checks -------------------------------------------------------
 	if [[ -z "$host" ]] || [[ "$host" =~ [[:space:]] ]]; then
-		echo "Usage: rebuild_remote <host>   (single, non-empty hostname)" >&2
+		echo "Usage: remote_rebuild <host>   (single, non-empty hostname)" >&2
 		return 1
 	fi
 	# ------------------------------------------------------------------------
@@ -863,12 +943,8 @@ rebuild_remote() {
 		--use-substitutes \
 		--ask-sudo-password \
 		--keep-going
-	#--use-remote-sudo
-	#--ask-sudo-password
-	# --sudo
-	#--keep-going
 }
-alias remote_rebuild='rebuild_remote'
+alias rebuild_remote='remote_rebuild'
 
 # ---------------------------------------------------------------------------
 

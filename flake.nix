@@ -314,40 +314,6 @@
             inherit inputs home-manager adwaita_hypercursor self nixos-raspberrypi users hostIps;
           };
         };
-
-      installer = let
-        system = "x86_64-linux";
-        pkgs = import nixpkgs-stable {inherit system;};
-        hosts = ["tim-laptop" "tim-pc" "tim-server" "greeter"];
-        hostDisks = {
-          "tim-laptop" = ["/dev/nvme0n1"];
-          "tim-pc" = ["/dev/nvme0n1" "/dev/nvme1n1"];
-          "tim-server" = ["/dev/sda"];
-          "greeter" = ["/dev/sda"];
-        };
-      in
-        nixpkgs-stable.lib.nixosSystem {
-          inherit system;
-          specialArgs = {
-            inherit self inputs hosts hostDisks home-manager adwaita_hypercursor users;
-          };
-          modules = [
-            disko.nixosModules.disko
-            vscode-server.nixosModules.default
-            ({
-              pkgs,
-              lib,
-              inputs,
-              ...
-            }: {
-              imports = [
-                (import ./common/installer.nix {
-                  inherit pkgs self lib hosts hostDisks home-manager adwaita_hypercursor;
-                })
-              ];
-            })
-          ];
-        };
     };
   };
 }

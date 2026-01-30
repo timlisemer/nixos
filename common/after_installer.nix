@@ -329,38 +329,5 @@
 
         echo "Key installation complete."
       '')
-
-      # --- transfer_and_install_keys -------------------------------------------
-      (pkgs.writeShellScriptBin "transfer_and_install_keys" ''
-        #! /usr/bin/env bash
-        set -euo pipefail
-
-        if [[ $# -ne 1 ]]; then
-          echo "Usage: transfer_and_install_keys <host>" >&2
-          exit 1
-        fi
-
-        HOST="$1"
-        # Use SUDO_USER if running under sudo, otherwise use USER
-        REAL_USER="''${SUDO_USER:-$USER}"
-        REAL_HOME="$(getent passwd "$REAL_USER" | cut -d: -f6)"
-
-        REMOTE_USER="$REAL_USER@$HOST"
-        KEY_PATH="$REAL_HOME/.ssh/id_ed25519"
-        LOCAL_INSTALL_KEYS_BIN="$(command -v install_keys || true)"
-
-        [[ -f "$KEY_PATH" ]] || { echo "Missing $KEY_PATH" >&2; exit 1; }
-        [[ -n "$LOCAL_INSTALL_KEYS_BIN" ]] || { echo "install_keys not in \$PATH" >&2; exit 1; }
-
-        echo "→ copying SSH key…"
-        ssh "$REMOTE_USER" 'mkdir -p ~/.ssh'
-        scp "$KEY_PATH" "$REMOTE_USER:~/.ssh/id_ed25519"
-        scp "$KEY_PATH".pub "$REMOTE_USER:~/.ssh/id_ed25519.pub"
-
-        echo "→ running install_keys on $HOST…"
-        ssh -t "$REMOTE_USER" 'bash install_keys'
-
-        echo "SSH key transferred and install_keys executed successfully on $HOST."
-      '')
     ];
 }
