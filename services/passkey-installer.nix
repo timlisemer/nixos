@@ -320,6 +320,14 @@
     echo "Keys installed to /mnt"
     echo ""
 
+    # Ensure all files are written to disk
+    sync
+
+    # Copy known_hosts to chroot for SSH operations
+    mkdir -p /mnt/root/.ssh
+    chmod 700 /mnt/root/.ssh
+    cp /root/.ssh/known_hosts /mnt/root/.ssh/known_hosts 2>/dev/null || true
+
     echo "=== Installing NixOS ==="
     nixos-install --flake "/mnt/etc/nixos#$HOSTNAME" --option extra-experimental-features "nix-command flakes" --option accept-flake-config true
     echo "NixOS installation complete."

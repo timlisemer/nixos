@@ -536,7 +536,14 @@ in {
   ## Clone all timlisemer GitHub repositories                            ##
   ##########################################################################
   system.activationScripts.cloneGitHubRepos = {
+    deps = ["setupHomeStructure" "setupSecrets"];
     text = ''
+      # Skip during nixos-install - will run on first real boot
+      if [ -n "''${NIXOS_INSTALL_BOOTLOADER:-}" ]; then
+        echo "[github-repos] Skipping: running inside nixos-install"
+        exit 0
+      fi
+
       if ! ${pkgs.openssh}/bin/ssh -o StrictHostKeyChecking=accept-new -T git@github.com 2>&1 | ${pkgs.gnugrep}/bin/grep -q "successfully authenticated"; then
         echo "[github-repos] SSH not available"
       else
@@ -629,7 +636,6 @@ in {
         fi
       fi
     '';
-    deps = ["setupHomeStructure"];
   };
 
   # This value determines the NixOS release from which the default
