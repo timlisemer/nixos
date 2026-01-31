@@ -74,6 +74,12 @@ in {
 
   # Build PKG_CONFIG_PATH cache during nixos-rebuild
   system.activationScripts.pkgconfigPaths.text = ''
+    # Skip during nixos-install - will run on first real boot
+    if [ -n "''${NIXOS_INSTALL_BOOTLOADER:-}" ]; then
+      echo "[pkgconfig-paths] Skipping: running inside nixos-install"
+      exit 0
+    fi
+
     ${pkgs.findutils}/bin/find -L /run/current-system/sw -type d \( -path '*/lib/pkgconfig' -o -path '*/share/pkgconfig' \) 2>/dev/null | ${pkgs.coreutils}/bin/sort -u > /etc/pkgconfig-paths
     COUNT=$(${pkgs.coreutils}/bin/wc -l < /etc/pkgconfig-paths)
     echo "[pkgconfig-paths] cached $COUNT directories"
@@ -497,6 +503,12 @@ in {
   ##########################################################################
   system.activationScripts.setupHomeStructure = {
     text = ''
+      # Skip during nixos-install - will run on first real boot
+      if [ -n "''${NIXOS_INSTALL_BOOTLOADER:-}" ]; then
+        echo "[home-structure] Skipping: running inside nixos-install"
+        exit 0
+      fi
+
       ${lib.concatStringsSep "\n" (lib.mapAttrsToList (name: user: ''
           home="$(${pkgs.getent}/bin/getent passwd "${name}" | cut -d: -f6)"
           if [ -n "$home" ] && [ -d "$home" ]; then
