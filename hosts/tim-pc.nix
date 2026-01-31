@@ -17,7 +17,7 @@
   # Windows VM with GPU passthrough (appears as GDM session)
   # Resources are auto-detected at runtime: RAM - 2GB, CPU threads - 2
   services.windows-vm = {
-    enable = true;
+    enable = false;
     vmName = "windows-vm";
     username = "tim";
     passwordFile = /run/secrets/windows_vm_password;
