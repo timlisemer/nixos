@@ -25,10 +25,7 @@
   validHostnamesStr = builtins.concatStringsSep "," validHostnames;
 
   # The FastAPI application for passkey authentication (external file to avoid Alejandra formatting issues)
-  installerApp = builtins.path {
-    path = ../files/install/passkey-installer.py;
-    name = "passkey_installer.py";
-  };
+  installerApp = pkgs.writeText "passkey_installer.py" (builtins.readFile ../files/install/passkey-installer.py);
 in {
   config = lib.mkIf isEnabled {
     # SSH key secret for distribution
@@ -51,7 +48,6 @@ in {
         SSH_KEY_PATH = "/run/secrets/installer_ssh_key";
         DATA_DIR = "/var/lib/passkey-installer";
         VALID_HOSTNAMES = validHostnamesStr;
-        PYTHONPATH = "/var/lib/passkey-installer";
       };
 
       serviceConfig = {
@@ -68,11 +64,12 @@ in {
         ProtectHome = true;
         PrivateTmp = true;
       };
-
-      preStart = ''
-        cp ${installerApp} /var/lib/passkey-installer/passkey_installer.py
-      '';
     };
+
+    # Symlink Python app to service directory (L+ replaces on every rebuild)
+    systemd.tmpfiles.rules = [
+      "L+ /var/lib/passkey-installer/passkey_installer.py - - - - ${installerApp}"
+    ];
 
     # Firewall rules - only HTTP port needed (Traefik handles HTTPS)
     networking.firewall.allowedTCPPorts = [
