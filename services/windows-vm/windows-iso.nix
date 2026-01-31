@@ -12,9 +12,30 @@
   # VirtIO drivers ISO URL (stable release)
   virtioUrl = "https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso";
 
-  # Autounattend.xml for Windows 11 unattended installation
-  # Bypasses Microsoft account, TPM checks, and OOBE
-  autounattendXml = pkgs.writeText "autounattend.xml" ''
+  # Script to create autounattend ISO at runtime (reads password from SOPS secret)
+  createAutounattendIso = pkgs.writeShellScript "create-autounattend-iso" ''
+        set -euo pipefail
+
+        PASSWORD_FILE="${toString cfg.passwordFile}"
+        USERNAME="${cfg.username}"
+
+        if [ ! -f "$PASSWORD_FILE" ]; then
+          echo "[autounattend] ERROR: Password file not found: $PASSWORD_FILE" >&2
+          exit 1
+        fi
+
+        PASSWORD=$(${pkgs.coreutils}/bin/cat "$PASSWORD_FILE")
+
+        if [ -z "$PASSWORD" ]; then
+          echo "[autounattend] ERROR: Password file is empty" >&2
+          exit 1
+        fi
+
+        WORK_DIR=$(${pkgs.coreutils}/bin/mktemp -d)
+        trap "${pkgs.coreutils}/bin/rm -rf $WORK_DIR" EXIT
+
+        # Generate autounattend.xml with password from SOPS secret
+        ${pkgs.coreutils}/bin/cat > "$WORK_DIR/autounattend.xml" << 'XMLEOF'
     <?xml version="1.0" encoding="utf-8"?>
     <unattend xmlns="urn:schemas-microsoft-com:unattend">
       <settings pass="windowsPE">
@@ -139,11 +160,11 @@
           <UserAccounts>
             <LocalAccounts>
               <LocalAccount wcm:action="add">
-                <Name>${cfg.username}</Name>
-                <DisplayName>${cfg.username}</DisplayName>
+                <Name>@USERNAME@</Name>
+                <DisplayName>@USERNAME@</DisplayName>
                 <Group>Administrators</Group>
                 <Password>
-                  <Value>${cfg.password}</Value>
+                  <Value>@PASSWORD@</Value>
                   <PlainText>true</PlainText>
                 </Password>
               </LocalAccount>
@@ -151,9 +172,9 @@
           </UserAccounts>
           <AutoLogon>
             <Enabled>true</Enabled>
-            <Username>${cfg.username}</Username>
+            <Username>@USERNAME@</Username>
             <Password>
-              <Value>${cfg.password}</Value>
+              <Value>@PASSWORD@</Value>
               <PlainText>true</PlainText>
             </Password>
             <LogonCount>1</LogonCount>
@@ -178,25 +199,19 @@
         </component>
       </settings>
     </unattend>
-  '';
+    XMLEOF
 
-  # Script to create autounattend ISO
-  createAutounattendIso = pkgs.writeShellScript "create-autounattend-iso" ''
-    set -euo pipefail
+        # Substitute placeholders with actual values (use | delimiter to handle special chars in password)
+        ${pkgs.gnused}/bin/sed -i "s|@USERNAME@|$USERNAME|g" "$WORK_DIR/autounattend.xml"
+        ${pkgs.gnused}/bin/sed -i "s|@PASSWORD@|$PASSWORD|g" "$WORK_DIR/autounattend.xml"
 
-    WORK_DIR=$(${pkgs.coreutils}/bin/mktemp -d)
-    trap "${pkgs.coreutils}/bin/rm -rf $WORK_DIR" EXIT
-
-    # Copy autounattend.xml
-    ${pkgs.coreutils}/bin/cp ${autounattendXml} "$WORK_DIR/autounattend.xml"
-
-    # Create ISO (suppress verbose output)
-    ${pkgs.xorriso}/bin/xorriso -as mkisofs \
-      -quiet \
-      -o "${autounattendIso}" \
-      -joliet -joliet-long -rock \
-      -volid "AUTOUNATTEND" \
-      "$WORK_DIR" 2>/dev/null
+        # Create ISO (suppress verbose output)
+        ${pkgs.xorriso}/bin/xorriso -as mkisofs \
+          -quiet \
+          -o "${autounattendIso}" \
+          -joliet -joliet-long -rock \
+          -volid "AUTOUNATTEND" \
+          "$WORK_DIR" 2>/dev/null
   '';
 
   # Windows ISO download script using UUPDump
@@ -240,7 +255,7 @@
       }
     fi
 
-    # Create autounattend ISO if not present
+    # Create autounattend ISO if not present (reads password from SOPS at runtime)
     if [ ! -f "$AUTOUNATTEND_ISO" ]; then
       ${createAutounattendIso} || {
         err "Failed to create autounattend ISO"
@@ -419,7 +434,6 @@ in {
         echo "[windows-iso] Download failed"
       fi
     '';
-    deps = [];
   };
 
   # Export paths for use in VM XML

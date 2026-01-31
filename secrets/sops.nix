@@ -39,6 +39,8 @@
     mode = "0400"; # Only readable by root for security
   };
 
+  sops.secrets.windows_vm_password = {};
+
   sops.secrets.openvpn_ca = {owner = "nm-openvpn";};
   sops.secrets.openvpn_extra_certs = {group = "nm-openvpn";};
   sops.secrets.openvpn_cert = {group = "nm-openvpn";};

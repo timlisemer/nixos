@@ -33,10 +33,10 @@ in {
       description = "Windows username for unattended install";
     };
 
-    password = mkOption {
-      type = types.str;
-      default = "changeme";
-      description = "Windows password for unattended install (plain text for now, SOPS later)";
+    passwordFile = mkOption {
+      type = types.nullOr types.path;
+      default = null;
+      description = "Path to file containing Windows password (e.g., /run/secrets/windows_vm_password)";
     };
 
     storage = {
@@ -147,6 +147,10 @@ in {
         message = "services.windows-vm.passthrough.gpu must contain at least one PCI address";
       }
       {
+        assertion = cfg.passwordFile != null;
+        message = "services.windows-vm.passwordFile must be set (e.g., /run/secrets/windows_vm_password)";
+      }
+      {
         assertion = cfg ? noHybridGraphics;
         message = ''
           services.windows-vm.noHybridGraphics must be explicitly set.
@@ -222,8 +226,11 @@ in {
     # VM XML definition service
     systemd.services.windows-vm-define = vmXmlModule.defineService;
 
-    # Windows ISO download activation script (non-blocking background download)
-    system.activationScripts.windows-iso-download = windowsIsoModule.activationScript;
+    # Windows ISO download activation script (runs after secrets are decrypted)
+    system.activationScripts.windows-iso-download = {
+      deps = ["setupSecrets"];
+      text = windowsIsoModule.activationScript.text;
+    };
 
     # Create the GDM session entry
     environment.etc."share/wayland-sessions/windows-vm.desktop".text = ''

@@ -27,7 +27,10 @@
       "WebFetch(domain:wiki.nixos.org)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "mcp__nixos-search__home_manager_search",
-      "WebFetch(domain:nixos.wiki)"
+      "WebFetch(domain:nixos.wiki)",
+      "mcp__nixos-search__nix",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__query-docs"
     ],
     "deny": [],
     "ask": [],

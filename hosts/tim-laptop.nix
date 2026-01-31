@@ -20,7 +20,7 @@
     enable = true;
     vmName = "windows-vm";
     username = "tim";
-    password = "changeme"; # TODO: Move to SOPS
+    passwordFile = /run/secrets/windows_vm_password;
     noHybridGraphics = false; # Laptop has hybrid graphics - dGPU sleeps
 
     # Storage: virtual qcow2 disk (laptop has single NVMe)
