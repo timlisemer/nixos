@@ -40,7 +40,7 @@ in {
     # inputs.claude.packages.${system}.claude-desktop-with-fhs
     arduino-ide
     qtcreator
-    kicad
+    # kicad
   ];
 
   programs.nautilus-open-any-terminal = {

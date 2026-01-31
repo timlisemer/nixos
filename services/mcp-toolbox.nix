@@ -133,6 +133,12 @@ in {
   ##########################################################################
   system.activationScripts.claudeMcpSetup = {
     text = ''
+      # Skip during nixos-install - will run on first real boot
+      if [ -n "''${NIXOS_INSTALL_BOOTLOADER:-}" ]; then
+        echo "[claude-mcp] Skipping: running inside nixos-install"
+        exit 0
+      fi
+
       # Remove existing MCP servers silently
       ${pkgs.sudo}/bin/sudo -u tim ${unstable.claude-code}/bin/claude mcp list 2>/dev/null | ${pkgs.gawk}/bin/awk -F: '/^[a-zA-Z0-9_-]+:/ {print $1}' | while read -r server; do
         ${pkgs.sudo}/bin/sudo -u tim ${unstable.claude-code}/bin/claude mcp remove --scope user "$server" >/dev/null 2>&1 || true

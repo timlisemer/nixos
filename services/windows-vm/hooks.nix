@@ -204,6 +204,12 @@ in {
   # Activation script to install hooks
   activationScript = {
     text = ''
+      # Skip during nixos-install - will run on first real boot
+      if [ -n "''${NIXOS_INSTALL_BOOTLOADER:-}" ]; then
+        echo "[libvirt-hooks] Skipping: running inside nixos-install"
+        exit 0
+      fi
+
       echo "[libvirt-hooks] Installing QEMU hooks for GPU passthrough"
 
       # Create libvirt hooks directory

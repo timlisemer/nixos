@@ -143,7 +143,13 @@ in {
   # This script creates symlinks from VS Code's expected locations to the Nix store,
   # allowing both local and remote VS Code sessions to find and use NixOS-managed extensions.
   system.activationScripts.vscode-remote-extensions = ''
-        echo "[vscode-extensions] Setting up VS Code and Cursor extensions"
+      # Skip during nixos-install - will run on first real boot
+      if [ -n "''${NIXOS_INSTALL_BOOTLOADER:-}" ]; then
+        echo "[vscode-extensions] Skipping: running inside nixos-install"
+        exit 0
+      fi
+
+      echo "[vscode-extensions] Setting up VS Code and Cursor extensions"
 
         # Create the VS Code cache directory for VSIX files
         mkdir -p /home/tim/.config/Code/CachedExtensionVSIXs

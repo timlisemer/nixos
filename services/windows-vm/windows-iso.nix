@@ -422,6 +422,12 @@ in {
   # Activation script for ISO download (blocking, runs during activation)
   activationScript = {
     text = ''
+      # Skip during nixos-install - will run on first real boot
+      if [ -n "''${NIXOS_INSTALL_BOOTLOADER:-}" ]; then
+        echo "[windows-iso] Skipping: running inside nixos-install"
+        exit 0
+      fi
+
       # Skip silently if all ISOs present
       if [ -f "${windowsIso}" ] && [ -f "${virtioIso}" ] && [ -f "${autounattendIso}" ]; then
         exit 0
